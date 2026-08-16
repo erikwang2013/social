@@ -178,23 +178,46 @@ LiveProvider 接口（admin 可配置）
 | 1v1 通话 | 信令走 WS 网关（offer/answer/ICE），铃响/接听/挂断状态机（Redis），媒体面走 mediasoup，通话记录落库 |
 | 语聊房 | 房间管理复用直播间模式，上麦/下麦/听众由 service 管状态，媒体面走 mediasoup |
 
-## 9. 虚拟经济（礼物打赏）
+## 9. 虚拟经济（充值 + 礼物打赏 + 提现）
 
 ```
-移动端 IAP（App Store / Google Play / 华为 IAP）──▶ service 钱包
-                                                    │
+移动端 IAP（App Store/Google Play/华为）──┐
+国内：微信支付 / 支付宝（APP/H5）          ├─▶ PaymentProvider ─▶ 钱包
+国外：微信国际 / 支付宝国际 / Stripe / PayPal│    （按 region 选路）
+                                          └─▶ payments 支付单（幂等+验签+对账）
    礼物库(admin 上架) ──▶ 打赏：校验余额→扣款→礼物记录→
                          直播间特效事件广播(WS)→主播收入入账(分成)
-                                                    │
-                              主播钱包 ──▶ 提现申请(admin 审核) ──▶ 支付网关(预留)
+主播钱包 ──▶ payouts 提现单 ──▶ 国内：商家转账 │ 国外：Stripe Connect/PayPal
 ```
 
-| 要点 | 说明 |
+### 9.1 支付渠道（国内外区分）
+
+```
+PaymentProvider 接口（admin 配置）
+├── 国内（CNY）
+│   ├── wechat_cn    微信支付（APP/H5）
+│   ├── alipay_cn    支付宝（APP/WAP）
+│   └── 提现：商家转账（零钱/银行卡）
+├── 国外（USD/EUR/...）
+│   ├── wechat_global  微信国际支付（境外商户）
+│   ├── alipay_global  支付宝国际（Alipay+）
+│   ├── stripe         卡 / Apple Pay / Google Pay / SEPA
+│   ├── paypal
+│   └── 提现：Stripe Connect / PayPal 批量打款
+└── 移动端虚拟币充值：App Store / Google Play / 华为 IAP（商店政策强制，服务端凭证校验）
+```
+
+| 机制 | 设计 |
 |------|------|
-| 充值合规 | 移动端虚拟币必须走商店 IAP（Apple/Google/华为抽成），服务端只做 IAP 凭证校验 |
+| 渠道选路 | 按用户 region + 币种 + admin 商户规则选渠道，可配回退顺序（国内外天然分流） |
+| 支付单 | payments 统一模型：用户/渠道/金额/币种/状态机，全渠道幂等 |
+| 回调 | 统一验签封装（RSA/HMAC），回调幂等，按日对账任务（渠道对账单核对） |
+| 提现 | payouts 提现单：国内商家转账，国外 Stripe Connect/PayPal 打款；按渠道能力选分账/代发模式 |
+| 定价 | 区域定价表（admin）：虚拟币 × 币种价格，汇率集中管理 |
+| 风控 | 限额/频控/异常单告警，全流水审计（复用审计体系） |
 | 礼物 SKU | 礼物目录（价格、特效标识、多语言名称）由 admin 管理 |
-| 流水审计 | 币余额变动全量流水 + 审计（复用 admin 审计体系） |
-| 提现 | 接口预留，接入具体支付网关时再做；区域定价、未成年人限额进合规阶段 |
+
+合规：移动端虚拟币充值必须走商店 IAP（Apple/Google/华为抽成），WeChat/Alipay 用于 H5/Web 及特定区域场景；提现涉及资金清结算，平台通过持牌渠道的分账/代发接口落地，渠道签约资质在 M6b 前确认；未成年人限额进合规阶段。
 
 ## 10. 核心数据模型
 
@@ -203,7 +226,7 @@ LiveProvider 接口（admin 可配置）
 - IM：conversations、conversation_members、messages、message_reads
 - 直播：live_rooms、live_streams（含 provider）、danmaku_archive
 - 语音：call_records、voice_rooms、voice_room_members
-- 虚拟经济：wallets、currency_transactions、gift_catalog、gifts_given、streamer_earnings、withdrawals、products（IAP SKU）
+- 虚拟经济：wallets、currency_transactions、gift_catalog、gifts_given、streamer_earnings、withdrawals、payments、payouts、price_plans（区域定价/汇率）、merchant_configs（渠道商户配置）、products（IAP SKU）
 - 平台：i18n_terms（四端共用词条）、moderation_queue、provider_configs、audit_logs
 
 ## 11. 数据库与存储选型
@@ -233,7 +256,7 @@ LiveProvider 接口（admin 可配置）
 - 审核管线：发布时多语言敏感词 → 图片/音视频审核（第三方 API）→ 人工审核台
 - GDPR：数据导出、注销/删除权、日志留存策略、未成年人年龄门槛、区域规则差异化
 
-## 14. 里程碑（单人全栈，约 8–9 个月）
+## 14. 里程碑（单人全栈，约 9–10 个月）
 
 | 阶段 | 内容 | 周期 |
 |------|------|------|
@@ -244,7 +267,8 @@ LiveProvider 接口（admin 可配置）
 | M4 语音 | media 组件（mediasoup+coturn）、语音消息、1v1 通话、语聊房 | 4–5 周 |
 | M5a 直播主力 | 第三方管线、直播间、弹幕、连麦 | 3–4 周 |
 | M5b 直播补充 | 自建 SRS 接入、双推容灾、选路配置 | 2 周 |
-| M6 虚拟经济 | IAP、钱包、礼物、分成、提现接口 | 4–5 周 |
+| M6a 虚拟币+礼物 | IAP、钱包、礼物、分成 | 2–3 周 |
+| M6b 支付渠道 | 微信/支付宝/微信国际/支付宝国际/Stripe/PayPal、提现、对账 | 3–4 周 |
 | M7 多语言+合规 | 全端 i18n、内容翻译、审核台、GDPR、音视频审核接入 | 3–4 周 |
 | M8 上线 | 双区部署（含 TURN 区域）、监控告警、压测、安全复查 | 2–3 周 |
 
@@ -259,4 +283,4 @@ LiveProvider 接口（admin 可配置）
 | media | Node.js mediasoup / SRS / FFmpeg / coturn |
 | contracts | protobuf / buf |
 | apps | SwiftUI / Kotlin+Compose / ArkTS |
-| 外部 | 第三方直播云、第三方 RTC、第三方审核 API、App Store/Google Play/华为 IAP、APNs/FCM/华为推送 |
+| 外部 | 第三方直播云、第三方 RTC、第三方审核 API、微信支付/支付宝/微信国际/支付宝国际/Stripe/PayPal、App Store/Google Play/华为 IAP、APNs/FCM/华为推送 |
