@@ -1,0 +1,57 @@
+runtime
+/.idea
+/.vscode
+*.log
+.env
+/tests/tmp
+/tests/.phpunit.result.cache
+/.phpunit.cache
+/.cursor
+vendor
+node_modules/
+target/
+build/
+/.github/*
+!.github/workflows/
+/.cursor
+.claude
+.claude-flow
+.swarm
+.mcp.json
+ruvector.db
+.superpowers/state/target
+.agents
+skills-lock.json
+.php-cs-fixer.cache
+*.backup
+*.bak
+# Session artifacts
+dump.rdb
+ruvector.db
+.swarm/memory.db
+.swarm/memory.db-shm
+.swarm/memory.db-wal
+
+
+# HarmonyOS（apps/harmonyos）：DevEco Studio / hvigor / ohpm 构建产物（harmonyos-12）
+# hvigor 构建缓存与日志（项目根）
+apps/harmonyos/.hvigor/
+# ohpm 依赖安装产物（项目根与各模块，如 entry/oh_modules）
+apps/harmonyos/**/oh_modules/
+# 各模块编译产物（entry/build 等）
+apps/harmonyos/**/build/
+# 原生/C++ 构建产物（当前无 native 代码，防止将来引入后误提交）
+apps/harmonyos/**/.cxx/
+# DevEco Previewer 预览缓存
+apps/harmonyos/**/.preview/
+# hvigor 输出目录
+apps/harmonyos/**/hvigor-outputs/
+# clangd 索引缓存与本地格式化配置
+apps/harmonyos/**/.clangd
+apps/harmonyos/**/.clang-format
+apps/harmonyos/**/.clang-tidy
+# DevEco 本地 SDK 路径配置（机器相关，不入库）
+apps/harmonyos/local.properties
+# DevEco IDE 本地配置
+apps/harmonyos/**/.idea/
+apps/harmonyos/**/*.iml
