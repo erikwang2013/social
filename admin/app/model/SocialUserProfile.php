@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SocialUserProfile extends Model
 {
+    protected $connection = 'social';
     protected $table = 'social_user_profiles';
     public $timestamps = false;
 }

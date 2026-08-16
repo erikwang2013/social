@@ -11,8 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class SocialUser extends Model
 {
+    // social_ 表无前缀，须用独立连接绕过 erik_ 前缀
+    protected $connection = 'social';
     protected $table = 'social_users';
     public $timestamps = false;
+    protected $hidden = ['password'];
 
     public function profile()
     {

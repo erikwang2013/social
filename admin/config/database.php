@@ -39,5 +39,19 @@ return [
             // 引擎
             'engine' => 'InnoDB',
         ],
+        // social 库连接（service 的表，无前缀，admin 直查用）
+        'social' => [
+            'driver' => 'mysql',
+            'host' => getenv('DB_HOST') ?: '127.0.0.1',
+            'port' => (int)(getenv('DB_PORT') ?: 3306),
+            'database' => getenv('DB_SOCIAL_DATABASE') ?: 'social',
+            'username' => getenv('DB_USERNAME') ?: 'root',
+            'password' => getenv('DB_PASSWORD') ?: '',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => 'InnoDB',
+        ],
     ],
 ];
