@@ -1,0 +1,10 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/php
+    out: ../service/generated
+  - remote: buf.build/grpc/php
+    out: ../service/generated
+  - remote: buf.build/protocolbuffers/php
+    out: ../admin/generated
+  - remote: buf.build/grpc/php
+    out: ../admin/generated
