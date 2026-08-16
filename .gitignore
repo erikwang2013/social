@@ -33,6 +33,11 @@ ruvector.db
 .swarm/memory.db-wal
 
 
+# Android（apps/android）
+apps/android/.gradle/
+apps/android/**/build/
+apps/android/local.properties
+
 # HarmonyOS（apps/harmonyos）：DevEco Studio / hvigor / ohpm 构建产物（harmonyos-12）
 # hvigor 构建缓存与日志（项目根）
 apps/harmonyos/.hvigor/
