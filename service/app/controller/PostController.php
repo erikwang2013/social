@@ -72,4 +72,46 @@ class PostController
             ->with('user')->orderByDesc('created_at')->limit(5)->get());
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $post]);
     }
+
+    /**
+     * @Apidoc\Title("点赞")
+     * @Apidoc\Url("/api/v1/posts/{id}/like")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header("Authorization", type="string", require=true, desc="Bearer access_token")
+     * @Apidoc\Param("id", type="int", require=true, desc="动态ID", path=true)
+     * @Apidoc\Returned(ref="Response")
+     */
+    public function like(Request $request, string $id)
+    {
+        $post = Post::find((int) $id);
+        if (!$post) {
+            return json(['code' => 404, 'message' => '动态不存在', 'lang_key' => 'post.not_found'], 404);
+        }
+        $like = \app\model\Like::firstOrCreate(['post_id' => $post->id, 'user_id' => $request->uid]);
+        if ($like->wasRecentlyCreated) {
+            $post->increment('like_count');
+        }
+        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => ['liked' => true]]);
+    }
+
+    /**
+     * @Apidoc\Title("取消点赞")
+     * @Apidoc\Url("/api/v1/posts/{id}/unlike")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header("Authorization", type="string", require=true, desc="Bearer access_token")
+     * @Apidoc\Param("id", type="int", require=true, desc="动态ID", path=true)
+     * @Apidoc\Returned(ref="Response")
+     */
+    public function unlike(Request $request, string $id)
+    {
+        $post = Post::find((int) $id);
+        if (!$post) {
+            return json(['code' => 404, 'message' => '动态不存在', 'lang_key' => 'post.not_found'], 404);
+        }
+        $deleted = \app\model\Like::where('post_id', $post->id)->where('user_id', $request->uid)->delete();
+        if ($deleted) {
+            $post->decrement('like_count');
+        }
+        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => ['liked' => false]]);
+    }
 }
