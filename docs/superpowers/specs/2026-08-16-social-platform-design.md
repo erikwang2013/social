@@ -206,20 +206,34 @@ LiveProvider 接口（admin 可配置）
 - 虚拟经济：wallets、currency_transactions、gift_catalog、gifts_given、streamer_earnings、withdrawals、products（IAP SKU）
 - 平台：i18n_terms（四端共用词条）、moderation_queue、provider_configs、audit_logs
 
-## 11. 部署与运维（全球多区域）
+## 11. 数据库与存储选型
+
+| 用途 | 存储 | 落地组件 |
+|------|------|----------|
+| 业务主数据（用户/动态/IM/钱包/审核/举报） | MySQL 8（中央主库 + 区域只读副本） | service 与 admin 共用，唯一事实源 |
+| 热数据/会话/在线状态/计数器/弹幕频道/通话状态机 | Redis 7 | bee_kv / bee_cache（redis 特性） |
+| 全文检索（动态/用户搜索、admin 后台搜索） | OpenSearch（单机起步） | bee_search（opensearch 特性） |
+| 时序统计（DAU/趋势/直播观看/通话时长/看板） | QuestDB（单二进制起步） | bee_tsdb（questdb 特性，可换 influxdb） |
+| 社交图 → 推荐流 | Neo4j 社区版（单机起步） | bee_graph（neo4j 特性，可换 nebulagraph） |
+| 对象文件（图片/视频/语音/导出包） | S3（MinIO 或云厂商） | service 直连 + CDN 分发 |
+| 审计日志 | MySQL audit_logs，到期归档对象存储 | 复用 admin 审计体系 |
+
+选择原则：bee-rust 各组件为特性开关抽象，单机起步、随规模换分布式后端，不锁死；MySQL 始终是唯一事实源，计算层（索引/统计/图/缓存）只存可重建的派生数据。管理端前端（Flutter）不直接碰数据库，全部经 admin 后端。
+
+## 12. 部署与运维（全球多区域）
 
 - **起步架构**：中国区 + 海外区两大区；每区 webman 集群 + bee-rust 集群 + 本地 Redis + media（SFU/SRS/TURN）；MySQL 中央主库 + 各区只读副本；CDN 分区域
 - **WS 就近接入**，跨区消息经中央协调；推送按区走对应厂商
 - **演进路径**：流量增长后按用户 hash 分库分片
 - **监控**：Prometheus metrics（沿用 open-admin 模式）、集中日志、告警（错误率/延迟/队列积压/媒体服务健康）
 
-## 12. 安全与合规
+## 13. 安全与合规
 
 - service 复刻 open-admin 的 18 层防御模式（XSS/SQLi/CSRF/限流/CSP）
 - 审核管线：发布时多语言敏感词 → 图片/音视频审核（第三方 API）→ 人工审核台
 - GDPR：数据导出、注销/删除权、日志留存策略、未成年人年龄门槛、区域规则差异化
 
-## 13. 里程碑（单人全栈，约 8–9 个月）
+## 14. 里程碑（单人全栈，约 8–9 个月）
 
 | 阶段 | 内容 | 周期 |
 |------|------|------|
@@ -236,7 +250,7 @@ LiveProvider 接口（admin 可配置）
 
 每个里程碑是独立可交付切片，中途可停，产品始终完整可用。
 
-## 14. 技术栈汇总
+## 15. 技术栈汇总
 
 | 子系统 | 技术 |
 |--------|------|
