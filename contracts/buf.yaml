@@ -1,0 +1,15 @@
+version: v2
+modules:
+  - path: .
+lint:
+  use:
+    - STANDARD
+  # 计划刻意采用 contracts/<service>/ 目录布局并共享 Pong 响应类型
+  # （T4 build.rs 依赖该路径、三端探活共用 Pong），与 STANDARD 冲突的规则显式豁免
+  except:
+    - PACKAGE_DIRECTORY_MATCH
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_RESPONSE_STANDARD_NAME
+breaking:
+  use:
+    - FILE

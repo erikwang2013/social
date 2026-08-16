@@ -1,0 +1,6 @@
+syntax = "proto3";
+package social.common.v1;
+
+message Pong {
+  string message = 1;
+}

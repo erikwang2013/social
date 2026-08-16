@@ -1,0 +1,10 @@
+syntax = "proto3";
+package social.infra.v1;
+
+import "common/types.proto";
+
+message PingRequest { string client = 1; }
+
+service InfraService {
+  rpc Ping(PingRequest) returns (social.common.v1.Pong);
+}

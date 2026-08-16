@@ -1,0 +1,10 @@
+syntax = "proto3";
+package social.admin.v1;
+
+import "common/types.proto";
+
+message PingRequest { string client = 1; }
+
+service AdminService {
+  rpc Ping(PingRequest) returns (social.common.v1.Pong);
+}
