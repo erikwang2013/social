@@ -143,3 +143,13 @@ Route::fallback(function (\support\Request $request) {
 
 // 关闭默认路由
 Route::disableDefaultRoute();
+
+// ============================================================
+// 社交用户管理（M1 直查 social_ 表；M2 改 gRPC 调 service）
+// 注：/admin/user 已被 open-admin 用户管理占用，此处用 /admin/social-user
+// ============================================================
+Route::group('/admin/social-user', function () {
+    Route::get('', [app\admin\controller\SocialUserController::class, 'list']);
+    Route::get('/{id}', [app\admin\controller\SocialUserController::class, 'detail']);
+    Route::post('/{id}/status', [app\admin\controller\SocialUserController::class, 'status']);
+})->middleware([app\middleware\AdminAuth::class]);
