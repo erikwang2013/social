@@ -284,3 +284,60 @@ PaymentProvider 接口（admin 配置）
 | contracts | protobuf / buf |
 | apps | SwiftUI / Kotlin+Compose / ArkTS |
 | 外部 | 第三方直播云、第三方 RTC、第三方审核 API、微信支付/支付宝/微信国际/支付宝国际/Stripe/PayPal、App Store/Google Play/华为 IAP、APNs/FCM/华为推送 |
+
+## 16. 团队规划（真实人力，稳节奏）
+
+### 16.1 组织架构
+
+```
+技术负责人 / PM（1人，兼任 contracts 契约 owner）
+├── 后端组（2人）       webman service 主力 + admin 改造/支付专项
+├── 平台组（2人）       Rust ×1（infrastructure）、音视频 ×1（media）
+├── 客户端组（3人）     iOS、Android、HarmonyOS 各 1
+├── 质量与运维（2人）   QA ×1、DevOps ×1
+└── 支持（弹性）        UI/UX ×1（常驻）、支付/合规顾问（按需）、本地化（外包）
+```
+
+### 16.2 角色明细
+
+| 角色 | 人 | 职责 | 关键技能 | 到位 |
+|------|---|------|----------|------|
+| 技术负责人/PM | 1 | contracts(gRPC) 契约 owner、跨子系统协调、里程碑推进 | PHP/架构/项目管理 | M0 |
+| 后端 PHP · service | 1 | 认证/动态/IM WS 网关/直播·语音信令/翻译调度/审核触发/GDPR | webman/Redis/MySQL/WS | M0 |
+| 后端 PHP · admin+支付 | 1 | open-admin 8 模块改造、PaymentProvider 全渠道、对账、提现 | PHP/支付渠道经验 | M0（支付专项 M6） |
+| iOS 工程师 | 1 | SwiftUI 客户端、APNs、WS、WebRTC 集成、i18n | Swift/SwiftUI | M0 |
+| Android 工程师 | 1 | Kotlin+Compose、FCM、WS、WebRTC、i18n | Kotlin/Compose | M0 |
+| HarmonyOS 工程师 | 1 | ArkTS 客户端、Push Kit、i18n | ArkTS/鸿蒙生态 | M0 |
+| Rust 工程师 | 1 | bee-rust 服务化（search/graph/tsdb）+ tonic gRPC | Rust/axum/tonic | M1 末 |
+| 音视频工程师 | 1 | media 组件（mediasoup/SRS/FFmpeg/coturn）、双推容灾、TURN 区域部署 | Node.js/WebRTC/SRS/转码 | M3 末 |
+| UI/UX 设计师 | 1 | 三端设计体系、直播/礼物/语音视觉、i18n 文案规范 | Figma/多语言设计 | M0 |
+| QA | 1 | 三端+后端+媒体回归、压测、审核/支付流程验证 | 移动/接口测试 | M1 |
+| DevOps | 1 | CI/CD、双区部署、Prometheus 监控、媒体服务运维、日志 | Docker/K8s/Prometheus | M2 |
+| 支付/财务顾问 | 弹性 | 渠道签约资质、对账规则、风控限额、分成结算 | 支付行业/财务 | M6 起 |
+| 合规/法务顾问 | 弹性 | GDPR、区域法规、内容审核规则、商店政策 | 数据合规 | M7 起 |
+| 本地化 | 外包 | 词条翻译审校、多语言文案 | 译审 | M7 起 |
+
+### 16.3 里程碑节奏
+
+| 阶段 | 团队 | 并行重点 |
+|------|------|----------|
+| M0–M2 | 负责人+后端2+移动3+设计+QA | 契约先行，三端按 OpenAPI 并行；Rust 到位接搜索 |
+| M3–M4 | +音视频、DevOps | 音视频搭 media 与 IM/语音并行 |
+| M5 | 全量 | 直播双轨，后端支援媒体 |
+| M6 | +支付顾问 | 支付专项+对账 |
+| M7 | +合规顾问、本地化 | i18n 全端+合规收口 |
+| M8 | 全量保障 | 双区上线、压测、安全复查 |
+
+### 16.4 招聘优先级
+
+1. 后端 PHP ×2 + 技术负责人（地基期核心，后端是工作量最大域）
+2. 移动端 ×3（三端并行是总工期硬约束，越早越好）
+3. UI/UX、QA
+4. Rust、DevOps（M1–M2 前到位）
+5. 音视频（M3 末）
+6. 支付/合规顾问、本地化（M6/M7 按需）
+
+### 16.5 风险与兜底
+
+- 音视频、支付渠道是最难招的两个角色（专家稀缺），预留外包/顾问兜底方案
+- HarmonyOS 工程师难招时可先由 Android 工程师兼（ArkTS 与 TS 同源，上手快），三端并行节奏不受影响
