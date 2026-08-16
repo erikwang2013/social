@@ -1,0 +1,5 @@
+{
+  "generatorName": "swift5",
+  "output": "Generated",
+  "config": { "swiftPackagePath": ".", "useSPMFileStructure": true }
+}

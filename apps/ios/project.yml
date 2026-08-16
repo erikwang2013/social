@@ -1,0 +1,12 @@
+name: SocialApp
+options:
+  bundleIdPrefix: com.social
+targets:
+  SocialApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources: [SocialApp]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
