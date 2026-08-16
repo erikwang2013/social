@@ -1,0 +1,5 @@
+{
+  "generatorName": "kotlin",
+  "output": "Generated",
+  "config": { "library": "okhttp" }
+}
