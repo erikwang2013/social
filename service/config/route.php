@@ -13,12 +13,34 @@
  */
 
 use Webman\Route;
+use app\middleware\AuthMiddleware;
 
 Route::get('/health', [\app\controller\HealthController::class, 'index']);
 
 // apidoc 静态 UI 无目录索引，重定向到 index.html（路由由 hg/apidoc 插件 route.php 自注册）
 Route::get('/apidoc', fn() => redirect('/apidoc/index.html'));
 Route::get('/apidoc/', fn() => redirect('/apidoc/index.html'));
+
+Route::group('/api/v1', function () {
+    Route::post('/auth/register', [app\controller\AuthController::class, 'register']);
+    Route::post('/auth/login', [app\controller\AuthController::class, 'login']);
+    Route::post('/auth/refresh', [app\controller\AuthController::class, 'refresh']);
+
+    Route::group('', function () {
+        Route::post('/auth/logout', [app\controller\AuthController::class, 'logout']);
+        Route::get('/auth/me', [app\controller\AuthController::class, 'me']);
+        Route::get('/me', [app\controller\MeController::class, 'index']);
+        Route::put('/me', [app\controller\MeController::class, 'update']);
+        Route::post('/posts', [app\controller\PostController::class, 'create']);
+        Route::get('/posts', [app\controller\PostController::class, 'timeline']);
+        Route::get('/posts/{id}', [app\controller\PostController::class, 'detail']);
+        Route::post('/posts/{id}/like', [app\controller\PostController::class, 'like']);
+        Route::post('/posts/{id}/unlike', [app\controller\PostController::class, 'unlike']);
+        Route::get('/posts/{id}/comments', [app\controller\CommentController::class, 'index']);
+        Route::post('/posts/{id}/comments', [app\controller\CommentController::class, 'create']);
+    })->middleware(AuthMiddleware::class);
+});
+
 
 
 

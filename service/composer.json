@@ -56,7 +56,8 @@
       "App\\": "./app",
       "app\\View\\Components\\": "./app/view/components"
     },
-    "classmap": ["generated/"]
+    "classmap": ["generated/"],
+    "files": ["app/functions.php"]
   },
   "scripts": {
     "post-package-install": [
