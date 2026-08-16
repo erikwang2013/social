@@ -1,0 +1,36 @@
+<?php
+/*
+ * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+ */
+
+declare(strict_types=1);
+
+namespace app\model;
+
+use support\Model;
+
+class AdminRole extends Model
+{
+    protected $table = 'admin_role';
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'int';
+
+    protected $fillable = ['name', 'slug', 'description', 'status'];
+    protected $casts = ['status' => 'integer'];
+
+    protected function serializeDate(\DateTimeInterface $date): string
+    {
+        return $date->format('Y-m-d H:i:s');
+    }
+
+    public function permissions()
+    {
+        return $this->belongsToMany(AdminPermission::class, 'admin_role_permission', 'role_id', 'permission_id');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(AdminUser::class, 'admin_user_role', 'role_id', 'user_id');
+    }
+}

@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+ */
+
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../services/api_service.dart';
+import '../../services/auth_service.dart';
+import '../../services/encryption_service.dart';
+import '../../i18n/translations.dart';
+
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final _api = ApiService();
+  final _realNameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() => _loading = true);
+    try {
+      final resp = await _api.get('/admin/profile');
+      final data = resp['data'] as Map<String, dynamic>?;
+      if (data != null) {
+        _realNameCtrl.text = data['real_name']?.toString() ?? '';
+        _phoneCtrl.text = data['phone']?.toString() ?? '';
+        _emailCtrl.text = data['email']?.toString() ?? '';
+      }
+    } catch (_) {
+    } finally {
+      setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    try {
+      await _api.put('/admin/profile', data: {
+        'real_name': _realNameCtrl.text.trim(),
+        'phone': EncryptionService.encrypt(_phoneCtrl.text.trim()),
+        'email': EncryptionService.encrypt(_emailCtrl.text.trim()),
+      });
+      Get.snackbar('成功', '个人信息更新成功');
+    } catch (e) {
+      Get.snackbar('错误', '更新失败: $e');
+    }
+  }
+
+  Future<void> _changePassword() async {
+    final oldPwdCtrl = TextEditingController();
+    final newPwdCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('修改密码'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: oldPwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '旧密码')),
+          TextField(controller: newPwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '新密码 (6-32位)')),
+          TextField(controller: confirmCtrl, obscureText: true, decoration: const InputDecoration(labelText: '确认新密码')),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('确认')),
+        ],
+      ),
+    );
+
+    if (ok != true) return;
+    if (newPwdCtrl.text != confirmCtrl.text) {
+      Get.snackbar('错误', '两次密码不一致');
+      return;
+    }
+
+    try {
+      await _api.put('/admin/profile/password', data: {
+        'old_password': EncryptionService.encrypt(oldPwdCtrl.text),
+        'new_password': EncryptionService.encrypt(newPwdCtrl.text),
+      });
+      Get.snackbar('成功', '密码修改成功');
+    } catch (e) {
+      Get.snackbar('错误', '修改失败: $e');
+    }
+  }
+
+  Future<void> _logout() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('退出登录'),
+        content: const Text('确定要退出登录吗？'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('退出')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    try { await _api.post('/admin/profile/logout'); } catch (_) {}
+    await AuthService.clearToken();
+    Get.offAllNamed('/login');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('个人中心')),
+      body: Center(child: SizedBox(width: 500, child: ListView(padding: const EdgeInsets.all(24), children: [
+      const Text('个人中心', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+      const SizedBox(height: 24),
+      TextField(controller: _realNameCtrl, decoration: const InputDecoration(labelText: '姓名')),
+      const SizedBox(height: 12),
+      TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: '手机号')),
+      const SizedBox(height: 12),
+      TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: '邮箱')),
+      const SizedBox(height: 24),
+      Row(children: [
+        ElevatedButton.icon(onPressed: _updateProfile, icon: const Icon(Icons.save), label: const Text('保存')),
+      ]),
+      const SizedBox(height: 32),
+      const Divider(),
+      ListTile(leading: const Icon(Icons.lock), title: const Text('修改密码'), trailing: const Icon(Icons.chevron_right), onTap: _changePassword),
+      ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: const Text('退出登录', style: TextStyle(color: Colors.red)), onTap: _logout),
+    ]))),
+    );
+  }
+}
