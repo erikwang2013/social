@@ -1,0 +1,11 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "hello-bee"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bee_rust = { path = "../../crates/bee_rust", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+axum = "0.8"
+tracing = "0.1"

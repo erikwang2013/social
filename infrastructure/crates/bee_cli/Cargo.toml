@@ -1,0 +1,18 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[[bin]]
+name = "bee-rust"
+path = "src/main.rs"
+doc = false
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }

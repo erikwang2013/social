@@ -1,0 +1,19 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_template"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+tera = "1"
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

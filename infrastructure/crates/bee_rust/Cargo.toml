@@ -1,0 +1,39 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+bee_config = { path = "../bee_config", optional = true }
+bee_logs = { path = "../bee_logs", optional = true }
+bee_cache = { path = "../bee_cache", optional = true }
+bee_template = { path = "../bee_template", optional = true }
+bee_kv = { path = "../bee_kv", optional = true }
+bee_search = { path = "../bee_search", optional = true }
+bee_graph = { path = "../bee_graph", optional = true }
+bee_tsdb = { path = "../bee_tsdb", optional = true }
+bee_orm = { path = "../bee_orm", optional = true }
+bee_session = { path = "../bee_session", optional = true }
+bee_router = { path = "../bee_router", optional = true }
+
+[features]
+default = ["full"]
+full = ["router", "orm", "kv", "config", "logs", "cache", "session", "security", "template"]
+security = ["bee_router/security"]
+router = ["bee_router", "bee_session", "bee_template", "bee_config", "bee_logs"]
+orm = ["bee_orm", "bee_config", "bee_cache"]
+kv = ["bee_kv"]
+search = ["bee_search"]
+graph = ["bee_graph"]
+tsdb = ["bee_tsdb"]
+template = ["bee_template"]
+config = ["bee_config"]
+logs = ["bee_logs"]
+cache = ["bee_cache", "bee_config"]
+session = ["bee_session", "bee_cache"]

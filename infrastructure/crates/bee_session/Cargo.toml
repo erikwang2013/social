@@ -1,0 +1,17 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_session"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+uuid = { version = "1", features = ["v4"] }
+bee_cache = { path = "../bee_cache" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }

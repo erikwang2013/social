@@ -1,0 +1,28 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_cache"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+tokio = { workspace = true, features = ["sync", "time"] }
+thiserror.workspace = true
+
+[features]
+redis = ["dep:redis"]
+memcache = ["dep:memcache"]
+
+[dependencies.redis]
+version = "0.27"
+optional = true
+features = ["tokio-comp"]
+
+[dependencies.memcache]
+version = "0.17"
+optional = true

@@ -1,0 +1,31 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_kv"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+thiserror.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+
+[features]
+redis = ["dep:redis"]
+memcached = ["dep:memcache"]
+
+[dependencies.redis]
+version = "0.27"
+optional = true
+features = ["tokio-comp", "aio"]
+
+[dependencies.memcache]
+version = "0.17"
+optional = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt", "macros"] }

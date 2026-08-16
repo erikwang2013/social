@@ -1,0 +1,13 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_config"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bee_config_macro = { path = "../bee_config_macro" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+notify = "6"
