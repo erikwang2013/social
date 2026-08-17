@@ -31,6 +31,16 @@ final class ActionHandler
             case Envelope::T_RECALL:
                 self::doRecall($fd, $uid, $data, $seq);
                 break;
+            case Envelope::T_CALL_INVITE:
+            case Envelope::T_CALL_ACCEPT:
+            case Envelope::T_CALL_REJECT:
+            case Envelope::T_CALL_CANCEL:
+            case Envelope::T_CALL_HANGUP:
+            case Envelope::T_CALL_OFFER:
+            case Envelope::T_CALL_ANSWER:
+            case Envelope::T_CALL_ICE:
+                self::handleCall($fd, $uid, $type, $data);
+                break;
             default:
                 self::send($fd, Envelope::T_ERROR, ['msg' => 'unknown type'], $seq);
         }
@@ -124,6 +134,40 @@ final class ActionHandler
         }
         $msg->update(['recall_status' => 1, 'recall_at' => date('Y-m-d H:i:s')]);
         Deliverer::notifyRecall((int) $msg->conversation_id, $mid, $uid);
+    }
+
+    /** 1v1 通话信令：start 的 already_in_call 等异常回 error 帧，其余静默（无状态机拒绝即忽略） */
+    private static function handleCall(int $fd, int $uid, string $type, array $data): void
+    {
+        static $cc = null;
+        $cc ??= new \app\call\CallCenter();
+        $callId = (int) ($data['call_id'] ?? 0);
+        try {
+            switch ($type) {
+                case 'call_invite':
+                    $cc->start($uid, (int) ($data['to_user_id'] ?? 0));
+                    break;
+                case 'call_accept':
+                    $cc->accept($callId, $uid);
+                    break;
+                case 'call_reject':
+                    $cc->reject($callId, $uid);
+                    break;
+                case 'call_cancel':
+                    $cc->cancel($callId, $uid);
+                    break;
+                case 'call_hangup':
+                    $cc->hangup($callId, $uid);
+                    break;
+                case 'call_offer':
+                case 'call_answer':
+                case 'call_ice':
+                    $cc->relay($callId, $uid, $type, $data);
+                    break;
+            }
+        } catch (\RuntimeException $e) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => $e->getMessage()]);
+        }
     }
 
     private static function send(int $fd, string $type, array $data = [], ?int $seq = null): void

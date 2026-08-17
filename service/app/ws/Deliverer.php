@@ -80,7 +80,8 @@ final class Deliverer
         }
     }
 
-    private static function pushToMember(int $uid, string $payload, bool $queueIfOffline): void
+    /** CallCenter 默认 sendFn 复用（1v1 通话帧本机直推，不排队） */
+    public static function pushToMember(int $uid, string $payload, bool $queueIfOffline): void
     {
         $fd = ConnectionRegistry::localFd($uid);
         if ($fd !== null) {

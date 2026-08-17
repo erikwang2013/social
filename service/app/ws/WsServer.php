@@ -76,7 +76,13 @@ class WsServer
 
     public function onClose(TcpConnection $conn): void
     {
+        $uid = ConnectionRegistry::uidFor($conn->id);
         ConnectionRegistry::detach($conn->id);
+        if ($uid !== null) {
+            static $cc = null;
+            $cc ??= new \app\call\CallCenter();
+            $cc->onDisconnect($uid);
+        }
     }
 
     /** 推帧给本机 fd（仅本 worker 的 connections 可达） */

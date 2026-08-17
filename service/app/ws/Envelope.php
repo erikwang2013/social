@@ -16,6 +16,16 @@ final class Envelope
     public const T_KICKED = 'kicked';
     public const T_PONG = 'pong';
     public const T_ERROR = 'error';
+    public const T_CALL_INVITE = 'call_invite';
+    public const T_CALL_ACCEPT = 'call_accept';
+    public const T_CALL_REJECT = 'call_reject';
+    public const T_CALL_CANCEL = 'call_cancel';
+    public const T_CALL_TIMEOUT = 'call_timeout';
+    public const T_CALL_OFFER = 'call_offer';
+    public const T_CALL_ANSWER = 'call_answer';
+    public const T_CALL_ICE = 'call_ice';
+    public const T_CALL_HANGUP = 'call_hangup';
+    public const T_CALL_FAILED = 'call_failed';
 
     public static function decode(string $raw): ?array
     {
