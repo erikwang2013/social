@@ -7,6 +7,8 @@ edition = "2024"
 tokio = { workspace = true }
 tonic = "0.12"
 prost = "0.13"
+serde_json = { workspace = true }
+bee_search = { path = "../bee_search", features = ["elasticsearch"] }
 
 [build-dependencies]
 tonic-build = "0.12"

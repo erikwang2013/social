@@ -1,6 +1,8 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::Mutex;
 use thiserror::Error;
 
 #[cfg(feature = "clickhouse")]
@@ -135,29 +137,23 @@ pub trait SearchEngine: Send + Sync {
 }
 
 // ---------------------------------------------------------------------------
-// Tests — in-memory stub engine
+// In-memory engine
 // ---------------------------------------------------------------------------
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use std::collections::HashMap;
-    use std::sync::Mutex;
+// ponytail: 内存实现，生产走 Elasticsearch feature；无持久化，重启丢数据
+pub struct MemoryEngine {
+    data: Mutex<HashMap<String, HashMap<DocumentId, Document>>>,
+}
 
-    /// An in-memory stub that satisfies [`SearchEngine`] for testing.
-    pub struct StubEngine {
-        data: Mutex<HashMap<String, HashMap<DocumentId, Document>>>,
+impl MemoryEngine {
+    pub fn new() -> Self {
+        Self { data: Mutex::new(HashMap::new()) }
     }
+}
 
-    impl StubEngine {
-        pub fn new() -> Self {
-            Self { data: Mutex::new(HashMap::new()) }
-        }
-    }
-
-    #[allow(clippy::needless_lifetimes)]
-    #[async_trait]
-    impl SearchEngine for StubEngine {
+#[allow(clippy::needless_lifetimes)]
+#[async_trait]
+impl SearchEngine for MemoryEngine {
         async fn create_index(
             &self,
             name: &str,
@@ -217,14 +213,20 @@ mod tests {
         async fn search(
             &self,
             index: &str,
-            _query: SearchQuery,
+            query: SearchQuery,
         ) -> Result<SearchResult, SearchError> {
+            let needle = query.get("query").and_then(|v| v.as_str()).unwrap_or("");
             let map = self.data.lock().unwrap_or_else(|e| e.into_inner());
             let hits: Vec<SearchHit> = map
                 .get(index)
                 .map(|store| {
                     store
                         .iter()
+                        .filter(|(id, doc)| {
+                            needle.is_empty()
+                                || id.contains(needle)
+                                || doc.to_string().contains(needle)
+                        })
                         .enumerate()
                         .map(|(i, (id, doc))| SearchHit {
                             id: id.clone(),
@@ -249,7 +251,11 @@ mod tests {
         ) -> Result<AggResult, SearchError> {
             Ok(serde_json::Value::Object(serde_json::Map::new()))
         }
-    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
 
     // ------------------------------------------------------------------
     // Tests
@@ -257,7 +263,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_stub_create_and_index() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         engine.create_index("posts", None).await.unwrap();
         engine.index("posts", "1".into(), serde_json::json!({"title": "hello"})).await.unwrap();
         let doc = engine.get("posts", &"1".into()).await.unwrap();
@@ -266,7 +272,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_stub_search() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         engine.create_index("items", None).await.unwrap();
         engine.index("items", "a".into(), serde_json::json!({"val": 1})).await.unwrap();
         engine.index("items", "b".into(), serde_json::json!({"val": 2})).await.unwrap();
@@ -276,7 +282,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_stub_aggregate() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         engine.create_index("aggs", None).await.unwrap();
         let res = engine
             .aggregate("aggs", serde_json::json!({"avg_score": {"avg": {"field": "score"}}}))
@@ -287,14 +293,14 @@ mod tests {
 
     #[tokio::test]
     async fn test_stub_scroll() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         let result = engine.scroll("scroll-1".into()).await.unwrap();
         assert_eq!(result.total, 0);
     }
 
     #[tokio::test]
     async fn test_stub_delete() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         engine.create_index("tmp", None).await.unwrap();
         engine.index("tmp", "x".into(), serde_json::json!({})).await.unwrap();
         engine.delete("tmp", &"x".into()).await.unwrap();
@@ -303,7 +309,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_stub_bulk() {
-        let engine = StubEngine::new();
+        let engine = MemoryEngine::new();
         engine.create_index("bulk", None).await.unwrap();
         let res = engine
             .bulk_index(

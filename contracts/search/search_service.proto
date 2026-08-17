@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package social.search.v1;
+
+service SearchService {
+  rpc Index(IndexRequest) returns (IndexResponse);
+  rpc Delete(DeleteRequest) returns (IndexResponse);
+  rpc Search(SearchRequest) returns (SearchResponse);
+}
+
+message IndexRequest {
+  string index = 1;
+  int64 id = 2;
+  string json = 3;
+}
+
+message IndexResponse {
+  bool ok = 1;
+}
+
+message DeleteRequest {
+  string index = 1;
+  int64 id = 2;
+}
+
+message SearchRequest {
+  string index = 1;
+  string query = 2;
+  int32 from = 3;
+  int32 size = 4;
+}
+
+message Hit {
+  int64 id = 1;
+  string json = 2;
+}
+
+message SearchResponse {
+  repeated Hit hits = 1;
+  int64 total = 2;
+}
