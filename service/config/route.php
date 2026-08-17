@@ -49,6 +49,10 @@ Route::group('/api/v1', function () {
         Route::post('/notifications/read-all', [app\controller\NotificationController::class, 'readAll']);
         Route::get('/search/posts', [app\controller\SearchController::class, 'posts']);
         Route::get('/search/users', [app\controller\SearchController::class, 'users']);
+        Route::get('/im/conversations', [app\controller\ImController::class, 'conversations']);
+        Route::post('/im/conversations', [app\controller\ImController::class, 'create']);
+        Route::get('/im/conversations/{id}/messages', [app\controller\ImController::class, 'messages']);
+        Route::post('/im/device-token', [app\controller\ImController::class, 'deviceToken']);
     })->middleware(AuthMiddleware::class);
 });
 

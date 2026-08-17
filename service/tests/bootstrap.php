@@ -120,6 +120,14 @@ Capsule::schema()->create('message_reads', function ($t) {
     $t->timestamp('updated_at')->nullable();
     $t->primary(['conversation_id', 'user_id']);
 });
+Capsule::schema()->create('device_tokens', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id');
+    $t->string('platform', 20);
+    $t->string('token', 255)->default('');
+    $t->timestamps();
+    $t->unique(['user_id', 'platform']);
+});
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
 \Webman\Context::set(\Webman\Http\Request::class, new \support\Request('GET / HTTP/1.1'));

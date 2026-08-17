@@ -38,3 +38,11 @@ CREATE TABLE IF NOT EXISTS `social_message_reads` (
   `updated_at` TIMESTAMP NULL,
   PRIMARY KEY (`conversation_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='已读游标';
+CREATE TABLE IF NOT EXISTS `social_device_tokens` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `platform` VARCHAR(20) NOT NULL COMMENT 'android/ios/harmonyos',
+  `token` VARCHAR(255) NOT NULL DEFAULT '',
+  `created_at` TIMESTAMP NULL, `updated_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`), UNIQUE KEY `uk_uid_platform` (`user_id`, `platform`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='设备推送令牌';
