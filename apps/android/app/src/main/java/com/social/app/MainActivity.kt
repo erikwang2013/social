@@ -9,10 +9,13 @@ import com.social.app.api.LoginScreen
 import com.social.app.api.NotificationScreen
 import com.social.app.api.TimelineScreen
 import com.social.app.api.UserScreen
+import com.social.app.im.WsClient
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ApiClient.init(this)
+        if (ApiClient.accessToken.isNotEmpty()) WsClient.connect("10.0.2.2", ApiClient.accessToken)
         if (ApiClient.accessToken.isEmpty()) {
             LoginScreen.show(this) { showHub() }
         } else {

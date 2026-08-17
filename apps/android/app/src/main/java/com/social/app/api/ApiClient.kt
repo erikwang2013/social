@@ -1,5 +1,11 @@
 package com.social.app.api
 
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
@@ -15,6 +21,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
 private const val BASE = "http://10.0.2.2:8788" // 模拟器访问宿主机
+private val Context.dataStore by preferencesDataStore(name = "auth")
+private val TOKEN_KEY = stringPreferencesKey("access_token")
 
 @Serializable
 data class LoginResponse(
@@ -87,6 +95,24 @@ object ApiClient {
     private val client = OkHttpClient.Builder().build()
 
     var accessToken: String = ""
+        private set
+
+    private var appContext: Context? = null
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+        accessToken = runBlocking { loadToken() }
+    }
+
+    private suspend fun loadToken(): String {
+        val ctx = appContext ?: return ""
+        return ctx.dataStore.data.first()[TOKEN_KEY] ?: ""
+    }
+
+    private fun saveToken(token: String) {
+        val ctx = appContext ?: return
+        runBlocking { ctx.dataStore.edit { it[TOKEN_KEY] = token } }
+    }
 
     private fun baseRequest(method: String, path: String, body: String? = null): Request.Builder {
         val rb = Request.Builder()
@@ -102,7 +128,7 @@ object ApiClient {
         }.toString()
         val resp = client.newCall(baseRequest("POST", "/api/v1/auth/login", jsonBody).build()).execute()
         val parsed = json.decodeFromString<LoginResponse>(resp.body!!.string())
-        parsed.data?.let { accessToken = it.accessToken }
+        parsed.data?.let { accessToken = it.accessToken; saveToken(it.accessToken) }
         return parsed
     }
 
@@ -112,7 +138,7 @@ object ApiClient {
         }.toString()
         val resp = client.newCall(baseRequest("POST", "/api/v1/auth/register", jsonBody).build()).execute()
         val parsed = json.decodeFromString<LoginResponse>(resp.body!!.string())
-        parsed.data?.let { accessToken = it.accessToken }
+        parsed.data?.let { accessToken = it.accessToken; saveToken(it.accessToken) }
         return parsed
     }
 
