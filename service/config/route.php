@@ -43,6 +43,10 @@ Route::group('/api/v1', function () {
         Route::post('/posts/{id}/unlike', [app\controller\PostController::class, 'unlike']);
         Route::get('/posts/{id}/comments', [app\controller\CommentController::class, 'index']);
         Route::post('/posts/{id}/comments', [app\controller\CommentController::class, 'create']);
+        Route::get('/notifications', [app\controller\NotificationController::class, 'index']);
+        Route::get('/notifications/unread-count', [app\controller\NotificationController::class, 'unreadCount']);
+        Route::post('/notifications/{id}/read', [app\controller\NotificationController::class, 'read']);
+        Route::post('/notifications/read-all', [app\controller\NotificationController::class, 'readAll']);
     })->middleware(AuthMiddleware::class);
 });
 

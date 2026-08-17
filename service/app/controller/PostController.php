@@ -93,6 +93,15 @@ class PostController
         $like = \app\model\Like::firstOrCreate(['post_id' => $post->id, 'user_id' => $request->uid]);
         if ($like->wasRecentlyCreated) {
             $post->increment('like_count');
+            if ($post->user_id !== $request->uid) {
+                \app\model\Notification::create([
+                    'user_id' => $post->user_id,
+                    'actor_id' => $request->uid,
+                    'type' => 'like',
+                    'ref_type' => 'post',
+                    'ref_id' => $post->id,
+                ]);
+            }
         }
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => ['liked' => true]]);
     }

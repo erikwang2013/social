@@ -59,6 +59,16 @@ class CommentController
         }
         $comment = Comment::create(['post_id' => $post->id, 'user_id' => $request->uid, 'content' => $content]);
         $post->increment('comment_count');
+        if ($post->user_id !== $request->uid) {
+            \app\model\Notification::create([
+                'user_id' => $post->user_id,
+                'actor_id' => $request->uid,
+                'type' => 'comment',
+                'ref_type' => 'post',
+                'ref_id' => $post->id,
+                'content' => mb_substr($content, 0, 100),
+            ]);
+        }
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $comment->load('user')]);
     }
 }
