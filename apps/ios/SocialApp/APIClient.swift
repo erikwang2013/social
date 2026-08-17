@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 struct TokenData: Codable {
     let accessToken: String
@@ -66,11 +67,44 @@ struct NotificationItem: Codable, Identifiable {
     }
 }
 
+enum Keychain {
+    private static let service = "com.social.app"
+
+    static func save(_ value: String, forKey key: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecValueData as String: Data(value.utf8),
+        ]
+        SecItemDelete(query as CFDictionary)
+        SecItemAdd(query as CFDictionary, nil)
+    }
+
+    static func load(_ key: String) -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: key,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var item: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+}
+
 final class APIClient {
     static let shared = APIClient()
     private let base = "http://127.0.0.1:8787" // 模拟器访问宿主机
     private let session = URLSession.shared
     var accessToken: String = ""
+
+    private init() {
+        accessToken = Keychain.load("access_token") ?? ""
+    }
 
     func request(_ method: String, _ path: String, body: [String: Any]? = nil,
                  completion: @escaping (Data?, Error?) -> Void) {
@@ -92,7 +126,10 @@ final class APIClient {
         request("POST", "/api/v1/auth/login", body: ["email": email, "password": password]) { data, _ in
             guard let data = data else { completion(nil); return }
             let resp = try? JSONDecoder().decode(LoginResponse.self, from: data)
-            resp?.data.map { self.accessToken = $0.accessToken }
+            resp?.data.map {
+                self.accessToken = $0.accessToken
+                Keychain.save($0.accessToken, forKey: "access_token")
+            }
             completion(resp)
         }
     }
@@ -102,7 +139,10 @@ final class APIClient {
                 body: ["email": email, "password": password, "nickname": nickname]) { data, _ in
             guard let data = data else { completion(nil); return }
             let resp = try? JSONDecoder().decode(LoginResponse.self, from: data)
-            resp?.data.map { self.accessToken = $0.accessToken }
+            resp?.data.map {
+                self.accessToken = $0.accessToken
+                Keychain.save($0.accessToken, forKey: "access_token")
+            }
             completion(resp)
         }
     }
