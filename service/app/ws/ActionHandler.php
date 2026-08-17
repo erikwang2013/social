@@ -205,7 +205,11 @@ final class ActionHandler
                     $rc->downMic($roomId, $uid);
                     break;
                 case 'room_kick_mic':
-                    $rc->kickMic($roomId, $uid, (int) ($data['user_id'] ?? 0));
+                    $target = (int) ($data['user_id'] ?? 0);
+                    if ($target <= 0) {
+                        return;
+                    }
+                    $rc->kickMic($roomId, $uid, $target);
                     break;
                 case 'room_offer':
                 case 'room_answer':

@@ -82,6 +82,9 @@ class WsServer
             static $cc = null;
             $cc ??= new \app\call\CallCenter();
             $cc->onDisconnect($uid);
+            static $rc = null;
+            $rc ??= new \app\room\RoomCenter();
+            $rc->onDisconnect($uid);
         }
     }
 

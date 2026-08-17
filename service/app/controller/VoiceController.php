@@ -84,6 +84,9 @@ class VoiceController
     /** 房主关房：POST /api/v1/voice/rooms/{id}/close */
     public function closeRoom(Request $request, string $id): Response
     {
+        if (VoiceRoom::query()->find((int) $id) === null) {
+            return json(['code' => 404, 'message' => '房间不存在或已关闭', 'lang_key' => 'voice.room_not_found'], 404);
+        }
         try {
             self::roomCenter()->close((int) $id, (int) $request->uid);
         } catch (\RuntimeException $e) {

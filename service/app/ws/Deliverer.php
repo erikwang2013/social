@@ -8,7 +8,8 @@ use app\model\Message;
 /**
  * 投递：本机在线直推；离线入队 im:offline:{uid}（cap 200）+ PushProvider。
  * ponytail: 未做跨节点 pub/sub —— workerman 5 已移除 Redis 协议（subscribe 需自定义 RESP 协议），
- * 当前单机部署语义等价（本地直推/离线队列均不依赖订阅）；多机扩展时在 pushToMember 离线分支前补 publish 即可。
+ * 当前单进程（ws worker count=1，见 config/process.php）语义等价（本地直推/离线队列均不依赖订阅）；
+ * 多 worker 时在 pushToMember 离线分支前补 pub/sub 或按 nodeId 路由即可。
  */
 final class Deliverer
 {

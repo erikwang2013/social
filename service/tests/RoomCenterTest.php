@@ -2,8 +2,10 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 namespace tests;
 
+use app\model\VoiceRoomMember;
 use app\room\RoomCenter;
 use app\ws\Envelope;
+use app\ws\WsRedis;
 use PHPUnit\Framework\TestCase;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
@@ -79,7 +81,56 @@ class RoomCenterTest extends TestCase
     {
         $roomId = $this->rc->create(1, '测试房');
         for ($i = 2; $i <= 8; $i++) { $this->rc->join($roomId, $i); $this->rc->upMic($roomId, $i); }
+        $this->rc->join($roomId, 9); // 先入房（非成员会被 member 守卫提前拦截）
         $this->expectException(\RuntimeException::class);
         $this->rc->upMic($roomId, 9);
+    }
+
+    public function testDisconnectLeavesRoom(): void
+    {
+        $roomId = $this->rc->create(1, '测试房');
+        $this->rc->join($roomId, 2);
+        $this->rc->onDisconnect(2);
+        $online = WsRedis::call(fn($r) => $r->smembers('im:room:' . $roomId . ':online')) ?? [];
+        $this->assertSame([1], array_map('intval', $online));
+        $this->assertSame(1, VoiceRoomMember::query()->where('room_id', $roomId)->count());
+        $this->assertSame([], WsRedis::call(fn($r) => $r->smembers('im:roomuser:2')) ?? []);
+    }
+
+    public function testOwnerDisconnectClosesRoom(): void
+    {
+        $roomId = $this->rc->create(1, '测试房');
+        $this->rc->join($roomId, 2);
+        $this->rc->onDisconnect(1);
+        $this->assertSame(0, $this->rc->status($roomId));
+        $this->assertSame([], WsRedis::call(fn($r) => $r->smembers('im:room:' . $roomId . ':online')) ?? []);
+        $this->assertSame(0, VoiceRoomMember::query()->where('room_id', $roomId)->count());
+    }
+
+    public function testJoinClosedRoomThrows(): void
+    {
+        $roomId = $this->rc->create(1, '测试房');
+        $this->rc->close($roomId, 1);
+        $threw = false;
+        try {
+            $this->rc->join($roomId, 2);
+        } catch (\RuntimeException $e) {
+            $threw = $e->getMessage() === 'room_not_found';
+        }
+        $this->assertTrue($threw);
+        // 不得留下成员行或在线集合（防 TOCTOU 复活孤儿数据）
+        $this->assertSame(0, VoiceRoomMember::query()->where('room_id', $roomId)->where('user_id', 2)->count());
+        $this->assertSame([], WsRedis::call(fn($r) => $r->smembers('im:room:' . $roomId . ':online')) ?? []);
+    }
+
+    public function testNonMemberCantSpoofFrames(): void
+    {
+        $roomId = $this->rc->create(1, '测试房');
+        $this->rc->join($roomId, 2);
+        $before = count($this->sent);
+        $this->rc->upMic($roomId, 3);
+        $this->rc->leave($roomId, 3);
+        $this->assertCount($before, $this->sent); // 不广播任何帧
+        $this->assertSame(0, VoiceRoomMember::query()->where('room_id', $roomId)->where('user_id', 3)->count());
     }
 }

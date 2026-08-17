@@ -39,7 +39,8 @@ return [
     'ws' => [
         'handler' => \app\ws\WsServer::class,
         'listen' => 'websocket://0.0.0.0:8789',
-        'count' => 2,
+        // 单 worker：本机 fd 直推表按进程隔离，多 worker 下跨进程投递会丢帧（见 Deliverer 注释）
+        'count' => 1,
         'user' => '',
         'group' => '',
         'reusePort' => true,
