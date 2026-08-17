@@ -1,4 +1,6 @@
 import http from '@ohos.net.http'
+import preferences from '@ohos.data.preferences'
+import { common } from '@kit.AbilityKit'
 
 export interface TokenData {
   access_token: string
@@ -42,6 +44,20 @@ const BASE = 'http://10.0.2.2:8787' // 模拟器访问宿主机（真机改为�
 
 export class ApiService {
   static accessToken: string = ''
+  private static pref?: preferences.Preferences
+
+  static init(context: common.UIAbilityContext): void {
+    preferences.getPreferences(context, 'auth').then((p: preferences.Preferences) => {
+      this.pref = p
+      p.get('access_token', '').then((v: preferences.ValueType) => {
+        this.accessToken = v as string
+      })
+    })
+  }
+
+  private static persistToken(token: string): void {
+    this.pref?.put('access_token', token).then(() => { this.pref?.flush() })
+  }
 
   private static async request(method: http.RequestMethod, path: string,
                                body?: Record<string, Object>): Promise<any> {
@@ -61,13 +77,19 @@ export class ApiService {
 
   static async login(email: string, password: string): Promise<LoginResult> {
     const r = await this.request(http.RequestMethod.POST, '/api/v1/auth/login', { email, password })
-    if (r.data?.access_token) this.accessToken = r.data.access_token
+    if (r.data?.access_token) {
+      this.accessToken = r.data.access_token
+      this.persistToken(r.data.access_token)
+    }
     return r
   }
 
   static async register(email: string, password: string, nickname: string): Promise<LoginResult> {
     const r = await this.request(http.RequestMethod.POST, '/api/v1/auth/register', { email, password, nickname })
-    if (r.data?.access_token) this.accessToken = r.data.access_token
+    if (r.data?.access_token) {
+      this.accessToken = r.data.access_token
+      this.persistToken(r.data.access_token)
+    }
     return r
   }
 
