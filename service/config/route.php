@@ -14,6 +14,7 @@
 
 use Webman\Route;
 use app\middleware\AuthMiddleware;
+use app\controller\ImVoiceController;
 
 Route::get('/health', [\app\controller\HealthController::class, 'index']);
 
@@ -53,6 +54,8 @@ Route::group('/api/v1', function () {
         Route::post('/im/conversations', [app\controller\ImController::class, 'create']);
         Route::get('/im/conversations/{id}/messages', [app\controller\ImController::class, 'messages']);
         Route::post('/im/device-token', [app\controller\ImController::class, 'deviceToken']);
+        Route::post('/im/voice', [ImVoiceController::class, 'upload']);
+        Route::get('/voice/{file}', [ImVoiceController::class, 'voiceFile']);
     })->middleware(AuthMiddleware::class);
 });
 

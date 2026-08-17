@@ -42,8 +42,14 @@ final class ActionHandler
         $cmid = trim((string) ($data['client_msg_id'] ?? ''));
         $content = $data['content'] ?? null;
         $imageUrl = (string) ($data['image_url'] ?? '');
-        if ($cid <= 0 || $cmid === '' || (($content === null || $content === '') && $imageUrl === '')) {
+        $voiceUrl = (string) ($data['voice_url'] ?? '');
+        $voiceDuration = (int) ($data['voice_duration'] ?? 0);
+        if ($cid <= 0 || $cmid === '' || (($content === null || $content === '') && $imageUrl === '' && $voiceUrl === '')) {
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid send payload'], $seq);
+            return;
+        }
+        if ($voiceUrl !== '' && !preg_match('#^/voice/[a-f0-9]{32}\.m4a$#', $voiceUrl)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid voice url'], $seq);
             return;
         }
         // SETNX 幂等：重复 client_msg_id 直接回已存在消息的 ack（键 TTL 24h，DB 唯一索引兜底并发）
@@ -60,9 +66,11 @@ final class ActionHandler
                 'conversation_id' => $cid,
                 'sender_id' => $uid,
                 'client_msg_id' => $cmid,
-                'type' => $imageUrl !== '' ? 2 : 1,
+                'type' => $voiceUrl !== '' ? 3 : ($imageUrl !== '' ? 2 : 1),
                 'content' => $content,
                 'image_url' => $imageUrl,
+                'voice_url' => $voiceUrl,
+                'voice_duration' => $voiceDuration,
                 'recall_status' => 0,
                 'recall_at' => null,
             ]);

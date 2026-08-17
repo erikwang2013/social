@@ -8,11 +8,13 @@ class Message extends Model
 {
     protected $fillable = [
         'conversation_id', 'sender_id', 'client_msg_id', 'type',
-        'content', 'image_url', 'recall_status', 'recall_at',
+        'content', 'image_url', 'voice_url', 'voice_duration',
+        'recall_status', 'recall_at',
     ];
 
     protected $casts = [
         'type' => 'integer',
         'recall_status' => 'integer',
+        'voice_duration' => 'integer',
     ];
 }

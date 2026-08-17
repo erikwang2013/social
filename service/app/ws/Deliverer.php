@@ -30,6 +30,8 @@ final class Deliverer
             'type' => (int) $msg->type,
             'content' => $msg->content,
             'image_url' => $msg->image_url,
+            'voice_url' => $msg->voice_url ?? '',
+            'voice_duration' => (int) ($msg->voice_duration ?? 0),
             'recall_status' => (int) $msg->recall_status,
             'created_at' => (string) $msg->created_at,
         ]);
