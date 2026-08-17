@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 tokio = { workspace = true }
 tonic = "0.12"
+tonic-health = "0.12"
 prost = "0.13"
 serde_json = { workspace = true }
 bee_search = { path = "../bee_search", features = ["elasticsearch"] }
