@@ -119,7 +119,7 @@ status: 呼叫中 → 接通 | 未接 | 取消 | 结束 | 失败
 - hangup/结束 → status=5 + ended_at，释放 busy key
 - 任一方 WS 断开 → 推对方 `call_hangup` 并结束（ponytail: 不做重连恢复）
 - 媒体面 P2P 直连（offer/answer/ICE 仅转发，媒体流不经服务端）；TURN 兜底（coturn 随语聊房交付）
-- P2P ICE 15s 未连通 → `call_failed` + 结束（首版不自动切 SFU，ponytail 标记）
+- P2P ICE 15s 未连通 → `call_failed` + 结束（首版不自动切 SFU，ponytail 标记）；落库 status=5
 
 **历史**：`GET /api/v1/voice/calls?page=` 分页返回（caller/callee/status/时长）。
 
