@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SocialFollow extends Model
 {
     protected $connection = 'social';
-    protected $table = 'follows';
+    protected $table = 'social_follows';
     public $timestamps = false;
 
     protected $fillable = ['id', 'follower_id', 'followee_id'];

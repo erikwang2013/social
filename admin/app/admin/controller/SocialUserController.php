@@ -9,6 +9,7 @@ namespace app\admin\controller;
 
 use support\Request;
 use app\model\SocialUser;
+use app\model\SocialFollow;
 
 class SocialUserController
 {
@@ -26,6 +27,10 @@ class SocialUserController
         $page = max(1, (int) $request->get('page', 1));
         $pageSize = min(100, max(1, (int) $request->get('page_size', 20)));
         $paginator = $query->orderByDesc('id')->paginate($pageSize, ['*'], 'page', $page);
+        foreach ($paginator->items() as $u) {
+            $u->setAttribute('follows_count', SocialFollow::where('follower_id', $u->id)->count());
+            $u->setAttribute('fans_count', SocialFollow::where('followee_id', $u->id)->count());
+        }
         return json(['code' => 0, 'message' => 'ok', 'data' => [
             'list' => $paginator->items(),
             'total' => $paginator->total(),
