@@ -64,6 +64,25 @@ Capsule::schema()->create('likes', function ($t) {
     $t->timestamps();
     $t->unique(['post_id', 'user_id']);
 });
+Capsule::schema()->create('follows', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('follower_id');
+    $t->unsignedBigInteger('followee_id');
+    $t->timestamps();
+    $t->unique(['follower_id', 'followee_id']);
+});
+Capsule::schema()->create('notifications', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id');
+    $t->unsignedBigInteger('actor_id');
+    $t->string('type', 32);
+    $t->string('ref_type', 32)->default('');
+    $t->unsignedBigInteger('ref_id')->default(0);
+    $t->string('content', 500)->default('');
+    $t->timestamp('read_at')->nullable();
+    $t->timestamps();
+    $t->index(['user_id', 'read_at']);
+});
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
 \Webman\Context::set(\Webman\Http\Request::class, new \support\Request('GET / HTTP/1.1'));
