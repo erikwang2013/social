@@ -3,6 +3,7 @@
 namespace tests;
 
 use app\call\CallCenter;
+use app\call\CallState;
 use app\ws\Envelope;
 use PHPUnit\Framework\TestCase;
 
@@ -128,5 +129,97 @@ class CallCenterTest extends TestCase
         $this->assertSame(Envelope::T_CALL_TIMEOUT, $this->sent[3]['frame']['type']);
         $this->assertSame(2, $this->sent[3]['uid']);
         $this->assertSame(3, $this->recorded['status']);
+    }
+
+    public function testHangupByNonParticipantNoop(): void
+    {
+        $callId = $this->cc->start(1, 2);
+        $this->cc->hangup($callId, 999); // 非成员：RINGING 中静默
+        $this->assertCount(2, $this->sent);
+        $this->assertNull($this->recorded);
+
+        $this->cc->accept($callId, 2);
+        $this->cc->hangup($callId, 999); // 已接通后非成员挂断仍须静默
+        $this->assertCount(3, $this->sent); // 仅 invite x2 + accept
+        $this->assertSame(2, $this->recorded['status']); // 仅 accept 落库，挂断未落库
+        $this->assertSame(
+            CallState::ACCEPTED,
+            \app\ws\WsRedis::call(fn($r) => $r->hget('im:call:' . $callId, 'status'))
+        );
+    }
+
+    public function testRelayByNonParticipantNoop(): void
+    {
+        $callId = $this->cc->start(1, 2);
+        $this->cc->relay($callId, 999, 'call_ice', ['candidate' => 'x']);
+        $this->assertCount(2, $this->sent); // 仅两条 invite，无转发
+        $this->cc->relay($callId, 999, 'call_offer', ['sdp' => 'x']);
+        $this->assertCount(2, $this->sent);
+    }
+
+    public function testRelayAfterEndNoop(): void
+    {
+        $callId = $this->cc->start(1, 2);
+        $this->cc->accept($callId, 2);
+        $this->cc->hangup($callId, 1);
+        $this->cc->relay($callId, 2, 'call_ice', ['candidate' => 'x']);
+        $this->assertCount(4, $this->sent); // invite x2 + accept + hangup，终端态后不再转发
+    }
+
+    public function testDoubleHangupSingleRecord(): void
+    {
+        $records = 0;
+        $row = null;
+        $cc = new CallCenter(
+            sendFn: fn(int $uid, array $frame) => $this->sent[] = ['uid' => $uid, 'frame' => $frame],
+            recordFn: function (array $r) use (&$row, &$records) {
+                if ($r['status'] === 5) { // 仅统计终局行（accept 落 status=2 不计）
+                    $row = $r;
+                    $records++;
+                }
+            },
+        );
+        $callId = $cc->start(1, 2);
+        $cc->accept($callId, 2);
+        $cc->hangup($callId, 1);
+        $cc->hangup($callId, 2); // 双端都挂：只允许一条终局
+        $this->assertSame(1, $records);
+        $this->assertSame(5, $row['status']);
+        $hangups = array_values(array_filter(
+            $this->sent,
+            fn($s) => $s['frame']['type'] === Envelope::T_CALL_HANGUP,
+        ));
+        $this->assertCount(1, $hangups);
+        $this->assertSame(2, $hangups[0]['uid']); // 仅主叫挂断推给被叫
+    }
+
+    public function testStartInvalidCallee(): void
+    {
+        foreach ([0, 1] as $bad) {
+            $err = null;
+            try {
+                $this->cc->start(1, $bad);
+            } catch (\RuntimeException $e) {
+                $err = $e;
+            }
+            $this->assertNotNull($err);
+            $this->assertStringContainsString('invalid_callee', $err->getMessage());
+            $this->assertTrue(!\app\ws\WsRedis::call(fn($r) => $r->get('im:callbusy:1'))); // 无残留 busy 键
+        }
+    }
+
+    public function testDisconnectDuringRingingEndsCall(): void
+    {
+        $callId = $this->cc->start(1, 2);
+        $this->cc->onDisconnect(2);
+
+        $last = end($this->sent);
+        $this->assertSame(Envelope::T_CALL_HANGUP, $last['frame']['type']);
+        $this->assertSame(1, $last['uid']); // 推给主叫
+        $this->assertSame(5, $this->recorded['status']);
+        $this->assertTrue(!\app\ws\WsRedis::call(fn($r) => $r->get('im:callbusy:1')));
+        $this->assertTrue(!\app\ws\WsRedis::call(fn($r) => $r->get('im:callbusy:2')));
+        $this->assertTrue(!\app\ws\WsRedis::call(fn($r) => $r->get('im:callby:1')));
+        $this->assertTrue(!\app\ws\WsRedis::call(fn($r) => $r->get('im:callby:2')));
     }
 }

@@ -9,9 +9,9 @@ final class CallState
     public const ENDED = 'ENDED';
     public const FAILED = 'FAILED';
 
-    /** 转移表：RINGING→ACCEPTED|REJECTED|CANCELED|MISSED|FAILED；ACCEPTED→ENDED|FAILED */
+    /** 转移表：RINGING→ACCEPTED|REJECTED|CANCELED|MISSED|FAILED|ENDED（§5 振铃中断线）；ACCEPTED→ENDED|FAILED */
     private const ALLOWED = [
-        self::RINGING => [self::ACCEPTED, 'REJECTED', 'CANCELED', 'MISSED', self::FAILED],
+        self::RINGING => [self::ACCEPTED, 'REJECTED', 'CANCELED', 'MISSED', self::FAILED, self::ENDED],
         self::ACCEPTED => [self::ENDED, self::FAILED],
     ];
 

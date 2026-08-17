@@ -23,6 +23,9 @@ class CallCenter
 
     public function start(int $caller, int $callee): int
     {
+        if ($callee <= 0 || $callee === $caller) {
+            throw new \RuntimeException('invalid_callee');
+        }
         if (!WsRedis::call(fn($r) => $r->setnx('im:callbusy:' . $caller, 1))) {
             throw new \RuntimeException('already_in_call');
         }
@@ -57,6 +60,9 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], CallState::ACCEPTED) || (int) $row['callee'] !== $uid) {
             return;
         }
+        if (WsRedis::call(fn($r) => $r->exists('im:call:' . $callId . ':done'))) {
+            return; // 终局已发生（竞态下的 accept-after-end）
+        }
         $now = date('Y-m-d H:i:s');
         WsRedis::call(function ($r) use ($callId, $now) {
             $r->hset('im:call:' . $callId, 'status', CallState::ACCEPTED);
@@ -72,7 +78,9 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], 'REJECTED') || (int) $row['callee'] !== $uid) {
             return;
         }
-        $this->finish($callId, 'REJECTED', 3);
+        if (!$this->finish($callId, 'REJECTED', 3)) {
+            return;
+        }
         ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_REJECT, 'data' => ['call_id' => $callId]]);
     }
 
@@ -82,7 +90,9 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], 'CANCELED') || (int) $row['caller'] !== $uid) {
             return;
         }
-        $this->finish($callId, 'CANCELED', 4);
+        if (!$this->finish($callId, 'CANCELED', 4)) {
+            return;
+        }
         ($this->sendFn)((int) $row['callee'], ['type' => Envelope::T_CALL_CANCEL, 'data' => ['call_id' => $callId]]);
     }
 
@@ -92,7 +102,12 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], CallState::ENDED)) {
             return;
         }
-        $this->finish($callId, CallState::ENDED, 5);
+        if ((int) $row['caller'] !== $uid && (int) $row['callee'] !== $uid) {
+            return; // 非通话成员
+        }
+        if (!$this->finish($callId, CallState::ENDED, 5)) {
+            return;
+        }
         $other = (int) $row['caller'] === $uid ? (int) $row['callee'] : (int) $row['caller'];
         ($this->sendFn)($other, ['type' => Envelope::T_CALL_HANGUP, 'data' => ['call_id' => $callId]]);
     }
@@ -104,7 +119,9 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], 'MISSED')) {
             return;
         }
-        $this->finish($callId, 'MISSED', 3);
+        if (!$this->finish($callId, 'MISSED', 3)) {
+            return;
+        }
         ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_TIMEOUT, 'data' => ['call_id' => $callId]]);
         ($this->sendFn)((int) $row['callee'], ['type' => Envelope::T_CALL_TIMEOUT, 'data' => ['call_id' => $callId]]);
     }
@@ -119,7 +136,9 @@ class CallCenter
         if ((int) $row['caller'] !== $uid && (int) $row['callee'] !== $uid) {
             return;
         }
-        $this->finish($callId, CallState::FAILED, 5);
+        if (!$this->finish($callId, CallState::FAILED, 5)) {
+            return;
+        }
         ($this->sendFn)((int) $row['callee'], ['type' => Envelope::T_CALL_FAILED, 'data' => ['call_id' => $callId]]);
         ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_FAILED, 'data' => ['call_id' => $callId]]);
     }
@@ -135,7 +154,9 @@ class CallCenter
         if ($row === null || $row['status'] === CallState::ENDED) {
             return;
         }
-        $this->finish($callId, CallState::ENDED, 5);
+        if (!$this->finish($callId, CallState::ENDED, 5)) {
+            return;
+        }
         $other = (int) $row['caller'] === $uid ? (int) $row['callee'] : (int) $row['caller'];
         ($this->sendFn)($other, ['type' => Envelope::T_CALL_HANGUP, 'data' => ['call_id' => $callId]]);
     }
@@ -144,8 +165,11 @@ class CallCenter
     public function relay(int $callId, int $uid, string $frameType, array $data): void
     {
         $row = $this->row($callId);
-        if ($row === null) {
-            return;
+        if ($row === null || in_array($row['status'], [CallState::ENDED, CallState::FAILED], true)) {
+            return; // 通话已终局，不再转发
+        }
+        if ((int) $row['caller'] !== $uid && (int) $row['callee'] !== $uid) {
+            return; // 非通话成员，防止伪造 SDP/ICE
         }
         $other = (int) $row['caller'] === $uid ? (int) $row['callee'] : (int) $row['caller'];
         ($this->sendFn)($other, ['type' => $frameType, 'data' => ['call_id' => $callId] + $data]);
@@ -157,15 +181,20 @@ class CallCenter
         return ($row === null || $row === []) ? null : $row;
     }
 
-    private function finish(int $callId, string $to, int $status): void
+    private function finish(int $callId, string $to, int $status): bool
     {
-        WsRedis::call(function ($r) use ($callId, $to, $status) {
+        // SETNX 一次性闸门：竞态下仅一方能落终局（键 1h 自过期，call id INCR 唯一，无需清理）
+        $won = (bool) WsRedis::call(fn($r) => $r->set('im:call:' . $callId . ':done', 1, ['NX', 'EX' => 3600]));
+        if (!$won) {
+            return false;
+        }
+        WsRedis::call(function ($r) use ($callId, $to) {
             $r->hset('im:call:' . $callId, 'status', $to);
-            $r->hset('im:call:' . $callId, 'ended_at', time());
+            $r->hset('im:call:' . $callId, 'ended_at', date('Y-m-d H:i:s'));
         });
         $row = $this->row($callId);
         if ($row === null) {
-            return;
+            return true;
         }
         ($this->recordFn)([
             'caller_id' => (int) $row['caller'],
@@ -180,5 +209,6 @@ class CallCenter
             $r->del('im:callby:' . $row['caller']);
             $r->del('im:callby:' . $row['callee']);
         });
+        return true;
     }
 }
