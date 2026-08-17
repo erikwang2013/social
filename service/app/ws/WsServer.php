@@ -45,9 +45,17 @@ class WsServer
 
     public function onMessage(TcpConnection $conn, string $data): void
     {
-        if (ConnectionRegistry::uidFor($conn->id) === null) {
+        $uid = ConnectionRegistry::uidFor($conn->id);
+        if ($uid === null) {
             $conn->close(4002);
+            return;
         }
+        $env = Envelope::decode($data);
+        if ($env === null) {
+            $conn->send(Envelope::encode(Envelope::T_ERROR, ['msg' => 'invalid frame']));
+            return;
+        }
+        ActionHandler::handle($conn->id, $uid, $env);
     }
 
     public function onClose(TcpConnection $conn): void
