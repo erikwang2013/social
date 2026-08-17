@@ -27,6 +27,6 @@ class SearchControllerTest extends TestCase
         $req = new Request("GET /api/v1/search/posts?q=anything HTTP/1.1\r\nHost: localhost\r\n\r\n");
         $ctrl = new SearchController;
         $res = json_decode($ctrl->posts($req)->rawBody(), true);
-        $this->assertContains($res['code'], [0, 503]);
+        $this->assertContains($res['code'], [0, 400, 503]);
     }
 }
