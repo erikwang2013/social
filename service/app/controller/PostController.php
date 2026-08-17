@@ -27,6 +27,7 @@ class PostController
             return json(['code' => 400, 'message' => '内容长度需 1-5000 字', 'lang_key' => 'post.content_length'], 400);
         }
         $post = Post::create(['user_id' => $request->uid, 'content' => $content]);
+        \app\common\SearchSync::indexPost($post->id, $content);
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $post->load('user')->makeHidden('liked')]);
     }
 
