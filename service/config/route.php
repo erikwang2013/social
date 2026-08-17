@@ -31,6 +31,11 @@ Route::group('/api/v1', function () {
         Route::get('/auth/me', [app\controller\AuthController::class, 'me']);
         Route::get('/me', [app\controller\MeController::class, 'index']);
         Route::put('/me', [app\controller\MeController::class, 'update']);
+        Route::post('/users/{id}/follow', [app\controller\FollowController::class, 'follow']);
+        Route::post('/users/{id}/unfollow', [app\controller\FollowController::class, 'unfollow']);
+        Route::get('/users/{id}/following', [app\controller\FollowController::class, 'following']);
+        Route::get('/users/{id}/followers', [app\controller\FollowController::class, 'followers']);
+        Route::get('/users/{id}/relation', [app\controller\FollowController::class, 'relation']);
         Route::post('/posts', [app\controller\PostController::class, 'create']);
         Route::get('/posts', [app\controller\PostController::class, 'timeline']);
         Route::get('/posts/{id}', [app\controller\PostController::class, 'detail']);
