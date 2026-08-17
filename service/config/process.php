@@ -35,6 +35,20 @@ return [
             'publicPath' => public_path()
         ]
     ],
+    // IM WebSocket 网关（连接注册与投递见 app/ws/）
+    'ws' => [
+        'handler' => \app\ws\WsServer::class,
+        'listen' => 'websocket://0.0.0.0:8789',
+        'count' => 2,
+        'user' => '',
+        'group' => '',
+        'reusePort' => true,
+        'eventLoop' => '',
+        'context' => [],
+        'constructor' => [
+            'node_id' => '',
+        ],
+    ],
     // File update detection and automatic reload
     'monitor' => [
         'handler' => app\process\Monitor::class,

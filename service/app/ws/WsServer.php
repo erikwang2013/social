@@ -1,0 +1,75 @@
+<?php
+// Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+namespace app\ws;
+
+use Workerman\Connection\TcpConnection;
+use Workerman\Worker;
+use app\common\JwtHelper;
+
+/**
+ * ws worker handler（webman process handler：实例方法由 worker_bind 绑到 Worker 回调）。
+ * 握手鉴权（?token=JWT）→ 注册连接；消息转交 ActionHandler（Task 4）。
+ */
+class WsServer
+{
+    private static ?Worker $worker = null;
+
+    public function __construct(string $nodeId = '')
+    {
+        ConnectionRegistry::setNodeId($nodeId);
+    }
+
+    public function onWorkerStart(Worker $worker): void
+    {
+        self::$worker = $worker;
+    }
+
+    public function onWebSocketConnect(TcpConnection $conn, string $httpBuffer): void
+    {
+        $payload = null;
+        $token = (string) ($_GET['token'] ?? '');
+        if ($token !== '') {
+            $payload = JwtHelper::decode($token);
+        }
+        if (!$payload || ($payload->type ?? '') !== 'access' || JwtHelper::isRevoked($payload->jti)) {
+            $conn->close(4001);
+            return;
+        }
+        $uid = (int) $payload->sub;
+        $oldFd = ConnectionRegistry::attach($conn->id, $uid);
+        if ($oldFd !== null) {
+            self::kick($oldFd);
+        }
+        $conn->send(Envelope::encode(Envelope::T_READY, ['uid' => $uid]));
+    }
+
+    public function onMessage(TcpConnection $conn, string $data): void
+    {
+        if (ConnectionRegistry::uidFor($conn->id) === null) {
+            $conn->close(4002);
+        }
+    }
+
+    public function onClose(TcpConnection $conn): void
+    {
+        ConnectionRegistry::detach($conn->id);
+    }
+
+    /** 推帧给本机 fd（仅本 worker 的 connections 可达） */
+    public static function sendToFd(int $fd, string $frame): void
+    {
+        $conn = self::$worker?->connections[$fd] ?? null;
+        if ($conn !== null) {
+            $conn->send($frame);
+        }
+    }
+
+    private static function kick(int $fd): void
+    {
+        self::sendToFd($fd, Envelope::encode(Envelope::T_KICKED));
+        $conn = self::$worker?->connections[$fd] ?? null;
+        if ($conn !== null) {
+            $conn->close();
+        }
+    }
+}
