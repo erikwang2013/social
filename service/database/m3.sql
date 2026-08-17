@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `social_messages` (
   `recall_status` TINYINT NOT NULL DEFAULT 0 COMMENT '0正常 1已撤回',
   `recall_at` TIMESTAMP NULL,
   `created_at` TIMESTAMP NULL,
+  `updated_at` TIMESTAMP NULL,
   PRIMARY KEY (`id`), UNIQUE KEY `uk_cmid` (`client_msg_id`),
   KEY `idx_cid_id` (`conversation_id`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消息';

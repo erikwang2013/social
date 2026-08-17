@@ -24,15 +24,15 @@ class WsServer
         self::$worker = $worker;
     }
 
-    public function onWebSocketConnect(TcpConnection $conn, string $httpBuffer): void
+    public function onWebSocketConnect(TcpConnection $conn, \Workerman\Protocols\Http\Request $request): void
     {
         $payload = null;
-        $token = (string) ($_GET['token'] ?? '');
+        $token = (string) $request->get('token', '');
         if ($token !== '') {
             $payload = JwtHelper::decode($token);
         }
         if (!$payload || ($payload->type ?? '') !== 'access' || JwtHelper::isRevoked($payload->jti)) {
-            $conn->close(4001);
+            $conn->close();
             return;
         }
         $uid = (int) $payload->sub;
@@ -41,13 +41,29 @@ class WsServer
             self::kick($oldFd);
         }
         $conn->send(Envelope::encode(Envelope::T_READY, ['uid' => $uid]));
+        self::drainOffline($conn, $uid);
+    }
+
+    /** 连接就绪后冲刷离线队列（先 ready 后帧，客户端按序处理；单连接策略下无并发消费） */
+    private static function drainOffline(TcpConnection $conn, int $uid): void
+    {
+        WsRedis::call(function ($r) use ($conn, $uid) {
+            $frames = $r->lrange('im:offline:' . $uid, 0, -1) ?: [];
+            if ($frames !== []) {
+                $r->del('im:offline:' . $uid);
+            }
+            foreach ($frames as $frame) {
+                $conn->send($frame);
+            }
+            return true;
+        });
     }
 
     public function onMessage(TcpConnection $conn, string $data): void
     {
         $uid = ConnectionRegistry::uidFor($conn->id);
         if ($uid === null) {
-            $conn->close(4002);
+            $conn->close();
             return;
         }
         $env = Envelope::decode($data);
