@@ -45,7 +45,10 @@ class PostController
     {
         $page = max(1, (int) $request->get('page', 1));
         $pageSize = min(50, max(1, (int) $request->get('page_size', 20)));
-        $paginator = Post::with('user')->orderByDesc('created_at')->paginate($pageSize, ['*'], 'page', $page);
+        $followeeIds = \app\model\Follow::where('follower_id', $request->uid)->pluck('followee_id')->all();
+        $ids = array_merge([$request->uid], $followeeIds);
+        $paginator = Post::with('user')->whereIn('user_id', $ids)
+            ->orderByDesc('created_at')->paginate($pageSize, ['*'], 'page', $page);
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => [
             'list' => $paginator->items(),
             'total' => $paginator->total(),
