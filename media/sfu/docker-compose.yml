@@ -1,0 +1,15 @@
+services:
+  sfu:
+    build: .
+    ports: ["8790:8790", "10000-10200:10000-10200/udp"]
+    environment:
+      SFU_PORT: "8790"
+      SFU_LISTEN_IP: "0.0.0.0"
+    restart: unless-stopped
+  coturn:
+    image: coturn/coturn:4.6
+    command: ["-c", "/etc/turnserver.conf"]
+    volumes:
+      - ./coturn/turnserver.conf:/etc/turnserver.conf:ro
+    ports: ["3478:3478/udp", "3478:3478", "49152-49200:49152-49200/udp"]
+    restart: unless-stopped

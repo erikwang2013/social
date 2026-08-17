@@ -1,0 +1,12 @@
+{
+  "name": "sfu",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "dependencies": {
+    "mediasoup": "^3.14.14"
+  }
+}
