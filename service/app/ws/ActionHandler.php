@@ -36,6 +36,7 @@ final class ActionHandler
             case Envelope::T_CALL_REJECT:
             case Envelope::T_CALL_CANCEL:
             case Envelope::T_CALL_HANGUP:
+            case Envelope::T_CALL_FAILED:
             case Envelope::T_CALL_OFFER:
             case Envelope::T_CALL_ANSWER:
             case Envelope::T_CALL_ICE:
@@ -158,6 +159,9 @@ final class ActionHandler
                     break;
                 case 'call_hangup':
                     $cc->hangup($callId, $uid);
+                    break;
+                case 'call_failed':
+                    $cc->failed($callId, $uid);
                     break;
                 case 'call_offer':
                 case 'call_answer':

@@ -57,8 +57,12 @@ class CallCenter
         if ($row === null || !CallState::can($row['status'], CallState::ACCEPTED) || (int) $row['callee'] !== $uid) {
             return;
         }
-        WsRedis::call(fn($r) => $r->hset('im:call:' . $callId, 'status', CallState::ACCEPTED));
-        ($this->recordFn)(['caller_id' => (int) $row['caller'], 'callee_id' => (int) $row['callee'], 'status' => 2, 'started_at' => date('Y-m-d H:i:s')]);
+        $now = date('Y-m-d H:i:s');
+        WsRedis::call(function ($r) use ($callId, $now) {
+            $r->hset('im:call:' . $callId, 'status', CallState::ACCEPTED);
+            $r->hset('im:call:' . $callId, 'started_at', $now); // finish() 落 status=5 行时带回
+        });
+        ($this->recordFn)(['caller_id' => (int) $row['caller'], 'callee_id' => (int) $row['callee'], 'status' => 2, 'started_at' => $now]);
         ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_ACCEPT, 'data' => ['call_id' => $callId]]);
     }
 
@@ -103,6 +107,21 @@ class CallCenter
         $this->finish($callId, 'MISSED', 3);
         ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_TIMEOUT, 'data' => ['call_id' => $callId]]);
         ($this->sendFn)((int) $row['callee'], ['type' => Envelope::T_CALL_TIMEOUT, 'data' => ['call_id' => $callId]]);
+    }
+
+    /** P2P ICE 15s 未连通 → 双端推 call_failed 并结束，落库 status=5（媒体面客户端检测，服务端收帧即终局） */
+    public function failed(int $callId, int $uid): void
+    {
+        $row = $this->row($callId);
+        if ($row === null || !CallState::can($row['status'], CallState::FAILED)) {
+            return;
+        }
+        if ((int) $row['caller'] !== $uid && (int) $row['callee'] !== $uid) {
+            return;
+        }
+        $this->finish($callId, CallState::FAILED, 5);
+        ($this->sendFn)((int) $row['callee'], ['type' => Envelope::T_CALL_FAILED, 'data' => ['call_id' => $callId]]);
+        ($this->sendFn)((int) $row['caller'], ['type' => Envelope::T_CALL_FAILED, 'data' => ['call_id' => $callId]]);
     }
 
     /** WS 掉线 → 推对方 call_hangup 并结束（ponytail: 不做重连恢复） */

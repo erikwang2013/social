@@ -13,7 +13,9 @@ class CallStateTest extends TestCase
         $this->assertTrue(CallState::can('RINGING', 'REJECTED'));
         $this->assertTrue(CallState::can('RINGING', 'CANCELED'));
         $this->assertTrue(CallState::can('RINGING', 'MISSED'));
+        $this->assertTrue(CallState::can('RINGING', 'FAILED'));
         $this->assertTrue(CallState::can('ACCEPTED', 'ENDED'));
+        $this->assertTrue(CallState::can('ACCEPTED', 'FAILED'));
     }
 
     public function testIllegalTransitions(): void
@@ -21,5 +23,7 @@ class CallStateTest extends TestCase
         $this->assertFalse(CallState::can('RINGING', 'ENDED'));
         $this->assertFalse(CallState::can('ACCEPTED', 'MISSED'));
         $this->assertFalse(CallState::can('ENDED', 'ENDED'));
+        $this->assertFalse(CallState::can('FAILED', 'ENDED'));
+        $this->assertFalse(CallState::can('FAILED', 'FAILED'));
     }
 }
