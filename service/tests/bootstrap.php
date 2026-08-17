@@ -84,5 +84,42 @@ Capsule::schema()->create('notifications', function ($t) {
     $t->index(['user_id', 'read_at']);
 });
 
+Capsule::schema()->create('conversations', function ($t) {
+    $t->increments('id');
+    $t->tinyInteger('type')->default(1);
+    $t->string('name', 100)->default('');
+    $t->unsignedBigInteger('owner_id')->default(0);
+    $t->tinyInteger('status')->default(1);
+    $t->timestamps();
+});
+Capsule::schema()->create('conversation_members', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('conversation_id');
+    $t->unsignedBigInteger('user_id');
+    $t->tinyInteger('role')->default(0);
+    $t->tinyInteger('status')->default(1);
+    $t->timestamps();
+});
+Capsule::schema()->create('messages', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('conversation_id');
+    $t->unsignedBigInteger('sender_id');
+    $t->string('client_msg_id', 64)->default('');
+    $t->tinyInteger('type')->default(1);
+    $t->text('content')->nullable();
+    $t->string('image_url', 500)->default('');
+    $t->tinyInteger('recall_status')->default(0);
+    $t->timestamp('recall_at')->nullable();
+    $t->timestamps();
+    $t->unique('client_msg_id');
+});
+Capsule::schema()->create('message_reads', function ($t) {
+    $t->unsignedBigInteger('conversation_id');
+    $t->unsignedBigInteger('user_id');
+    $t->unsignedBigInteger('last_read_id')->default(0);
+    $t->timestamp('updated_at')->nullable();
+    $t->primary(['conversation_id', 'user_id']);
+});
+
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
 \Webman\Context::set(\Webman\Http\Request::class, new \support\Request('GET / HTTP/1.1'));
