@@ -26,6 +26,15 @@ final class Envelope
     public const T_CALL_ICE = 'call_ice';
     public const T_CALL_HANGUP = 'call_hangup';
     public const T_CALL_FAILED = 'call_failed';
+    public const T_ROOM_JOIN = 'room_join';
+    public const T_ROOM_LEAVE = 'room_leave';
+    public const T_ROOM_UP_MIC = 'room_up_mic';
+    public const T_ROOM_DOWN_MIC = 'room_down_mic';
+    public const T_ROOM_OFFER = 'room_offer';
+    public const T_ROOM_ANSWER = 'room_answer';
+    public const T_ROOM_ICE = 'room_ice';
+    public const T_ROOM_KICK_MIC = 'room_kick_mic';
+    public const T_ROOM_CLOSED = 'room_closed';
 
     public static function decode(string $raw): ?array
     {

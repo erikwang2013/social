@@ -57,6 +57,10 @@ Route::group('/api/v1', function () {
         Route::post('/im/device-token', [app\controller\ImController::class, 'deviceToken']);
         Route::post('/im/voice', [ImVoiceController::class, 'upload']);
         Route::get('/voice/calls', [VoiceController::class, 'calls']); // 静态路由先注册，避免被 /voice/{file} 吞掉
+        Route::post('/voice/rooms', [VoiceController::class, 'createRoom']);
+        Route::get('/voice/rooms', [VoiceController::class, 'rooms']);
+        Route::get('/voice/rooms/{id}', [VoiceController::class, 'roomDetail']);
+        Route::post('/voice/rooms/{id}/close', [VoiceController::class, 'closeRoom']);
         Route::get('/voice/{file}', [ImVoiceController::class, 'voiceFile']);
     })->middleware(AuthMiddleware::class);
 });

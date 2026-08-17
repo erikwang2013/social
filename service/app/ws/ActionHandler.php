@@ -42,6 +42,16 @@ final class ActionHandler
             case Envelope::T_CALL_ICE:
                 self::handleCall($fd, $uid, $type, $data);
                 break;
+            case Envelope::T_ROOM_JOIN:
+            case Envelope::T_ROOM_LEAVE:
+            case Envelope::T_ROOM_UP_MIC:
+            case Envelope::T_ROOM_DOWN_MIC:
+            case Envelope::T_ROOM_KICK_MIC:
+            case Envelope::T_ROOM_OFFER:
+            case Envelope::T_ROOM_ANSWER:
+            case Envelope::T_ROOM_ICE:
+                self::handleRoom($fd, $uid, $type, $data);
+                break;
             default:
                 self::send($fd, Envelope::T_ERROR, ['msg' => 'unknown type'], $seq);
         }
@@ -167,6 +177,40 @@ final class ActionHandler
                 case 'call_answer':
                 case 'call_ice':
                     $cc->relay($callId, $uid, $type, $data);
+                    break;
+            }
+        } catch (\RuntimeException $e) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => $e->getMessage()]);
+        }
+    }
+
+    /** 语聊房：room_not_found/room_mic_full/room_forbidden/sfu_unreachable 回 error 帧，其余静默 */
+    private static function handleRoom(int $fd, int $uid, string $type, array $data): void
+    {
+        static $rc = null;
+        $rc ??= new \app\room\RoomCenter();
+        $roomId = (int) ($data['room_id'] ?? 0);
+        try {
+            switch ($type) {
+                case 'room_join':
+                    $rc->join($roomId, $uid);
+                    break;
+                case 'room_leave':
+                    $rc->leave($roomId, $uid);
+                    break;
+                case 'room_up_mic':
+                    $rc->upMic($roomId, $uid);
+                    break;
+                case 'room_down_mic':
+                    $rc->downMic($roomId, $uid);
+                    break;
+                case 'room_kick_mic':
+                    $rc->kickMic($roomId, $uid, (int) ($data['user_id'] ?? 0));
+                    break;
+                case 'room_offer':
+                case 'room_answer':
+                case 'room_ice':
+                    $rc->sfuRelay($roomId, $uid, $type, $data);
                     break;
             }
         } catch (\RuntimeException $e) {
