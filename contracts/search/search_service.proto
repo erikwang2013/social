@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package social.search.v1;
 
+option php_namespace = "Search\\V1";
+
 service SearchService {
   rpc Index(IndexRequest) returns (IndexResponse);
   rpc Delete(DeleteRequest) returns (IndexResponse);
