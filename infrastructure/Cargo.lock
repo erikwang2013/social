@@ -3283,7 +3283,9 @@ checksum = "8ed6a63f02c8539c91a8685a86f4099661ba3da017932f6ebbea6de3f0fa7c90"
 name = "social_grpc"
 version = "0.1.0"
 dependencies = [
+ "bee_search",
  "prost",
+ "serde_json",
  "tokio",
  "tonic",
  "tonic-build",

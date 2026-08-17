@@ -36,6 +36,7 @@ ruvector.db
 
 # Android（apps/android）
 apps/android/.gradle/
+apps/android/.kotlin/
 apps/android/**/build/
 apps/android/local.properties
 
