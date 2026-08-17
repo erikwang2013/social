@@ -108,6 +108,8 @@ Capsule::schema()->create('messages', function ($t) {
     $t->tinyInteger('type')->default(1);
     $t->text('content')->nullable();
     $t->string('image_url', 500)->default('');
+    $t->string('voice_url', 500)->default('');
+    $t->unsignedSmallInteger('voice_duration')->default(0);
     $t->tinyInteger('recall_status')->default(0);
     $t->timestamp('recall_at')->nullable();
     $t->timestamps();
@@ -127,6 +129,32 @@ Capsule::schema()->create('device_tokens', function ($t) {
     $t->string('token', 255)->default('');
     $t->timestamps();
     $t->unique(['user_id', 'platform']);
+});
+Capsule::schema()->create('call_records', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('caller_id');
+    $t->unsignedBigInteger('callee_id');
+    $t->tinyInteger('status')->default(1);
+    $t->timestamp('started_at')->nullable();
+    $t->timestamp('ended_at')->nullable();
+    $t->timestamps();
+    $t->index(['callee_id', 'id']);
+});
+Capsule::schema()->create('voice_rooms', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('owner_id');
+    $t->string('name', 100);
+    $t->tinyInteger('status')->default(1);
+    $t->timestamps();
+    $t->index(['status', 'updated_at']);
+});
+Capsule::schema()->create('voice_room_members', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('room_id');
+    $t->unsignedBigInteger('user_id');
+    $t->tinyInteger('role')->default(0);
+    $t->timestamps();
+    $t->unique(['room_id', 'user_id']);
 });
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
