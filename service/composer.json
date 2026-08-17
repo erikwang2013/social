@@ -80,7 +80,7 @@
   "prefer-stable": true,
   "config": {
     "allow-plugins": {
-      "erikwang2013/security-php": true,
+      "erikwang2013/security-php": false,
       "erikwang2013/encryptable": true
     }
   }

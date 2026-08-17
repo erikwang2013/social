@@ -829,16 +829,16 @@
         },
         {
             "name": "erikwang2013/security-php",
-            "version": "v1.1.6",
+            "version": "v1.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/security-php.git",
-                "reference": "9cb4eae66e07f9be03e4b36de92409b913727643"
+                "reference": "4aee87ffb10ef7c57cb6373836c5c11be8fd4dad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/9cb4eae66e07f9be03e4b36de92409b913727643",
-                "reference": "9cb4eae66e07f9be03e4b36de92409b913727643",
+                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/4aee87ffb10ef7c57cb6373836c5c11be8fd4dad",
+                "reference": "4aee87ffb10ef7c57cb6373836c5c11be8fd4dad",
                 "shasum": ""
             },
             "require": {
@@ -893,9 +893,9 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/security-php/issues",
-                "source": "https://github.com/erikwang2013/security-php/tree/v1.1.6"
+                "source": "https://github.com/erikwang2013/security-php/tree/v1.1.9"
             },
-            "time": "2026-08-03T13:30:58+00:00"
+            "time": "2026-08-17T02:55:02+00:00"
         },
         {
             "name": "erikwang2013/snowflake-php",
