@@ -1,4 +1,4 @@
-import { ApiService, PostItem } from '../service/ApiService'
+import { ApiService, PostItem, RelationData, NotificationItem } from '../service/ApiService'
 
 @Entry
 @Component
@@ -8,13 +8,25 @@ struct Index {
   @State nickname: string = ''
   @State message: string = ''
   @State loggedIn: boolean = false
+  @State page: string = 'timeline'
   @State posts: PostItem[] = []
   @State content: string = ''
+  @State userId: number = 0
+  @State relation: RelationData | null = null
+  @State notifications: NotificationItem[] = []
+  @State unread: number = 0
+  @State notifTitle: string = '通知'
 
   build() {
     Column() {
       if (this.loggedIn) {
-        this.timelinePanel()
+        if (this.page === 'profile') {
+          this.profilePanel()
+        } else if (this.page === 'notifications') {
+          this.notificationPanel()
+        } else {
+          this.timelinePanel()
+        }
       } else {
         this.loginPanel()
       }
@@ -61,6 +73,12 @@ struct Index {
       }
       .padding(12)
 
+      Row({ space: 8 }) {
+        Button(this.notifTitle).onClick(() => { this.page = 'notifications' })
+        Button('主页').onClick(() => { this.page = 'profile' })
+      }
+      .width('100%').padding({ left: 12, right: 12, bottom: 8 })
+
       List({ space: 8 }) {
         ForEach(this.posts, (post: PostItem) => {
           ListItem() {
@@ -79,7 +97,92 @@ struct Index {
     .onAppear(() => { this.load() })
   }
 
+  @Builder
+  profilePanel() {
+    Column({ space: 12 }) {
+      Button('返回').onClick(() => { this.page = 'timeline' })
+        .width('100%').margin({ bottom: 8 })
+      if (this.relation) {
+        Text(`粉丝 ${this.relation.follower_count}   关注 ${this.relation.following_count}`)
+        Button(this.relation.is_following ? '取消关注' : '关注').width('100%').onClick(async () => {
+          const r = this.relation
+          if (r) {
+            if (r.is_following) {
+              await ApiService.unfollow(this.userId)
+            } else {
+              await ApiService.follow(this.userId)
+            }
+            await this.loadProfile()
+          }
+        })
+      } else {
+        Text('加载中…')
+      }
+    }
+    .padding(24)
+    .onAppear(() => { this.loadProfile() })
+  }
+
+  @Builder
+  notificationPanel() {
+    Column() {
+      Row({ space: 8 }) {
+        Button('返回').onClick(() => { this.page = 'timeline' })
+        Button('全部已读').onClick(async () => {
+          await ApiService.markAllRead()
+          await this.loadNotifications()
+        })
+      }
+      .width('100%').padding(12)
+
+      List({ space: 8 }) {
+        ForEach(this.notifications, (n: NotificationItem) => {
+          ListItem() {
+            Row() {
+              Column() {
+                Text(this.notifLabel(n)).width('100%')
+                Text(n.content).fontSize(12).fontColor(Color.Gray).width('100%')
+              }
+              .alignItems(HorizontalAlign.Start)
+              .layoutWeight(1)
+              if (!n.read) {
+                Circle({ width: 8, height: 8 }).fill(Color.Red)
+              }
+            }
+            .width('100%')
+            .padding(12)
+          }
+        }, (n: NotificationItem) => n.id.toString())
+      }
+      .layoutWeight(1)
+    }
+    .onAppear(() => { this.loadNotifications() })
+  }
+
+  notifLabel(n: NotificationItem): string {
+    const name = n.actor ? n.actor.nickname : ''
+    if (n.type === 'like') { return `${name} 赞了你的动态` }
+    if (n.type === 'comment') { return `${name} 评论了你的动态` }
+    if (n.type === 'follow') { return `${name} 关注了你` }
+    return `${name} ${n.type}`
+  }
+
   async load() {
     this.posts = await ApiService.timeline()
+    this.unread = await ApiService.unreadCount()
+    this.notifTitle = this.unread > 0 ? `通知(${this.unread})` : '通知'
+  }
+
+  async loadProfile() {
+    this.userId = await ApiService.me()
+    if (this.userId > 0) {
+      this.relation = await ApiService.relation(this.userId)
+    }
+  }
+
+  async loadNotifications() {
+    this.notifications = await ApiService.notifications()
+    this.unread = await ApiService.unreadCount()
+    this.notifTitle = this.unread > 0 ? `通知(${this.unread})` : '通知'
   }
 }

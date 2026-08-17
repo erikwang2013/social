@@ -37,6 +37,35 @@ struct PostItem: Codable, Identifiable {
     }
 }
 
+struct RelationData: Codable {
+    let isFollowing: Bool
+    let followerCount: Int
+    let followingCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case isFollowing = "is_following"
+        case followerCount = "follower_count"
+        case followingCount = "following_count"
+    }
+}
+
+struct UserBrief: Codable {
+    let id: Int64
+    let nickname: String
+}
+
+struct NotificationItem: Codable, Identifiable {
+    let id: Int64
+    let type: String
+    let content: String
+    let read: Bool
+    let actor: UserBrief?
+
+    enum CodingKeys: String, CodingKey {
+        case id, type, content, read, actor
+    }
+}
+
 final class APIClient {
     static let shared = APIClient()
     private let base = "http://127.0.0.1:8787" // 模拟器访问宿主机
@@ -98,5 +127,58 @@ final class APIClient {
             }
             completion((root["code"] as? Int) == 0)
         }
+    }
+
+    func me(completion: @escaping (Int64?) -> Void) {
+        request("GET", "/api/v1/me") { data, _ in
+            completion(self.dataDict(data)?["user_id"] as? Int64)
+        }
+    }
+
+    func follow(id: Int64, completion: @escaping (Bool) -> Void) {
+        request("POST", "/api/v1/users/\(id)/follow") { data, _ in completion(self.ok(data)) }
+    }
+
+    func unfollow(id: Int64, completion: @escaping (Bool) -> Void) {
+        request("POST", "/api/v1/users/\(id)/unfollow") { data, _ in completion(self.ok(data)) }
+    }
+
+    func relation(id: Int64, completion: @escaping (RelationData?) -> Void) {
+        request("GET", "/api/v1/users/\(id)/relation") { data, _ in
+            guard let d = self.dataDict(data),
+                  let json = try? JSONSerialization.data(withJSONObject: d) else { completion(nil); return }
+            completion(try? JSONDecoder().decode(RelationData.self, from: json))
+        }
+    }
+
+    func notifications(completion: @escaping ([NotificationItem]) -> Void) {
+        request("GET", "/api/v1/notifications") { data, _ in
+            guard let d = self.dataDict(data),
+                  let list = d["list"],
+                  let json = try? JSONSerialization.data(withJSONObject: list) else { completion([]); return }
+            completion((try? JSONDecoder().decode([NotificationItem].self, from: json)) ?? [])
+        }
+    }
+
+    func unreadCount(completion: @escaping (Int) -> Void) {
+        request("GET", "/api/v1/notifications/unread-count") { data, _ in
+            completion(self.dataDict(data)?["unread_count"] as? Int ?? 0)
+        }
+    }
+
+    func markAllRead(completion: @escaping (Bool) -> Void) {
+        request("POST", "/api/v1/notifications/read-all") { data, _ in completion(self.ok(data)) }
+    }
+
+    private func dataDict(_ data: Data?) -> [String: Any]? {
+        guard let data = data,
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return root["data"] as? [String: Any]
+    }
+
+    private func ok(_ data: Data?) -> Bool {
+        guard let data = data,
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return false }
+        return (root["code"] as? Int) == 0
     }
 }
