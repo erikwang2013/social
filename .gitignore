@@ -33,6 +33,9 @@ ruvector.db
 .swarm/memory.db-shm
 .swarm/memory.db-wal
 
+# 语音文件存储（用户内容，E2E 也会写入）
+service/storage/
+
 
 # Android（apps/android）
 apps/android/.gradle/
