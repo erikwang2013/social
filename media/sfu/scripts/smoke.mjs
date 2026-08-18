@@ -7,7 +7,10 @@ import path from 'node:path';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const port = 8799;
 const child = spawn('node', ['server.js'], { cwd: root, env: { ...process.env, SFU_PORT: String(port) }, stdio: ['ignore', 'pipe', 'inherit'], detached: true });
-await new Promise((r) => setTimeout(r, 800));
+// 冷启动 mediasoup 加载可超 800ms：轮询端口就绪，最多 5s
+for (let i = 0; i < 50; i++) {
+  try { await fetch(`http://127.0.0.1:${port}/signal`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }); break; } catch { await new Promise((r) => setTimeout(r, 100)); }
+}
 
 const sfu = async (body) => {
   const res = await fetch(`http://127.0.0.1:${port}/signal`, {

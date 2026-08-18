@@ -1,5 +1,6 @@
 {
   "name": "sfu",
+  "copyright": "Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz",
   "private": true,
   "type": "module",
   "scripts": {
