@@ -43,14 +43,16 @@ class RoomCenter
             ['room_id' => $roomId, 'user_id' => $uid],
             ['role' => (int) $room->owner_id === $uid ? 1 : 0],
         );
-        // TOCTOU：校验后关房可能已并发（close 删 member 行 + 在线集合），重查避免复活孤儿数据
+        WsRedis::call(fn($r) => $r->sadd('im:room:' . $roomId . ':online', $uid));
+        WsRedis::call(fn($r) => $r->sadd('im:roomuser:' . $uid, $roomId));
+        // TOCTOU：sadd 后复核——close 并发在复核前删 key 则回滚，避免孤儿 member 行/在线键复活
         $room = VoiceRoom::query()->find($roomId);
         if ($room === null || (int) $room->status !== 1) {
             VoiceRoomMember::query()->where('room_id', $roomId)->where('user_id', $uid)->delete();
+            WsRedis::call(fn($r) => $r->srem('im:room:' . $roomId . ':online', $uid));
+            WsRedis::call(fn($r) => $r->srem('im:roomuser:' . $uid, $roomId));
             throw new \RuntimeException('room_not_found');
         }
-        WsRedis::call(fn($r) => $r->sadd('im:room:' . $roomId . ':online', $uid));
-        WsRedis::call(fn($r) => $r->sadd('im:roomuser:' . $uid, $roomId));
         $this->broadcast($roomId, ['type' => Envelope::T_ROOM_JOIN, 'data' => ['room_id' => $roomId, 'user_id' => $uid]]);
     }
 
@@ -83,6 +85,7 @@ class RoomCenter
         }
         VoiceRoomMember::query()->where('room_id', $roomId)->delete();
         // 先广播后删在线集合：broadcast 依赖该集合拿到接收者（房主离房触发的 close 时房主已 srem，不影响成员）
+        // ponytail: REST 触发的 close（HTTP worker）broadcast 走本进程连接表为空 → 帧不达 WS 端；客户端以房间操作返回 room_not_found/rooms 列表收敛，跨进程推送待 pub/sub
         $this->broadcast($roomId, ['type' => Envelope::T_ROOM_CLOSED, 'data' => ['room_id' => $roomId]]);
         WsRedis::call(fn($r) => $r->del('im:room:' . $roomId . ':online'));
     }
