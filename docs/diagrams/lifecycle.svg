@@ -1,0 +1,83 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    .s    { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 20 }
+    .term { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.6; rx: 20 }
+    .fail { fill: #fef2f2; stroke: #dc2626; stroke-width: 1.6; rx: 20 }
+    .t    { font-size: 13px; fill: #0f172a; text-anchor: middle }
+    .ts   { font-size: 10.5px; fill: #64748b; text-anchor: middle }
+    .lane { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.4; rx: 10 }
+    .lbl  { font-size: 14px; font-weight: 700; fill: #334155 }
+    .edge { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arr) }
+    .el   { font-size: 10.5px; fill: #475569; text-anchor: middle }
+  </style>
+
+  <!-- 泳道 1：消息投递 -->
+  <text class="lbl" x="24" y="36">① 消息投递生命周期</text>
+  <rect class="lane" x="20" y="48" width="920" height="120"/>
+  <rect class="s" x="40" y="78" width="150" height="56"/>
+  <text class="t" x="115" y="101">发送（WS 帧）</text>
+  <text class="ts" x="115" y="119">客户端 → :8789</text>
+  <rect class="s" x="260" y="78" width="150" height="56"/>
+  <text class="t" x="335" y="101">服务端落库</text>
+  <text class="ts" x="335" y="119">MySQL 消息 + Redis 索引</text>
+  <rect class="s" x="480" y="78" width="150" height="56"/>
+  <text class="t" x="555" y="101">实时推送</text>
+  <text class="ts" x="555" y="119">在线：Deliverer 直推</text>
+  <rect class="term" x="700" y="78" width="210" height="56"/>
+  <text class="t" x="805" y="101">送达 / 离线拉取</text>
+  <text class="ts" x="805" y="119">离线：下次登录拉取 · 未读数</text>
+  <path class="edge" d="M 190 106 L 260 106"/>
+  <path class="edge" d="M 410 106 L 480 106"/>
+  <path class="edge" d="M 630 106 L 700 106"/>
+
+  <!-- 泳道 2：1v1 通话 -->
+  <text class="lbl" x="24" y="206">② 1v1 通话生命周期（CallCenter 状态机，Redis im:call:{id}）</text>
+  <rect class="lane" x="20" y="218" width="920" height="128"/>
+  <rect class="s" x="40" y="248" width="140" height="60"/>
+  <text class="t" x="110" y="271">空闲</text>
+  <text class="ts" x="110" y="289">im:callbusy 互斥</text>
+  <rect class="s" x="250" y="248" width="150" height="60"/>
+  <text class="t" x="325" y="271">响铃中</text>
+  <text class="ts" x="325" y="289">30s 超时</text>
+  <rect class="term" x="470" y="248" width="140" height="60"/>
+  <text class="t" x="540" y="271">通话中</text>
+  <text class="ts" x="540" y="289">媒体直连 / RTP</text>
+  <rect class="term" x="680" y="248" width="130" height="60"/>
+  <text class="t" x="745" y="271">已结束</text>
+  <text class="ts" x="745" y="289">finish 一次性门</text>
+  <rect class="fail" x="830" y="248" width="100" height="60"/>
+  <text class="t" x="880" y="271">失败</text>
+  <text class="ts" x="880" y="289">超时 / 忙线</text>
+  <path class="edge" d="M 180 278 L 250 278"/>
+  <path class="edge" d="M 400 278 L 470 278"/>
+  <path class="edge" d="M 610 278 L 680 278"/>
+  <path class="edge" d="M 400 260 C 400 240, 820 240, 880 258"/>
+  <text class="el" x="640" y="238">超时 / 拒绝</text>
+  <path class="edge" d="M 325 308 C 325 330, 870 330, 875 308"/>
+  <text class="el" x="640" y="336">忙线 SETNX 拒绝</text>
+
+  <!-- 泳道 3：语聊房 -->
+  <text class="lbl" x="24" y="386">③ 语聊房生命周期（DB rooms 事实 + Redis 在线表 + SFU Router）</text>
+  <rect class="lane" x="20" y="398" width="920" height="104"/>
+  <rect class="s" x="40" y="418" width="150" height="60"/>
+  <text class="t" x="115" y="441">创建</text>
+  <text class="ts" x="115" y="459">owner 创建 · SFU 建 Router</text>
+  <rect class="s" x="270" y="418" width="190" height="60"/>
+  <text class="t" x="365" y="441">活跃</text>
+  <text class="ts" x="365" y="459">加入 / 8 麦位上下麦 · 转发</text>
+  <rect class="term" x="540" y="418" width="170" height="60"/>
+  <text class="t" x="625" y="441">解散</text>
+  <text class="ts" x="625" y="459">owner 离开 / 主动 close</text>
+  <rect class="term" x="790" y="418" width="140" height="60"/>
+  <text class="t" x="860" y="441">SFU 回收</text>
+  <text class="ts" x="860" y="459">Router 空置 5min</text>
+  <path class="edge" d="M 190 448 L 270 448"/>
+  <path class="edge" d="M 460 448 L 540 448"/>
+  <path class="edge" d="M 710 448 L 790 448"/>
+</svg>
