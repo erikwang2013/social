@@ -8,6 +8,7 @@ function http(string $method, string $path, array $json = [], string $token = ''
     if (!$sock) {
         throw new RuntimeException("http connect failed: $errstr");
     }
+    stream_set_timeout($sock, 5); // 防服务端不关连接时永久挂起
     $body = $json === [] ? '' : json_encode($json, JSON_UNESCAPED_UNICODE);
     $headers = "Host: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: " . strlen($body) . "\r\nConnection: close";
     if ($token !== '') {
@@ -108,10 +109,18 @@ final class WsClient
         $b0 = ord($hdr[0]);
         $len = ord($hdr[1]) & 0x7f;
         if ($len === 126) {
-            $len = unpack('n', fread($this->sock, 2))[1];
+            $ext = fread($this->sock, 2);
+            if ($ext === false || strlen($ext) < 2) {
+                return null;
+            }
+            $len = unpack('n', $ext)[1];
         } elseif ($len === 127) {
-            $hi = unpack('N', fread($this->sock, 4))[1];
-            $lo = unpack('N', fread($this->sock, 4))[1];
+            $ext = fread($this->sock, 8);
+            if ($ext === false || strlen($ext) < 8) {
+                return null;
+            }
+            $hi = unpack('N', substr($ext, 0, 4))[1];
+            $lo = unpack('N', substr($ext, 4, 4))[1];
             $len = $hi * 4294967296 + $lo;
         }
         $payload = '';
@@ -133,6 +142,7 @@ final class WsClient
     private function decodeFrame(string $buf): ?array
     {
         if (strlen($buf) < 2) {
+            $this->pending = $buf;
             return null;
         }
         $len = ord($buf[1]) & 0x7f;
@@ -147,6 +157,7 @@ final class WsClient
             $off = 10;
         }
         if (strlen($buf) < $off + $len) {
+            $this->pending = $buf;
             return null;
         }
         $this->pending = substr($buf, $off + $len);

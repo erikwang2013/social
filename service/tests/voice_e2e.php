@@ -9,6 +9,7 @@ function http(string $method, string $path, array $json = [], string $token = ''
     if (!$sock) {
         throw new RuntimeException("http connect failed: $errstr");
     }
+    stream_set_timeout($sock, 5); // 防服务端不关连接时永久挂起
     $body = $json === [] ? '' : json_encode($json, JSON_UNESCAPED_UNICODE);
     $hs = "Host: 127.0.0.1\r\nContent-Type: application/json\r\nContent-Length: " . strlen($body) . "\r\nConnection: close";
     if ($token !== '') {
@@ -72,6 +73,7 @@ function httpUpload(string $path, string $file, string $token, array $headers = 
     if (!$sock) {
         throw new RuntimeException("http connect failed: $errstr");
     }
+    stream_set_timeout($sock, 5); // 防服务端不关连接时永久挂起
     $boundary = '----e2e' . uniqid();
     $data = file_get_contents($file);
     $body = "--$boundary\r\nContent-Disposition: form-data; name=\"voice\"; filename=\"sample.m4a\"\r\nContent-Type: audio/m4a\r\n\r\n$data\r\n--$boundary--\r\n";
@@ -177,10 +179,18 @@ final class WsClient
         $b0 = ord($hdr[0]);
         $len = ord($hdr[1]) & 0x7f;
         if ($len === 126) {
-            $len = unpack('n', fread($this->sock, 2))[1];
+            $ext = fread($this->sock, 2);
+            if ($ext === false || strlen($ext) < 2) {
+                return null;
+            }
+            $len = unpack('n', $ext)[1];
         } elseif ($len === 127) {
-            $hi = unpack('N', fread($this->sock, 4))[1];
-            $lo = unpack('N', fread($this->sock, 4))[1];
+            $ext = fread($this->sock, 8);
+            if ($ext === false || strlen($ext) < 8) {
+                return null;
+            }
+            $hi = unpack('N', substr($ext, 0, 4))[1];
+            $lo = unpack('N', substr($ext, 4, 4))[1];
             $len = $hi * 4294967296 + $lo;
         }
         $payload = '';
@@ -202,6 +212,7 @@ final class WsClient
     private function decodeFrame(string $buf): ?array
     {
         if (strlen($buf) < 2) {
+            $this->pending = $buf;
             return null;
         }
         $len = ord($buf[1]) & 0x7f;
@@ -216,6 +227,7 @@ final class WsClient
             $off = 10;
         }
         if (strlen($buf) < $off + $len) {
+            $this->pending = $buf;
             return null;
         }
         $this->pending = substr($buf, $off + $len);
@@ -243,6 +255,9 @@ final class WsClient
 
 // ---- 生成 1s m4a 样本 ----
 $sample = '/tmp/voice_e2e_sample.m4a';
+register_shutdown_function(static function () use ($sample): void {
+    @unlink($sample); // check() exit(1) 失败路径也清理
+});
 exec('ffmpeg -f lavfi -i anullsrc=r=8000:cl=mono -t 1 -c:a aac -b:a 32k -y ' . escapeshellarg($sample) . ' 2>/dev/null', $_, $ffCode);
 check($ffCode === 0 && is_file($sample), 'ffmpeg 生成 1s m4a 样本');
 
@@ -367,7 +382,7 @@ check($rl !== null && (int) $rl['data']['user_id'] === $bId, 'B room_leave 广�
 $wa->send(['type' => 'room_leave', 'data' => ['room_id' => $roomId]]);
 // 房主离房关房由 WS worker 异步落库，轮询列表直到消失（leave 无回显帧）
 $gone = false;
-for ($i = 0; $i < 10 && !$gone; $i++) {
+for ($i = 0; $i < 20 && !$gone; $i++) { // 20 次 x 300ms ≈ 6s，防慢机器 flake
     $rooms = http('GET', '/api/v1/voice/rooms', [], $aTok, $v1);
     $gone = true;
     foreach ($rooms['data']['list'] ?? [] as $r) {
@@ -383,5 +398,4 @@ check($gone, '房主 leave 后房间列表不再出现该房间');
 
 $wa->close();
 $wb->close();
-unlink($sample);
 echo "VOICE E2E OK\n";
