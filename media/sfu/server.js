@@ -11,10 +11,9 @@ let worker;
 const rooms = new Map(); // roomId -> { router, transports, producers, consumers, lastActive }
 
 async function ensureWorker() {
-  if (!worker) {
-    // rtc 端口范围须与 docker-compose 发布的 10000-10200/udp 对齐，否则容器内媒体不通
-    worker = await mediasoup.createWorker({ logLevel: 'warn', rtcMinPort: 10000, rtcMaxPort: 10200 });
-  }
+  // rtc 端口范围须与 docker-compose 发布的 10000-10200/udp 对齐，否则容器内媒体不通
+  // 存 promise 而非结果：并发首触天然去重（同 routerFor 竞态修复）
+  worker ??= mediasoup.createWorker({ logLevel: 'warn', rtcMinPort: 10000, rtcMaxPort: 10200 });
   return worker;
 }
 
