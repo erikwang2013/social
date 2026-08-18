@@ -36,6 +36,8 @@ function check(bool $cond, string $msg): void
 final class WsClient
 {
     private $sock;
+    /** 握手响应后同段到达的帧（服务端 101 与 ready/离线帧可能同 TCP 段） */
+    private string $pending = '';
 
     public function __construct(string $host, int $port, string $token)
     {
@@ -48,11 +50,23 @@ final class WsClient
             . "Host: $host:$port\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
             . "Sec-WebSocket-Key: $key\r\nSec-WebSocket-Version: 13\r\n\r\n";
         fwrite($sock, $req);
-        $resp = fread($sock, 4096);
+        // 只读到头部结束符：服务端就绪帧可能与 101 响应同段到达，fread 整读会吞掉首帧
+        stream_set_timeout($sock, 5);
+        $resp = '';
+        while (!str_contains($resp, "\r\n\r\n") && !feof($sock)) {
+            $chunk = fread($sock, 1024);
+            if ($chunk === false || $chunk === '') {
+                break;
+            }
+            $resp .= $chunk;
+        }
         if (!str_contains($resp, '101')) {
             fclose($sock);
             throw new RuntimeException("ws handshake failed: $resp");
         }
+        $pos = strpos($resp, "\r\n\r\n");
+        $this->pending = substr($resp, $pos + 4);
+        stream_set_timeout($sock, 0);
         $this->sock = $sock;
     }
 
@@ -81,6 +95,11 @@ final class WsClient
 
     private function recv(int $timeoutMs): ?array
     {
+        if ($this->pending !== '') {
+            $buf = $this->pending;
+            $this->pending = '';
+            return $this->decodeFrame($buf);
+        }
         stream_set_timeout($this->sock, 0, $timeoutMs * 1000);
         $hdr = fread($this->sock, 2);
         if ($hdr === false || strlen($hdr) < 2) {
@@ -90,6 +109,10 @@ final class WsClient
         $len = ord($hdr[1]) & 0x7f;
         if ($len === 126) {
             $len = unpack('n', fread($this->sock, 2))[1];
+        } elseif ($len === 127) {
+            $hi = unpack('N', fread($this->sock, 4))[1];
+            $lo = unpack('N', fread($this->sock, 4))[1];
+            $len = $hi * 4294967296 + $lo;
         }
         $payload = '';
         while (strlen($payload) < $len) {
@@ -103,6 +126,31 @@ final class WsClient
             return null;
         }
         $dec = json_decode($payload, true);
+        return is_array($dec) ? $dec : null;
+    }
+
+    /** 从原始字节流解出首个服务端帧（未 masked），余量回存 pending */
+    private function decodeFrame(string $buf): ?array
+    {
+        if (strlen($buf) < 2) {
+            return null;
+        }
+        $len = ord($buf[1]) & 0x7f;
+        $off = 2;
+        if ($len === 126 && strlen($buf) >= 4) {
+            $len = unpack('n', substr($buf, 2, 2))[1];
+            $off = 4;
+        } elseif ($len === 127 && strlen($buf) >= 10) {
+            $hi = unpack('N', substr($buf, 2, 4))[1];
+            $lo = unpack('N', substr($buf, 6, 4))[1];
+            $len = $hi * 4294967296 + $lo;
+            $off = 10;
+        }
+        if (strlen($buf) < $off + $len) {
+            return null;
+        }
+        $this->pending = substr($buf, $off + $len);
+        $dec = json_decode(substr($buf, $off, $len), true);
         return is_array($dec) ? $dec : null;
     }
 
