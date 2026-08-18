@@ -14,6 +14,9 @@ import com.social.app.api.ApiClient
  * 必须通过 headers 带上 Authorization + X-Api-Version，不能裸 URL 播放。
  */
 object VoiceMessageView {
+    // 同一时刻只保留一个播放器；换条播放/出错/播完都释放，避免重复点击泄漏
+    private var current: MediaPlayer? = null
+
     fun show(parent: LinearLayout, base: String, voiceUrl: String, duration: Int) {
         val row = LinearLayout(parent.context).apply { orientation = LinearLayout.HORIZONTAL }
         val player = Button(parent.context).apply {
@@ -21,6 +24,8 @@ object VoiceMessageView {
         }
         val state = TextView(parent.context)
         player.setOnClickListener {
+            current?.let { runCatching { it.stop() }; it.release() }
+            current = null
             val headers = mapOf(
                 "Authorization" to "Bearer ${ApiClient.accessToken}",
                 "X-Api-Version" to VoiceApi.API_VERSION,
@@ -28,6 +33,7 @@ object VoiceMessageView {
             state.text = "播放中…"
             try {
                 val mp = MediaPlayer()
+                current = mp
                 mp.setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -36,10 +42,15 @@ object VoiceMessageView {
                 )
                 mp.setDataSource(parent.context, Uri.parse(base + voiceUrl), headers)
                 mp.setOnPreparedListener { it.start() }
-                mp.setOnCompletionListener { it.release(); state.text = "" }
-                mp.setOnErrorListener { _, _, _ -> state.text = "播放失败"; true }
+                mp.setOnCompletionListener {
+                    current?.release(); current = null; state.text = ""
+                }
+                mp.setOnErrorListener { _, _, _ ->
+                    current?.release(); current = null; state.text = "播放失败"; true
+                }
                 mp.prepareAsync()
             } catch (e: Exception) {
+                current?.release(); current = null
                 state.text = "播放失败"
             }
         }

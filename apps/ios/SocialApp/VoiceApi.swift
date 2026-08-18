@@ -87,7 +87,9 @@ final class VoiceApi {
             req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         if let form = form {
-            let pairs = form.map { "\($0.key)=\($0.value)" }.joined(separator: "&")
+            // .alphanumerics：form 值需把 & = 等分隔符也编码掉（.urlQueryAllowed 不会）
+            let enc: (String) -> String = { $0.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? $0 }
+            let pairs = form.map { "\(enc($0.key))=\(enc($0.value))" }.joined(separator: "&")
             req.httpBody = Data(pairs.utf8)
             req.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         } else if let body = body {
@@ -117,6 +119,7 @@ struct CallView: View {
     @State private var status = "等待来电…"
     @State private var peerId: Int64 = 0
     @State private var canAnswer = false
+    @State private var oldHandler: ((String, [String: Any]) -> Void)?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -127,6 +130,7 @@ struct CallView: View {
             }
         }
         .onAppear {
+            oldHandler = ImClient.shared.onEvent // 接管前保存，onDisappear 恢复
             ImClient.shared.onEvent = { type, data in
                 DispatchQueue.main.async {
                     switch type {
@@ -146,6 +150,10 @@ struct CallView: View {
                 }
             }
         }
+        .onDisappear {
+            ImClient.shared.onEvent = oldHandler
+            oldHandler = nil
+        }
     }
 
     private func send(_ type: String) {
@@ -160,6 +168,7 @@ struct VoiceRoomView: View {
     @State private var status = "房间列表"
     @State private var roomId: Int64 = 0
     @State private var micOn = false
+    @State private var oldHandler: ((String, [String: Any]) -> Void)?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -176,15 +185,47 @@ struct VoiceRoomView: View {
                     micOn.toggle()
                     ImClient.shared.send(micOn ? "room_up_mic" : "room_down_mic", data: ["room_id": roomId])
                 }.disabled(roomId == 0)
+                Button("离开房间") {
+                    ImClient.shared.send("room_leave", data: ["room_id": roomId])
+                    roomId = 0
+                    status = "已离开房间"
+                }.disabled(roomId == 0)
                 Button("刷新") { load() }
             }
         }
-        .onAppear { load() }
+        .onAppear {
+            oldHandler = ImClient.shared.onEvent // 接管前保存，onDisappear 恢复
+            ImClient.shared.onEvent = { type, data in
+                DispatchQueue.main.async { handleRoomEvent(type, data) }
+            }
+            load()
+        }
+        .onDisappear {
+            ImClient.shared.onEvent = oldHandler
+            oldHandler = nil
+        }
     }
 
     private func load() {
         VoiceApi.shared.rooms { items in
             DispatchQueue.main.async { rooms = items }
+        }
+    }
+
+    private func handleRoomEvent(_ type: String, _ data: [String: Any]) {
+        switch type {
+        case "room_join": status = "有人加入房间 #\(roomId)"
+        case "room_leave": status = "有人离开房间 #\(roomId)"
+        case "room_up_mic": status = "有人上麦"
+        case "room_down_mic": status = "有人下麦"
+        case "room_kick_mic": status = "你被房主抱下麦"
+        case "room_closed":
+            status = "房间已关闭"
+            roomId = 0
+        case "room_offer", "room_answer", "room_ice":
+            // TODO 真机联调：WebRTC 媒体面，本里程碑不实现
+            status = "已收到 \(type)（WebRTC TODO）"
+        default: break
         }
     }
 }
