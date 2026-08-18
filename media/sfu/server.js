@@ -12,7 +12,8 @@ const rooms = new Map(); // roomId -> { router, transports, producers, consumers
 
 async function ensureWorker() {
   if (!worker) {
-    worker = await mediasoup.createWorker({ logLevel: 'warn' });
+    // rtc 端口范围须与 docker-compose 发布的 10000-10200/udp 对齐，否则容器内媒体不通
+    worker = await mediasoup.createWorker({ logLevel: 'warn', rtcMinPort: 10000, rtcMaxPort: 10200 });
   }
   return worker;
 }
@@ -24,8 +25,14 @@ async function routerFor(roomId) {
     const router = await w.createRouter({
       mediaCodecs: [{ kind: 'audio', mimeType: 'audio/opus', clockRate: 48000, channels: 2 }],
     });
-    room = { router, transports: new Map(), producers: new Map(), consumers: new Map(), lastActive: Date.now() };
-    rooms.set(roomId, room);
+    // 并发首触竞态：await 期间对方可能已 set，取先到者，后到者关掉自己的 router
+    room = rooms.get(roomId);
+    if (room) {
+      router.close();
+    } else {
+      room = { router, transports: new Map(), producers: new Map(), consumers: new Map(), lastActive: Date.now() };
+      rooms.set(roomId, room);
+    }
   }
   room.lastActive = Date.now();
   return room;
@@ -47,8 +54,17 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   let raw = '';
-  req.on('data', (c) => (raw += c));
+  let tooBig = false;
+  req.on('data', (c) => {
+    raw += c;
+    if (!tooBig && raw.length > 64e3) {
+      tooBig = true;
+      json(res, 413, { error: 'payload too large' });
+      req.destroy();
+    }
+  });
   req.on('end', async () => {
+    if (tooBig) return;
     try {
       const { room_id, method, ...body } = JSON.parse(raw || '{}');
       const room = await routerFor(room_id);
@@ -101,6 +117,7 @@ async function handle(room, method, body, roomId) {
       return { ok: true };
     }
     case 'close':
+      rooms.get(roomId)?.router.close(); // 不关 router 则其 transports/producers 泄漏在 worker 里
       rooms.delete(roomId);
       return { ok: true };
     default:
