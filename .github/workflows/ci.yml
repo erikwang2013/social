@@ -23,12 +23,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: cd infrastructure && cargo build --workspace
       - run: cd infrastructure && cargo test --workspace
-  android:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: "17" }
-      - uses: android-actions/setup-android@v3
-      - run: cd apps/android && ./gradlew assembleDebug
+  # android 打包（APK）已取消：推送后不再打包应用，仅由 release.yml 创建 tags/releases
+  # android:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-java@v4
+  #       with: { distribution: temurin, java-version: "17" }
+  #     - uses: android-actions/setup-android@v3
+  #     - run: cd apps/android && ./gradlew assembleDebug
   # ios / harmonyos：macOS / DevEco 环境就绪后启用

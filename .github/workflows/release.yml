@@ -1,0 +1,40 @@
+name: Release
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Bump version from latest tag
+        id: version
+        run: |
+          latest=$(git tag --sort=-v:refname | head -1)
+          if [ -z "$latest" ]; then
+            echo "next=v0.1.0" >> "$GITHUB_OUTPUT"
+          else
+            IFS=. read -r mj mn pt <<< "${latest#v}"
+            echo "next=v${mj}.${mn}.$((pt + 1))" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create tag
+        run: |
+          git tag "${{ steps.version.outputs.next }}"
+          git push origin "${{ steps.version.outputs.next }}"
+
+      - name: Create release
+        run: |
+          gh release create "${{ steps.version.outputs.next }}" \
+            --generate-notes \
+            --target "${{ github.sha }}"
+        env:
+          GH_TOKEN: ${{ github.token }}
