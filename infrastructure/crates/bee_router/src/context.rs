@@ -223,5 +223,60 @@ mod tests {
         assert!(ctx.redirect("javascript:alert(1)").is_err());
         // protocol-relative open redirect
         assert!(ctx.redirect("//evil.com").is_err());
+        // relative paths must start with '/'
+        assert!(ctx.redirect("dashboard").is_err());
+    }
+
+    #[test]
+    fn test_params_set_and_get() {
+        let engine = TemplateEngine::new(Path::new("tests/fixtures/templates")).unwrap();
+        let mut ctx = make_context(Arc::new(engine));
+        let mut params = std::collections::HashMap::new();
+        params.insert("id".to_string(), "42".to_string());
+        ctx.set_params(params);
+        assert_eq!(ctx.param("id"), Some("42"));
+        assert_eq!(ctx.param("missing"), None);
+    }
+
+    #[tokio::test]
+    async fn test_text_sets_content_type_and_body() {
+        let engine = TemplateEngine::new(Path::new("tests/fixtures/templates")).unwrap();
+        let mut ctx = make_context(Arc::new(engine));
+        ctx.text("plain").unwrap();
+        let res = ctx.into_response();
+        assert_eq!(res.headers()["content-type"], "text/plain; charset=utf-8");
+        let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
+        assert_eq!(&body[..], b"plain");
+    }
+
+    #[tokio::test]
+    async fn test_html_renders_template() {
+        let engine = TemplateEngine::new(Path::new("tests/fixtures/templates")).unwrap();
+        let mut ctx = make_context(Arc::new(engine));
+        let data = bee_template::context! { "title": &"Hello Page" };
+        ctx.html("test.html", &data).unwrap();
+        let res = ctx.into_response();
+        assert_eq!(res.headers()["content-type"], "text/html; charset=utf-8");
+        let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
+        assert!(String::from_utf8_lossy(&body).contains("Hello Page"));
+    }
+
+    #[test]
+    fn test_html_missing_template_errors() {
+        let engine = TemplateEngine::new(Path::new("tests/fixtures/templates")).unwrap();
+        let mut ctx = make_context(Arc::new(engine));
+        let err = ctx.html("nope.html", &std::collections::HashMap::new()).unwrap_err();
+        assert!(matches!(err, RouterError::TemplateError(_)));
+    }
+
+    #[tokio::test]
+    async fn test_abort_sets_status_and_body() {
+        let engine = TemplateEngine::new(Path::new("tests/fixtures/templates")).unwrap();
+        let mut ctx = make_context(Arc::new(engine));
+        ctx.abort(StatusCode::FORBIDDEN, "denied");
+        let res = ctx.into_response();
+        assert_eq!(res.status(), StatusCode::FORBIDDEN);
+        let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
+        assert_eq!(&body[..], b"denied");
     }
 }

@@ -135,4 +135,51 @@ mod tests {
         let result = engine.render("hello.html", &data).unwrap();
         assert_eq!(result.trim(), "Hello, Bob! You are 25 years old.");
     }
+
+    #[test]
+    fn test_new_with_missing_dir_yields_empty_engine() {
+        // Tera accepts a glob with zero matches, so a missing directory
+        // produces an engine that fails on every render rather than an
+        // error at construction time.
+        let engine = TemplateEngine::new(Path::new("/nonexistent/template/dir")).unwrap();
+        let err = match engine.render("anything.html", &HashMap::new()) {
+            Ok(_) => panic!("rendering with an empty template set must fail"),
+            Err(e) => e,
+        };
+        assert!(matches!(err, TemplateError::RenderError(_)));
+    }
+
+    #[test]
+    fn test_render_missing_template_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let template_path = dir.path().join("hello.html");
+        std::fs::write(&template_path, "Hello, {{ name }}!").unwrap();
+        let engine = TemplateEngine::new(dir.path()).unwrap();
+        let err = match engine.render("missing.html", &HashMap::new()) {
+            Ok(_) => panic!("rendering a missing template must fail"),
+            Err(e) => e,
+        };
+        assert!(matches!(err, TemplateError::RenderError(_)));
+    }
+
+    #[test]
+    fn test_render_unknown_variable_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("t.html"), "Hello, {{ name }}!").unwrap();
+        let engine = TemplateEngine::new(dir.path()).unwrap();
+        // Tera fails on unknown variables instead of rendering them empty.
+        let err = match engine.render("t.html", &HashMap::new()) {
+            Ok(_) => panic!("an unknown variable must fail the render"),
+            Err(e) => e,
+        };
+        assert!(matches!(err, TemplateError::RenderError(_)));
+    }
+
+    #[test]
+    fn test_context_macro_non_finite_float_serializes_as_null() {
+        // Current serde_json serializes NaN to null; the documented panic
+        // only triggers on values that cannot be serialized at all.
+        let ctx = context! { "nan": &f64::NAN };
+        assert_eq!(ctx["nan"], serde_json::Value::Null);
+    }
 }

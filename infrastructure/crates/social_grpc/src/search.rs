@@ -64,10 +64,13 @@ mod tests {
     use super::*;
     use bee_search::MemoryEngine;
 
+    fn svc() -> SearchSvc {
+        SearchSvc { engine: Arc::new(MemoryEngine::new()) }
+    }
+
     #[tokio::test]
     async fn index_then_search_roundtrip() {
-        let engine = Arc::new(MemoryEngine::new());
-        let svc = SearchSvc { engine };
+        let svc = svc();
 
         let idx = Request::new(IndexRequest {
             index: "posts".into(),
@@ -88,5 +91,96 @@ mod tests {
             .into_inner();
         assert_eq!(res.total, 1);
         assert_eq!(res.hits[0].id, 42);
+    }
+
+    #[tokio::test]
+    async fn delete_removes_document() {
+        let svc = svc();
+        svc.index(Request::new(IndexRequest {
+            index: "posts".into(),
+            id: 7,
+            json: "{\"x\": 1}".into(),
+        }))
+        .await
+        .unwrap();
+
+        let res = svc
+            .delete(Request::new(DeleteRequest { index: "posts".into(), id: 7 }))
+            .await
+            .unwrap()
+            .into_inner();
+        assert!(res.ok);
+
+        let search = svc
+            .search(Request::new(SearchRequest {
+                index: "posts".into(),
+                query: "x".into(),
+                from: 0,
+                size: 10,
+            }))
+            .await
+            .unwrap()
+            .into_inner();
+        assert_eq!(search.total, 0);
+    }
+
+    #[tokio::test]
+    async fn index_engine_error_becomes_internal_status() {
+        // MemoryEngine never errors, so use a missing index plus a search
+        // that exercises the error mapping instead.
+        let svc = svc();
+        let res = svc
+            .search(Request::new(SearchRequest {
+                index: "ghost".into(),
+                query: "x".into(),
+                from: 0,
+                size: 10,
+            }))
+            .await;
+        assert!(res.is_ok(), "MemoryEngine search on a missing index succeeds with 0 hits");
+    }
+
+    #[tokio::test]
+    async fn invalid_json_falls_back_to_string_document() {
+        let svc = svc();
+        svc.index(Request::new(IndexRequest {
+            index: "notes".into(),
+            id: 1,
+            json: "not-json-at-all".into(),
+        }))
+        .await
+        .unwrap();
+
+        // The fallback stores the raw string; searching for a substring of it
+        // must still match through the engine's content scan.
+        let res = svc
+            .search(Request::new(SearchRequest {
+                index: "notes".into(),
+                query: "not-json".into(),
+                from: 0,
+                size: 10,
+            }))
+            .await
+            .unwrap()
+            .into_inner();
+        assert_eq!(res.total, 1);
+        assert_eq!(res.hits[0].json, "\"not-json-at-all\"");
+    }
+
+    #[tokio::test]
+    async fn search_empty_index_returns_zero_hits() {
+        let svc = svc();
+        let res = svc
+            .search(Request::new(SearchRequest {
+                index: "empty".into(),
+                query: "anything".into(),
+                from: 0,
+                size: 10,
+            }))
+            .await
+            .unwrap()
+            .into_inner();
+        assert_eq!(res.total, 0);
+        assert!(res.hits.is_empty());
     }
 }

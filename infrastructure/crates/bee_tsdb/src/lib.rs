@@ -298,4 +298,85 @@ mod tests {
         .await
         .unwrap();
     }
+
+    #[tokio::test]
+    async fn test_tag_filter_neq() {
+        let db = StubTsdb::new();
+        for (day, host) in [(1, "srv1"), (2, "srv2")] {
+            let mut pt = make_point("cpu", day);
+            pt.tags.insert("host".into(), host.into());
+            db.write_point(pt).await.unwrap();
+        }
+        let filter = TagFilter { key: "host".into(), value: "srv1".into(), op: FilterOp::Neq };
+        let results =
+            db.query_range("cpu", ts(2026, 1, 1), ts(2026, 1, 31), Some(&[filter])).await.unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].tags["host"], "srv2");
+    }
+
+    #[tokio::test]
+    async fn test_tag_filter_regex_prefix() {
+        let db = StubTsdb::new();
+        for (day, host) in [(1, "web-1"), (2, "db-1")] {
+            let mut pt = make_point("svc", day);
+            pt.tags.insert("host".into(), host.into());
+            db.write_point(pt).await.unwrap();
+        }
+        let filter = TagFilter { key: "host".into(), value: "web".into(), op: FilterOp::Regex };
+        let results =
+            db.query_range("svc", ts(2026, 1, 1), ts(2026, 1, 31), Some(&[filter])).await.unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].tags["host"], "web-1");
+    }
+
+    #[tokio::test]
+    async fn test_range_boundaries_are_inclusive() {
+        let db = StubTsdb::new();
+        db.write_point(make_point("cpu", 1)).await.unwrap();
+        db.write_point(make_point("cpu", 31)).await.unwrap();
+        // [day 1, day 31] must include both endpoints.
+        let results =
+            db.query_range("cpu", ts(2026, 1, 1), ts(2026, 1, 31), None).await.unwrap();
+        assert_eq!(results.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_multiple_tag_filters_are_and_combined() {
+        let db = StubTsdb::new();
+        for (day, host, dc) in [(1, "srv1", "east"), (2, "srv1", "west"), (3, "srv2", "east")] {
+            let mut pt = make_point("cpu", day);
+            pt.tags.insert("host".into(), host.into());
+            pt.tags.insert("dc".into(), dc.into());
+            db.write_point(pt).await.unwrap();
+        }
+        let filters = [
+            TagFilter { key: "host".into(), value: "srv1".into(), op: FilterOp::Eq },
+            TagFilter { key: "dc".into(), value: "east".into(), op: FilterOp::Eq },
+        ];
+        let results =
+            db.query_range("cpu", ts(2026, 1, 1), ts(2026, 1, 31), Some(&filters)).await.unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].timestamp, ts(2026, 1, 1));
+    }
+
+    #[tokio::test]
+    async fn test_point_serde_roundtrip() {
+        let mut pt = make_point("cpu", 1);
+        pt.tags.insert("host".into(), "srv1".into());
+        pt.fields.insert("load".into(), serde_json::json!(0.75));
+        let json = serde_json::to_string(&pt).unwrap();
+        let back: Point = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.measurement, "cpu");
+        assert_eq!(back.tags["host"], "srv1");
+        assert_eq!(back.fields["load"], 0.75);
+        assert_eq!(back.timestamp, pt.timestamp);
+    }
+
+    #[tokio::test]
+    async fn test_filter_op_and_aggregation_debug() {
+        // Enums derive Debug; exercise every variant so additions to the
+        // enum surface as compile errors here.
+        assert!(format!("{:?}", FilterOp::Eq).contains("Eq"));
+        assert!(format!("{:?}", Aggregation::Mean).contains("Mean"));
+    }
 }

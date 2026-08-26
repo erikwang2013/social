@@ -467,4 +467,48 @@ mod tests {
         assert_eq!(pascal_case("blog_post"), "BlogPost");
         assert_eq!(pascal_case("API"), "API");
     }
+
+    #[test]
+    fn rust_type_maps_aliases() {
+        for (input, expected) in [
+            ("string", "String"),
+            ("text", "String"),
+            ("str", "String"),
+            ("int", "i64"),
+            ("integer", "i64"),
+            ("i64", "i64"),
+            ("i32", "i32"),
+            ("float", "f64"),
+            ("f64", "f64"),
+            ("bool", "bool"),
+            ("boolean", "bool"),
+        ] {
+            assert_eq!(rust_type(input).unwrap(), expected, "alias {input}");
+        }
+        assert!(rust_type("datetime").unwrap_err().contains("unknown type: datetime"));
+    }
+
+    #[test]
+    fn find_bin_name_parses_package_name() {
+        let _guard = CWD_LOCK.lock().unwrap();
+        let dir = temp_dir("find-bin");
+        let old = std::env::current_dir().unwrap();
+        std::env::set_current_dir(&dir).unwrap();
+        fs::write("Cargo.toml", "[package]\nname = \"my-server\"\nversion = \"0.1.0\"\n").unwrap();
+        assert_eq!(find_bin_name().unwrap(), "my-server");
+        fs::write("Cargo.toml", "[dependencies]\n").unwrap();
+        assert!(find_bin_name().unwrap_err().contains("could not find"));
+        std::env::set_current_dir(old).unwrap();
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn validate_name_rejects_path_separators_and_dots() {
+        for bad in ["", ".", "..", "../x", "a/b", "sub\\file", "/abs"] {
+            assert!(validate_name(bad).is_err(), "{bad:?}");
+        }
+        for good in ["app", "my-app", "my_app", "App1"] {
+            assert!(validate_name(good).is_ok(), "{good:?}");
+        }
+    }
 }

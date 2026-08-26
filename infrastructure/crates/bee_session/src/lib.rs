@@ -141,4 +141,73 @@ mod tests {
         let theme: Option<String> = loaded.get("theme").unwrap();
         assert_eq!(theme, Some("dark".to_string()));
     }
+
+    #[tokio::test]
+    async fn test_session_delete_and_is_empty() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let mut session = Session::new(cache, Duration::from_secs(3600));
+        assert!(session.is_empty());
+        session.set("k", &1_i32).unwrap();
+        assert!(!session.is_empty());
+        session.delete("k");
+        assert!(session.is_empty());
+        assert!(session.get::<i32>("k").unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_session_load_missing_errors() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let err = match Session::load(cache, "does-not-exist", Duration::from_secs(3600)).await {
+            Ok(_) => panic!("loading a missing session must fail"),
+            Err(e) => e,
+        };
+        assert!(matches!(err, SessionError::CacheError(CacheError::NotFound)));
+    }
+
+    #[tokio::test]
+    async fn test_session_refresh_picks_up_external_changes() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let mut session = Session::new(cache.clone(), Duration::from_secs(3600));
+        session.set("user", &"alice").unwrap();
+        session.save().await.unwrap();
+        let id = session.id().to_string();
+
+        // Another handle modifies the persisted session.
+        let mut other = Session::load(cache.clone(), &id, Duration::from_secs(3600)).await.unwrap();
+        other.set("user", &"bob").unwrap();
+        other.save().await.unwrap();
+
+        session.refresh().await.unwrap();
+        let user: Option<String> = session.get("user").unwrap();
+        assert_eq!(user, Some("bob".to_string()));
+    }
+
+    #[tokio::test]
+    async fn test_session_sub_second_ttl_floor_is_one_second() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let mut session = Session::new(cache.clone(), Duration::from_millis(500));
+        session.set("k", &"v").unwrap();
+        session.save().await.unwrap();
+        // A 0-second TTL would expire immediately; the floor keeps it alive.
+        let loaded = Session::load(cache, session.id(), Duration::from_secs(3600)).await.unwrap();
+        assert_eq!(loaded.get::<String>("k").unwrap(), Some("v".to_string()));
+    }
+
+    #[test]
+    fn test_session_get_wrong_type_errors() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let mut session = Session::new(cache, Duration::from_secs(3600));
+        session.set("num", &"not-a-number").unwrap();
+        let err = session.get::<i32>("num").unwrap_err();
+        assert!(matches!(err, SessionError::DeserializeError(_)));
+    }
+
+    #[test]
+    fn test_session_ids_are_unique() {
+        let cache: Arc<dyn Cache> = Arc::new(MemoryCache::new());
+        let a = Session::new(cache.clone(), Duration::from_secs(3600));
+        let b = Session::new(cache, Duration::from_secs(3600));
+        assert_ne!(a.id(), b.id());
+        assert_eq!(a.id().len(), 36); // UUID v4
+    }
 }

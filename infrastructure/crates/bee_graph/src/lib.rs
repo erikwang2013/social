@@ -399,4 +399,157 @@ mod tests {
         assert!(res.columns.is_empty());
         assert!(res.rows.is_empty());
     }
+
+    /// Build a tiny chain: a -[KNOWS]-> b -[KNOWS]-> c, plus a LIKES edge a -> c.
+    async fn chain_graph() -> StubGraphDB {
+        let db = StubGraphDB::new();
+        for id in ["a", "b", "c"] {
+            db.add_vertex(Vertex {
+                id: id.into(),
+                label: "N".into(),
+                properties: Properties::new(),
+            })
+            .await
+            .unwrap();
+        }
+        for (from, to, label) in [("a", "b", "KNOWS"), ("b", "c", "KNOWS"), ("a", "c", "LIKES")] {
+            db.add_edge(Edge {
+                id: String::new(),
+                label: label.into(),
+                from: from.into(),
+                to: to.into(),
+                properties: Properties::new(),
+            })
+            .await
+            .unwrap();
+        }
+        db
+    }
+
+    fn traverse(start: &str, labels: Vec<&str>, max_depth: u32, direction: TraversalDirection) -> Traversal {
+        Traversal {
+            start: start.into(),
+            edge_labels: labels.into_iter().map(String::from).collect(),
+            max_depth,
+            direction,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_traverse_outgoing_chain() {
+        let db = chain_graph().await;
+        let paths =
+            db.traverse(traverse("a", vec![], 2, TraversalDirection::Outgoing)).await.unwrap();
+        // a->b (depth1), a->c (depth1), a->b->c (depth2)
+        assert_eq!(paths.len(), 3);
+    }
+
+    #[tokio::test]
+    async fn test_traverse_incoming_follows_reverse_edges() {
+        let db = chain_graph().await;
+        let paths =
+            db.traverse(traverse("c", vec![], 1, TraversalDirection::Incoming)).await.unwrap();
+        // Only b -> c and a -> c are incoming to c (LIKES has no other endpoint here).
+        assert_eq!(paths.len(), 2);
+        let froms: Vec<&str> = paths.iter().map(|p| p.edges[0].from.as_str()).collect();
+        assert!(froms.contains(&"b"));
+        assert!(froms.contains(&"a"));
+    }
+
+    #[tokio::test]
+    async fn test_traverse_both_directions() {
+        let db = chain_graph().await;
+        let paths = db.traverse(traverse("b", vec![], 1, TraversalDirection::Both)).await.unwrap();
+        // b -> c (KNOWS), a -> b (KNOWS)
+        assert_eq!(paths.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_traverse_filters_by_edge_label() {
+        let db = chain_graph().await;
+        let paths =
+            db.traverse(traverse("a", vec!["LIKES"], 1, TraversalDirection::Outgoing)).await.unwrap();
+        assert_eq!(paths.len(), 1);
+        assert_eq!(paths[0].edges[0].label, "LIKES");
+        assert_eq!(paths[0].vertices[1].id, "c");
+    }
+
+    #[tokio::test]
+    async fn test_traverse_max_depth_zero_returns_no_paths() {
+        let db = chain_graph().await;
+        let paths = db.traverse(traverse("a", vec![], 0, TraversalDirection::Outgoing)).await.unwrap();
+        assert!(paths.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_traverse_from_missing_vertex_errors() {
+        let db = chain_graph().await;
+        let err = db.traverse(traverse("ghost", vec![], 1, TraversalDirection::Outgoing)).await.unwrap_err();
+        assert!(matches!(err, GraphError::VertexNotFound(_)));
+    }
+
+    #[tokio::test]
+    async fn test_add_edge_with_missing_endpoint_errors() {
+        let db = StubGraphDB::new();
+        db.add_vertex(Vertex { id: "a".into(), label: "N".into(), properties: Properties::new() })
+            .await
+            .unwrap();
+        let err = db
+            .add_edge(Edge {
+                id: String::new(),
+                label: "L".into(),
+                from: "a".into(),
+                to: "ghost".into(),
+                properties: Properties::new(),
+            })
+            .await
+            .unwrap_err();
+        assert!(matches!(err, GraphError::VertexNotFound(_)));
+    }
+
+    #[tokio::test]
+    async fn test_update_missing_vertex_errors() {
+        let db = StubGraphDB::new();
+        let err = db.update_vertex(&"ghost".into(), Properties::new()).await.unwrap_err();
+        assert!(matches!(err, GraphError::VertexNotFound(_)));
+    }
+
+    #[tokio::test]
+    async fn test_delete_vertex_removes_incident_edges() {
+        let db = chain_graph().await;
+        db.delete_vertex(&"a".into()).await.unwrap();
+        // b's remaining outgoing edge (b -> c) must be intact, and the
+        // a-related edges must be gone: traverse from b with depth 2.
+        let paths =
+            db.traverse(traverse("b", vec![], 2, TraversalDirection::Outgoing)).await.unwrap();
+        let only: Vec<String> =
+            paths.iter().map(|p| p.edges[0].from.clone()).collect();
+        assert!(only.iter().all(|f| f == "b"), "no edge may reference deleted vertex a: {only:?}");
+    }
+
+    #[test]
+    fn test_types_serde_roundtrip() {
+        let v = Vertex {
+            id: "v1".into(),
+            label: "Person".into(),
+            properties: {
+                let mut m = Properties::new();
+                m.insert("age".into(), serde_json::json!(30));
+                m
+            },
+        };
+        let back: Vertex = serde_json::from_str(&serde_json::to_string(&v).unwrap()).unwrap();
+        assert_eq!(back.id, "v1");
+        assert_eq!(back.properties["age"], 30);
+
+        let t = Traversal {
+            start: "a".into(),
+            edge_labels: vec!["KNOWS".into()],
+            max_depth: 3,
+            direction: TraversalDirection::Both,
+        };
+        let back: Traversal = serde_json::from_str(&serde_json::to_string(&t).unwrap()).unwrap();
+        assert_eq!(back.max_depth, 3);
+        assert!(matches!(back.direction, TraversalDirection::Both));
+    }
 }

@@ -324,4 +324,76 @@ mod tests {
             .unwrap();
         assert_eq!(res.indexed, 3);
     }
+
+    #[tokio::test]
+    async fn test_delete_index_removes_docs() {
+        let engine = MemoryEngine::new();
+        engine.create_index("tmp", None).await.unwrap();
+        engine.index("tmp", "1".into(), serde_json::json!({"a": 1})).await.unwrap();
+        engine.delete_index("tmp").await.unwrap();
+        let result = engine.search("tmp", serde_json::json!({"match_all": {}})).await.unwrap();
+        assert_eq!(result.total, 0);
+    }
+
+    #[tokio::test]
+    async fn test_search_missing_index_returns_zero() {
+        let engine = MemoryEngine::new();
+        let result = engine.search("ghost", serde_json::json!({"match_all": {}})).await.unwrap();
+        assert_eq!(result.total, 0);
+        assert!(result.hits.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_search_matches_document_content() {
+        let engine = MemoryEngine::new();
+        engine.create_index("posts", None).await.unwrap();
+        engine.index("posts", "1".into(), serde_json::json!({"title": "hello world"})).await.unwrap();
+        engine.index("posts", "2".into(), serde_json::json!({"title": "goodbye"})).await.unwrap();
+        let result = engine.search("posts", serde_json::json!({"query": "hello"})).await.unwrap();
+        assert_eq!(result.total, 1);
+        assert_eq!(result.hits[0].id, "1");
+        assert_eq!(result.hits[0].score, 1.0);
+    }
+
+    #[tokio::test]
+    async fn test_search_empty_query_matches_all() {
+        let engine = MemoryEngine::new();
+        engine.create_index("items", None).await.unwrap();
+        engine.index("items", "a".into(), serde_json::json!({"v": 1})).await.unwrap();
+        engine.index("items", "b".into(), serde_json::json!({"v": 2})).await.unwrap();
+        let result = engine.search("items", serde_json::json!({})).await.unwrap();
+        assert_eq!(result.total, 2);
+    }
+
+    #[tokio::test]
+    async fn test_get_missing_document_returns_none() {
+        let engine = MemoryEngine::new();
+        engine.create_index("idx", None).await.unwrap();
+        assert!(engine.get("idx", &"nope".into()).await.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn test_index_overwrites_existing_document() {
+        let engine = MemoryEngine::new();
+        engine.create_index("idx", None).await.unwrap();
+        engine.index("idx", "1".into(), serde_json::json!({"v": 1})).await.unwrap();
+        engine.index("idx", "1".into(), serde_json::json!({"v": 2})).await.unwrap();
+        let doc = engine.get("idx", &"1".into()).await.unwrap().unwrap();
+        assert_eq!(doc["v"], 2);
+    }
+
+    #[tokio::test]
+    async fn test_search_result_serde_roundtrip() {
+        let mut result = SearchResult { total: 1, hits: Vec::new(), aggregations: None };
+        result.hits.push(SearchHit {
+            id: "1".into(),
+            score: 0.9,
+            source: serde_json::json!({"t": "x"}),
+        });
+        let json = serde_json::to_string(&result).unwrap();
+        let back: SearchResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.total, 1);
+        assert_eq!(back.hits[0].id, "1");
+        assert_eq!(back.hits[0].score, 0.9);
+    }
 }

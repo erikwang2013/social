@@ -182,4 +182,54 @@ mod tests {
         store.del("x").await.unwrap();
         assert!(!store.exists("x").await.unwrap());
     }
+
+    #[tokio::test]
+    async fn test_stub_get_missing_is_none() {
+        let store = StubKvStore::new();
+        assert_eq!(store.get("missing").await.unwrap(), None);
+    }
+
+    #[tokio::test]
+    async fn test_stub_incr_starts_at_zero() {
+        let store = StubKvStore::new();
+        // A missing key is treated as 0 before incrementing (Redis semantics).
+        let val = store.incr("fresh", 7).await.unwrap();
+        assert_eq!(val, 7);
+        assert_eq!(store.incr("fresh", -3).await.unwrap(), 4);
+    }
+
+    #[tokio::test]
+    async fn test_stub_incr_non_integer_errors() {
+        let store = StubKvStore::new();
+        store.set("word", "hello").await.unwrap();
+        let err = store.incr("word", 1).await.unwrap_err();
+        assert!(matches!(err, KvError::OperationFailed(_)));
+    }
+
+    #[tokio::test]
+    async fn test_stub_expire_missing_key_errors() {
+        let store = StubKvStore::new();
+        let err = store.expire("nope", 10).await.unwrap_err();
+        assert!(matches!(err, KvError::NotFound(_)));
+    }
+
+    #[tokio::test]
+    async fn test_stub_expired_key_reads_as_missing() {
+        let store = StubKvStore::new();
+        store.set("temp", "v").await.unwrap();
+        store.expire("temp", 0).await.unwrap(); // expires immediately
+        assert_eq!(store.get("temp").await.unwrap(), None);
+        assert!(!store.exists("temp").await.unwrap());
+        let vals = store.mget(&["temp"]).await.unwrap();
+        assert_eq!(vals, vec![None]);
+    }
+
+    #[tokio::test]
+    async fn test_stub_mset_overwrites_and_keeps_order() {
+        let store = StubKvStore::new();
+        store.set("a", "old").await.unwrap();
+        store.mset(&[("a", "new"), ("b", "2")]).await.unwrap();
+        let vals = store.mget(&["b", "a"]).await.unwrap();
+        assert_eq!(vals, vec![Some("2".into()), Some("new".into())]);
+    }
 }

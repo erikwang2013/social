@@ -48,4 +48,43 @@ mod tests {
         assert_eq!(parsed["default"]["app_name"], "test-app");
         assert_eq!(parsed["database"]["host"], "localhost");
     }
+
+    #[test]
+    fn test_parse_ignores_comments_and_blank_lines() {
+        let content = "# top comment\n; semicolon comment\n\nkey = value\n[database]\n; db comment\nhost = localhost\n";
+        let parsed = IniParser::parse(content);
+        assert_eq!(parsed["default"]["key"], "value");
+        assert_eq!(parsed["database"]["host"], "localhost");
+        assert_eq!(parsed["default"].len(), 1, "comments must not become keys");
+    }
+
+    #[test]
+    fn test_parse_ignores_lines_without_equals() {
+        let content = "app_name = test-app\nthis line has no equals\n[database]\nhost=localhost\n";
+        let parsed = IniParser::parse(content);
+        assert!(!parsed["default"].contains_key("this line has no equals"));
+        assert_eq!(parsed["database"]["host"], "localhost");
+    }
+
+    #[test]
+    fn test_parse_trims_key_and_value_whitespace() {
+        let content = "  app_name   =   test-app  \n";
+        let parsed = IniParser::parse(content);
+        assert_eq!(parsed["default"]["app_name"], "test-app");
+    }
+
+    #[test]
+    fn test_parse_section_switch_does_not_leak_keys() {
+        let content = "[a]\nk1 = v1\n[b]\nk2 = v2\n";
+        let parsed = IniParser::parse(content);
+        assert_eq!(parsed["a"]["k1"], "v1");
+        assert!(!parsed["a"].contains_key("k2"), "keys after a section switch stay in the new section");
+        assert_eq!(parsed["b"]["k2"], "v2");
+    }
+
+    #[test]
+    fn test_parse_empty_content_has_only_default_section() {
+        let parsed = IniParser::parse("");
+        assert!(parsed.get("default").is_none() || parsed["default"].is_empty());
+    }
 }

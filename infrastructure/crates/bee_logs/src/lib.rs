@@ -123,7 +123,30 @@ mod tests {
     #[test]
     fn test_level_str() {
         assert_eq!(Logger::new().level_str(), "info");
+        assert_eq!(Logger::new().level(Level::TRACE).level_str(), "trace");
         assert_eq!(Logger::new().level(Level::DEBUG).level_str(), "debug");
+        assert_eq!(Logger::new().level(Level::INFO).level_str(), "info");
         assert_eq!(Logger::new().level(Level::WARN).level_str(), "warn");
+        assert_eq!(Logger::new().level(Level::ERROR).level_str(), "error");
+    }
+
+    #[test]
+    fn test_file_output_creates_log_file() {
+        init_logging();
+        let dir = std::env::temp_dir().join(format!(
+            "bee-logs-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("app.log");
+        // The file must be created (open happens before subscriber init),
+        // even though try_init() fails once a global subscriber exists.
+        let _ = Logger::new().output(Output::File(path.display().to_string())).init();
+        assert!(path.exists());
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

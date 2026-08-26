@@ -167,4 +167,77 @@ mod tests {
         let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
         assert_eq!(&body[..], b"count=42");
     }
+
+    async fn create() -> &'static str {
+        "created"
+    }
+
+    async fn update() -> &'static str {
+        "updated"
+    }
+
+    async fn remove() -> &'static str {
+        "removed"
+    }
+
+    #[tokio::test]
+    async fn post_put_delete_routes_are_registered() {
+        let app = Router::new()
+            .ns(
+                "/api",
+                |ns| ns.post("/create", create).put("/update", update).delete("/remove", remove),
+            )
+            .build();
+        for (method, uri, expected) in [
+            ("POST", "/api/create", "created"),
+            ("PUT", "/api/update", "updated"),
+            ("DELETE", "/api/remove", "removed"),
+        ] {
+            let res = app
+                .clone()
+                .oneshot(
+                    Request::builder()
+                        .method(method)
+                        .uri(uri)
+                        .body(Body::empty())
+                        .unwrap(),
+                )
+                .await
+                .unwrap();
+            assert_eq!(res.status(), StatusCode::OK, "{method} {uri}");
+            let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
+            assert_eq!(&body[..], expected.as_bytes(), "{method} {uri}");
+        }
+    }
+
+    #[tokio::test]
+    async fn unregistered_path_returns_404() {
+        let app = Router::new().ns("/api", |ns| ns.get("/hello", hello));
+        let res = app
+            .build()
+            .oneshot(Request::builder().uri("/nope").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test]
+    async fn multiple_namespaces_do_not_collide() {
+        let app = Router::new()
+            .ns("/a", |ns| ns.get("/x", hello))
+            .ns("/b", |ns| ns.get("/x", hello));
+        let res = app
+            .build()
+            .oneshot(
+                Request::builder()
+                    .uri("/b/x?name=bee")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        let body = axum::body::to_bytes(res.into_body(), 1024).await.unwrap();
+        assert_eq!(&body[..], b"hello bee");
+    }
 }

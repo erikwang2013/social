@@ -160,6 +160,22 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_incr_non_integer_errors() {
+        let cache = MemoryCache::new();
+        cache.set("word", b"hello".to_vec(), None).await.unwrap();
+        let err = cache.incr("word").await.unwrap_err();
+        assert!(matches!(err, CacheError::SerializeError(_)));
+    }
+
+    #[tokio::test]
+    async fn test_set_overwrites_value_and_ttl() {
+        let cache = MemoryCache::new();
+        cache.set("k", b"first".to_vec(), Some(1)).await.unwrap();
+        cache.set("k", b"second".to_vec(), None).await.unwrap();
+        assert_eq!(cache.get("k").await.unwrap(), Some(b"second".to_vec()));
+    }
+
+    #[tokio::test]
     async fn test_ttl_expiry() {
         let cache = MemoryCache::new();
         cache.set("ephemeral", b"data".to_vec(), Some(1)).await.unwrap();

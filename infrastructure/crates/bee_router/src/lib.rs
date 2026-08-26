@@ -358,4 +358,54 @@ mod tests {
         assert!(ctx.set_header("X-Frame-Options", "DENY").is_ok());
         assert!(ctx.set_header("X-Test", "bad\r\nInjected: 1").is_err());
     }
+
+    struct OrderRecorder {
+        events: Arc<std::sync::Mutex<Vec<&'static str>>>,
+    }
+
+    impl Filter for OrderRecorder {
+        fn before(&self, _ctx: &mut Context) -> Result<(), RouterError> {
+            self.events.lock().unwrap().push("before");
+            Ok(())
+        }
+        fn after(&self, _ctx: &mut Context) -> Result<(), RouterError> {
+            self.events.lock().unwrap().push("after");
+            Ok(())
+        }
+    }
+
+    struct OrderedController {
+        events: Arc<std::sync::Mutex<Vec<&'static str>>>,
+    }
+
+    #[async_trait]
+    impl Controller for OrderedController {
+        async fn prepare(&self, _ctx: &mut Context) -> Result<(), RouterError> {
+            self.events.lock().unwrap().push("prepare");
+            Ok(())
+        }
+        async fn handle(&self, _ctx: &mut Context) -> Result<(), RouterError> {
+            self.events.lock().unwrap().push("handle");
+            Ok(())
+        }
+        async fn finish(&self, _ctx: &mut Context) -> Result<(), RouterError> {
+            self.events.lock().unwrap().push("finish");
+            Ok(())
+        }
+    }
+
+    #[tokio::test]
+    async fn pipeline_runs_before_handle_after_finish_in_order() {
+        let events = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let mut ctx = make_context(Request::builder().body(Body::empty()).unwrap());
+        ctx.dispatch(
+            cache(),
+            Duration::from_secs(3600),
+            &[&OrderRecorder { events: events.clone() }],
+            &OrderedController { events: events.clone() },
+        )
+        .await
+        .unwrap();
+        assert_eq!(*events.lock().unwrap(), vec!["before", "prepare", "handle", "after", "finish"]);
+    }
 }
