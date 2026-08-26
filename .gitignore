@@ -65,3 +65,8 @@ apps/harmonyos/local.properties
 # DevEco IDE 本地配置
 apps/harmonyos/**/.idea/
 apps/harmonyos/**/*.iml
+
+# runtime uploads
+admin/public/upload/
+# env backups
+service/.env.api-test-bak
