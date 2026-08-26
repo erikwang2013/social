@@ -1,6 +1,6 @@
 # Platform Sosial
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + live/suara + ekonomi virtual.
 
@@ -14,23 +14,23 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 
 ## Ringkasan Fitur
 
-![Ringkasan Fitur](docs/diagrams/features.id.svg)
+![Ringkasan Fitur](diagrams/features.id.svg)
 
 ## Desain Arsitektur
 
-![Desain Arsitektur](docs/diagrams/architecture.id.svg)
+![Desain Arsitektur](diagrams/architecture.id.svg)
 
 ## Proses Bisnis Inti
 
-![Proses Bisnis Inti](docs/diagrams/core-flow.id.svg)
+![Proses Bisnis Inti](diagrams/core-flow.id.svg)
 
 ## Siklus Hidup
 
-![Siklus Hidup](docs/diagrams/lifecycle.id.svg)
+![Siklus Hidup](diagrams/lifecycle.id.svg)
 
 ## Desain Modul
 
-![Desain Modul](docs/diagrams/module-design.id.svg)
+![Desain Modul](diagrams/module-design.id.svg)
 
 ## Struktur Proyek
 
@@ -112,12 +112,12 @@ Jika proyek ini membantu Anda, pindai kode QR untuk mendukung kami, terima kasih
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **Transfer global (transfer bank)**
 
@@ -168,6 +168,6 @@ Untuk transfer mata uang lainnya, bank korespondennya adalah **BNY Mellon**:
 
 ## Dokumentasi
 
-- Desain keseluruhan: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- Desain suara M4: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- Rencana implementasi: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- Desain keseluruhan: `superpowers/specs/2026-08-16-social-platform-design.md`
+- Desain suara M4: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- Rencana implementasi: `superpowers/plans/2026-08-17-m4-voice.md`

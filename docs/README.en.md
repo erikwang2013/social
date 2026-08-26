@@ -1,6 +1,6 @@
 # Social Platform
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy.
 
@@ -14,23 +14,23 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 
 ## Feature Overview
 
-![Feature Overview](docs/diagrams/features.en.svg)
+![Feature Overview](diagrams/features.en.svg)
 
 ## Architecture
 
-![Architecture](docs/diagrams/architecture.en.svg)
+![Architecture](diagrams/architecture.en.svg)
 
 ## Core Business Flows
 
-![Core Business Flows](docs/diagrams/core-flow.en.svg)
+![Core Business Flows](diagrams/core-flow.en.svg)
 
 ## Lifecycle
 
-![Lifecycle](docs/diagrams/lifecycle.en.svg)
+![Lifecycle](diagrams/lifecycle.en.svg)
 
 ## Module Design
 
-![Module Design](docs/diagrams/module-design.en.svg)
+![Module Design](diagrams/module-design.en.svg)
 
 ## Project Structure
 
@@ -112,12 +112,12 @@ If this project helps you, scan the QR code to support us, thank you!
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **Global Transfer (Bank Transfer)**
 
@@ -168,6 +168,6 @@ The correspondent bank for remittances in other currencies is **BNY Mellon**:
 
 ## Documentation
 
-- Overall design: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4 voice design: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- Implementation plan: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- Overall design: `superpowers/specs/2026-08-16-social-platform-design.md`
+- M4 voice design: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- Implementation plan: `superpowers/plans/2026-08-17-m4-voice.md`

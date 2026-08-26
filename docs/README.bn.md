@@ -1,6 +1,6 @@
 # সোশ্যাল প্ল্যাটফর্ম
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 বহুভাষিক সোশ্যাল প্ল্যাটফর্ম মনোরিপো: টেক্সট/ইমেজ কমিউনিটি + ইনস্ট্যান্ট মেসেজিং + লাইভ/ভয়েস + ভার্চুয়াল ইকোনমি।
 
@@ -14,23 +14,23 @@
 
 ## ফিচার ওভারভিউ
 
-![ফিচার ওভারভিউ](docs/diagrams/features.bn.svg)
+![ফিচার ওভারভিউ](diagrams/features.bn.svg)
 
 ## আর্কিটেকচার ডিজাইন
 
-![আর্কিটেকচার ডিজাইন](docs/diagrams/architecture.bn.svg)
+![আর্কিটেকচার ডিজাইন](diagrams/architecture.bn.svg)
 
 ## মূল বিজনেস প্রক্রিয়া
 
-![মূল বিজনেস প্রক্রিয়া](docs/diagrams/core-flow.bn.svg)
+![মূল বিজনেস প্রক্রিয়া](diagrams/core-flow.bn.svg)
 
 ## লাইফসাইকেল
 
-![লাইফসাইকেল](docs/diagrams/lifecycle.bn.svg)
+![লাইফসাইকেল](diagrams/lifecycle.bn.svg)
 
 ## মডিউল ডিজাইন
 
-![মডিউল ডিজাইন](docs/diagrams/module-design.bn.svg)
+![মডিউল ডিজাইন](diagrams/module-design.bn.svg)
 
 ## প্রজেক্ট স্ট্রাকচার
 
@@ -112,12 +112,12 @@ npm run smoke                         # SFU /signal প্রোটোকল স
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **গ্লোবাল ব্যাংক ট্রান্সফার**
 
@@ -168,6 +168,6 @@ npm run smoke                         # SFU /signal প্রোটোকল স
 
 ## ডকুমেন্টেশন
 
-- সামগ্রিক ডিজাইন: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4 ভয়েস ডিজাইন: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- বাস্তবায়ন পরিকল্পনা: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- সামগ্রিক ডিজাইন: `superpowers/specs/2026-08-16-social-platform-design.md`
+- M4 ভয়েস ডিজাইন: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- বাস্তবায়ন পরিকল্পনা: `superpowers/plans/2026-08-17-m4-voice.md`

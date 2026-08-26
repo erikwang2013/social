@@ -1,6 +1,6 @@
 # सोशल प्लेटफ़ॉर्म
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 बहुभाषी सोशल प्लेटफ़ॉर्म मोनोरिपो: टेक्स्ट/इमेज कम्युनिटी + इंस्टेंट मैसेजिंग + लाइव/वॉइस + वर्चुअल इकोनॉमी।
 
@@ -14,23 +14,23 @@
 
 ## फ़ीचर अवलोकन
 
-![फ़ीचर अवलोकन](docs/diagrams/features.hi.svg)
+![फ़ीचर अवलोकन](diagrams/features.hi.svg)
 
 ## आर्किटेक्चर डिज़ाइन
 
-![आर्किटेक्चर डिज़ाइन](docs/diagrams/architecture.hi.svg)
+![आर्किटेक्चर डिज़ाइन](diagrams/architecture.hi.svg)
 
 ## मुख्य बिज़नेस प्रक्रियाएँ
 
-![मुख्य बिज़नेस प्रक्रियाएँ](docs/diagrams/core-flow.hi.svg)
+![मुख्य बिज़नेस प्रक्रियाएँ](diagrams/core-flow.hi.svg)
 
 ## लाइफ़साइकल
 
-![लाइफ़साइकल](docs/diagrams/lifecycle.hi.svg)
+![लाइफ़साइकल](diagrams/lifecycle.hi.svg)
 
 ## मॉड्यूल डिज़ाइन
 
-![मॉड्यूल डिज़ाइन](docs/diagrams/module-design.hi.svg)
+![मॉड्यूल डिज़ाइन](diagrams/module-design.hi.svg)
 
 ## प्रोजेक्ट संरचना
 
@@ -112,12 +112,12 @@ npm run smoke                         # SFU /signal प्रोटोकॉल 
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **ग्लोबल बैंक ट्रांसफर**
 
@@ -168,6 +168,6 @@ npm run smoke                         # SFU /signal प्रोटोकॉल 
 
 ## दस्तावेज़
 
-- समग्र डिज़ाइन: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4 वॉइस डिज़ाइन: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- कार्यान्वयन योजना: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- समग्र डिज़ाइन: `superpowers/specs/2026-08-16-social-platform-design.md`
+- M4 वॉइस डिज़ाइन: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- कार्यान्वयन योजना: `superpowers/plans/2026-08-17-m4-voice.md`

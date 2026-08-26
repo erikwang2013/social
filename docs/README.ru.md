@@ -1,6 +1,6 @@
 # Социальная платформа
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 Монорепозиторий многоязычной социальной платформы: текстово-графическое сообщество + мгновенные сообщения + стримы/голос + виртуальная экономика.
 
@@ -14,23 +14,23 @@
 
 ## Обзор функций
 
-![Обзор функций](docs/diagrams/features.ru.svg)
+![Обзор функций](diagrams/features.ru.svg)
 
 ## Архитектура
 
-![Архитектура](docs/diagrams/architecture.ru.svg)
+![Архитектура](diagrams/architecture.ru.svg)
 
 ## Основные бизнес-процессы
 
-![Основные бизнес-процессы](docs/diagrams/core-flow.ru.svg)
+![Основные бизнес-процессы](diagrams/core-flow.ru.svg)
 
 ## Жизненный цикл
 
-![Жизненный цикл](docs/diagrams/lifecycle.ru.svg)
+![Жизненный цикл](diagrams/lifecycle.ru.svg)
 
 ## Дизайн модулей
 
-![Дизайн модулей](docs/diagrams/module-design.ru.svg)
+![Дизайн модулей](diagrams/module-design.ru.svg)
 
 ## Структура проекта
 
@@ -112,12 +112,12 @@ npm run smoke                         # Смоук-тест протокола S
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **Глобальный перевод (банковский перевод)**
 
@@ -168,6 +168,6 @@ npm run smoke                         # Смоук-тест протокола S
 
 ## Документация
 
-- Общий дизайн: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- Голосовой дизайн M4: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- План реализации: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- Общий дизайн: `superpowers/specs/2026-08-16-social-platform-design.md`
+- Голосовой дизайн M4: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- План реализации: `superpowers/plans/2026-08-17-m4-voice.md`

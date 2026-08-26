@@ -1,6 +1,6 @@
 # Plateforme Sociale
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 Monorepo de plateforme sociale multilingue : communauté texte/image + messagerie instantanée + live/voix + économie virtuelle.
 
@@ -14,23 +14,23 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 
 ## Aperçu des fonctionnalités
 
-![Aperçu des fonctionnalités](docs/diagrams/features.fr.svg)
+![Aperçu des fonctionnalités](diagrams/features.fr.svg)
 
 ## Architecture
 
-![Architecture](docs/diagrams/architecture.fr.svg)
+![Architecture](diagrams/architecture.fr.svg)
 
 ## Processus métier essentiels
 
-![Processus métier essentiels](docs/diagrams/core-flow.fr.svg)
+![Processus métier essentiels](diagrams/core-flow.fr.svg)
 
 ## Cycle de vie
 
-![Cycle de vie](docs/diagrams/lifecycle.fr.svg)
+![Cycle de vie](diagrams/lifecycle.fr.svg)
 
 ## Conception des modules
 
-![Conception des modules](docs/diagrams/module-design.fr.svg)
+![Conception des modules](diagrams/module-design.fr.svg)
 
 ## Structure du projet
 
@@ -112,12 +112,12 @@ Si ce projet vous aide, scannez le code QR pour nous soutenir, merci !
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **Virement international (virement bancaire)**
 
@@ -168,6 +168,6 @@ Pour les virements dans d'autres devises, la banque correspondante est **BNY Mel
 
 ## Documentation
 
-- Conception générale : `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- Conception voix M4 : `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- Plan d'implémentation : `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- Conception générale : `superpowers/specs/2026-08-16-social-platform-design.md`
+- Conception voix M4 : `superpowers/specs/2026-08-17-m4-voice-design.md`
+- Plan d'implémentation : `superpowers/plans/2026-08-17-m4-voice.md`

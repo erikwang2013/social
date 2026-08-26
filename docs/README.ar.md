@@ -1,6 +1,6 @@
 # منصة اجتماعية
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 مستودع واحد (monorepo) لمنصة اجتماعية متعددة اللغات: مجتمع نصوص/صور + مراسلة فورية + بث مباشر/صوت + اقتصاد افتراضي.
 
@@ -14,23 +14,23 @@
 
 ## نظرة عامة على الميزات
 
-![نظرة عامة على الميزات](docs/diagrams/features.ar.svg)
+![نظرة عامة على الميزات](diagrams/features.ar.svg)
 
 ## تصميم البنية
 
-![تصميم البنية](docs/diagrams/architecture.ar.svg)
+![تصميم البنية](diagrams/architecture.ar.svg)
 
 ## العمليات الأساسية
 
-![العمليات الأساسية](docs/diagrams/core-flow.ar.svg)
+![العمليات الأساسية](diagrams/core-flow.ar.svg)
 
 ## دورة الحياة
 
-![دورة الحياة](docs/diagrams/lifecycle.ar.svg)
+![دورة الحياة](diagrams/lifecycle.ar.svg)
 
 ## تصميم الوحدات
 
-![تصميم الوحدات](docs/diagrams/module-design.ar.svg)
+![تصميم الوحدات](diagrams/module-design.ar.svg)
 
 ## هيكل المشروع
 
@@ -112,12 +112,12 @@ npm run smoke                         # اختبار تدخيني لبروتوك
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **تحويل مصرفي عالمي**
 
@@ -168,6 +168,6 @@ npm run smoke                         # اختبار تدخيني لبروتوك
 
 ## التوثيق
 
-- التصميم العام: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- تصميم الصوت M4: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- خطة التنفيذ: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- التصميم العام: `superpowers/specs/2026-08-16-social-platform-design.md`
+- تصميم الصوت M4: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- خطة التنفيذ: `superpowers/plans/2026-08-17-m4-voice.md`

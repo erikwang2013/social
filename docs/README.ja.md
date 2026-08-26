@@ -1,6 +1,6 @@
 # ソーシャルプラットフォーム
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 多言語ソーシャルプラットフォームのモノレポ：テキスト/画像コミュニティ + インスタントメッセージ + ライブ/ボイス + 仮想経済。
 
@@ -14,23 +14,23 @@
 
 ## 機能概要
 
-![機能概要](docs/diagrams/features.ja.svg)
+![機能概要](diagrams/features.ja.svg)
 
 ## アーキテクチャ設計
 
-![アーキテクチャ設計](docs/diagrams/architecture.ja.svg)
+![アーキテクチャ設計](diagrams/architecture.ja.svg)
 
 ## ビジネスコアフロー
 
-![ビジネスコアフロー](docs/diagrams/core-flow.ja.svg)
+![ビジネスコアフロー](diagrams/core-flow.ja.svg)
 
 ## ライフサイクル
 
-![ライフサイクル](docs/diagrams/lifecycle.ja.svg)
+![ライフサイクル](diagrams/lifecycle.ja.svg)
 
 ## 機能設計
 
-![機能設計](docs/diagrams/module-design.ja.svg)
+![機能設計](diagrams/module-design.ja.svg)
 
 ## プロジェクト構成
 
@@ -112,12 +112,12 @@ npm run smoke                         # SFU /signal プロトコルのスモー�
 
 **微信支付**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="微信支付">
+<img src="weixinpay.png" width="160" height="175" alt="微信支付">
 
 
 **支付宝**
 
-<img src="docs/alipay.png" width="160" height="175" alt="支付宝">
+<img src="alipay.png" width="160" height="175" alt="支付宝">
 
 **国際送金（銀行振込）**
 
@@ -168,6 +168,6 @@ npm run smoke                         # SFU /signal プロトコルのスモー�
 
 ## ドキュメント
 
-- 全体設計：`docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4音声設計：`docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- 実装計画：`docs/superpowers/plans/2026-08-17-m4-voice.md`
+- 全体設計：`superpowers/specs/2026-08-16-social-platform-design.md`
+- M4音声設計：`superpowers/specs/2026-08-17-m4-voice-design.md`
+- 実装計画：`superpowers/plans/2026-08-17-m4-voice.md`

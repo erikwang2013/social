@@ -1,6 +1,6 @@
 # 소셜 플랫폼
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 다국어 소셜 플랫폼 모노레포: 텍스트/이미지 커뮤니티 + 인스턴트 메시징 + 라이브/음성 + 가상 경제.
 
@@ -14,23 +14,23 @@
 
 ## 기능 개요
 
-![기능 개요](docs/diagrams/features.ko.svg)
+![기능 개요](diagrams/features.ko.svg)
 
 ## 아키텍처 설계
 
-![아키텍처 설계](docs/diagrams/architecture.ko.svg)
+![아키텍처 설계](diagrams/architecture.ko.svg)
 
 ## 핵심 비즈니스 프로세스
 
-![핵심 비즈니스 프로세스](docs/diagrams/core-flow.ko.svg)
+![핵심 비즈니스 프로세스](diagrams/core-flow.ko.svg)
 
 ## 라이프사이클
 
-![라이프사이클](docs/diagrams/lifecycle.ko.svg)
+![라이프사이클](diagrams/lifecycle.ko.svg)
 
 ## 기능 설계
 
-![기능 설계](docs/diagrams/module-design.ko.svg)
+![기능 설계](diagrams/module-design.ko.svg)
 
 ## 프로젝트 구조
 
@@ -112,12 +112,12 @@ npm run smoke                         # SFU /signal 프로토콜 스모크(Docke
 
 **위챗페이**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="위챗페이">
+<img src="weixinpay.png" width="160" height="175" alt="위챗페이">
 
 
 **알리페이**
 
-<img src="docs/alipay.png" width="160" height="175" alt="알리페이">
+<img src="alipay.png" width="160" height="175" alt="알리페이">
 
 **글로벌 송금 (은행 송금)**
 
@@ -168,6 +168,6 @@ npm run smoke                         # SFU /signal 프로토콜 스모크(Docke
 
 ## 문서
 
-- 전체 설계: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4 음성 설계: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- 구현 계획: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- 전체 설계: `superpowers/specs/2026-08-16-social-platform-design.md`
+- M4 음성 설계: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- 구현 계획: `superpowers/plans/2026-08-17-m4-voice.md`

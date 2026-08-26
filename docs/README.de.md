@@ -1,6 +1,6 @@
 # Soziale Plattform
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
 Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Messaging + Live-/Sprachfunktionen + virtuelle Wirtschaft.
 
@@ -14,23 +14,23 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 
 ## Funktionsübersicht
 
-![Funktionsübersicht](docs/diagrams/features.de.svg)
+![Funktionsübersicht](diagrams/features.de.svg)
 
 ## Architektur
 
-![Architektur](docs/diagrams/architecture.de.svg)
+![Architektur](diagrams/architecture.de.svg)
 
 ## Kern-Geschäftsprozesse
 
-![Kern-Geschäftsprozesse](docs/diagrams/core-flow.de.svg)
+![Kern-Geschäftsprozesse](diagrams/core-flow.de.svg)
 
 ## Lebenszyklus
 
-![Lebenszyklus](docs/diagrams/lifecycle.de.svg)
+![Lebenszyklus](diagrams/lifecycle.de.svg)
 
 ## Funktionsdesign
 
-![Funktionsdesign](docs/diagrams/module-design.de.svg)
+![Funktionsdesign](diagrams/module-design.de.svg)
 
 ## Projektstruktur
 
@@ -112,12 +112,12 @@ Wenn dieses Projekt Ihnen hilft, scannen Sie den QR-Code und unterstützen Sie u
 
 **WeChat Pay**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
 
 
 **Alipay**
 
-<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+<img src="alipay.png" width="160" height="175" alt="Alipay">
 
 **Überweisung (Banküberweisung)**
 
@@ -168,6 +168,6 @@ Bei Überweisungen in anderen Währungen ist die Korrespondenzbank **BNY Mellon*
 
 ## Dokumentation
 
-- Gesamtdesign: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
-- M4-Sprachdesign: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
-- Umsetzungsplan: `docs/superpowers/plans/2026-08-17-m4-voice.md`
+- Gesamtdesign: `superpowers/specs/2026-08-16-social-platform-design.md`
+- M4-Sprachdesign: `superpowers/specs/2026-08-17-m4-voice-design.md`
+- Umsetzungsplan: `superpowers/plans/2026-08-17-m4-voice.md`
