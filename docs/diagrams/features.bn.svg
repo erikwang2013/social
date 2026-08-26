@@ -1,0 +1,67 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    .root { fill: #1e3a8a; stroke: #1e3a8a; rx: 10 }
+    .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; rx: 8 }
+    .fn   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
+    .plan { fill: #fffbeb; stroke: #d97706; stroke-width: 1.2; rx: 6; stroke-dasharray: 5 3 }
+    .t    { font-size: 13.5px; fill: #0f172a; text-anchor: middle }
+    .tr   { font-size: 16px; font-weight: 700; fill: #ffffff; text-anchor: middle }
+    .tm   { font-size: 14px; font-weight: 700; fill: #1e3a8a; text-anchor: middle }
+    .ts   { font-size: 11px; fill: #d97706; text-anchor: middle }
+    .edge { stroke: #94a3b8; stroke-width: 1.4; fill: none; marker-end: url(#arr) }
+  </style>
+
+  <rect class="root" x="380" y="16" width="200" height="44"/>
+  <text class="tr" x="480" y="44">সোশ্যাল প্ল্যাটফর্ম</text>
+
+  <!-- 账户与鉴权 -->
+  <rect class="mod" x="30" y="96" width="200" height="40"/>
+  <text class="tm" x="130" y="121">অ্যাকাউন্ট ও প্রমাণীকরণ</text>
+  <path class="edge" d="M 480 60 L 130 96"/>
+  <rect class="fn" x="30" y="148" width="200" height="26"/><text class="t" x="130" y="166">নিবন্ধন / লগইন / রিফ্রেশ (JWT)</text>
+  <rect class="fn" x="30" y="180" width="200" height="26"/><text class="t" x="130" y="198">X-Api-Version সংস্করণ API</text>
+
+  <!-- 图文社区 -->
+  <rect class="mod" x="262" y="96" width="200" height="40"/>
+  <text class="tm" x="362" y="121">পোস্ট কমিউনিটি</text>
+  <path class="edge" d="M 480 60 L 362 96"/>
+  <rect class="fn" x="262" y="148" width="200" height="26"/><text class="t" x="362" y="166">পোস্ট / টাইমলাইন / বিবরণ</text>
+  <rect class="fn" x="262" y="180" width="200" height="26"/><text class="t" x="362" y="198">লাইক / মন্তব্য / ফলো</text>
+  <rect class="fn" x="262" y="212" width="200" height="26"/><text class="t" x="362" y="230">অনুসন্ধান / বিজ্ঞপ্তি (অপঠিত)</text>
+
+  <!-- IM -->
+  <rect class="mod" x="494" y="96" width="200" height="40"/>
+  <text class="tm" x="594" y="121">ইনস্ট্যান্ট মেসেজিং IM</text>
+  <path class="edge" d="M 480 60 L 594 96"/>
+  <rect class="fn" x="494" y="148" width="200" height="26"/><text class="t" x="594" y="166">1v1 চ্যাট / টেক্সট</text>
+  <rect class="fn" x="494" y="180" width="200" height="26"/><text class="t" x="594" y="198">ভয়েস বার্তা (আপলোড / প্লে)</text>
+  <rect class="fn" x="494" y="212" width="200" height="26"/><text class="t" x="594" y="230">WS পুশ / ডিভাইস টোকেন</text>
+
+  <!-- 语音通话 -->
+  <rect class="mod" x="726" y="96" width="200" height="40"/>
+  <text class="tm" x="826" y="121">1v1 ভয়েস কল</text>
+  <path class="edge" d="M 480 60 L 826 96"/>
+  <rect class="fn" x="726" y="148" width="200" height="26"/><text class="t" x="826" y="166">আমন্ত্রণ / উত্তর / বাতিল / কাটা</text>
+  <rect class="fn" x="726" y="180" width="200" height="26"/><text class="t" x="826" y="198">৩০ সেকেন্ডে স্বয়ংক্রিয় ব্যর্থতা</text>
+  <rect class="fn" x="726" y="212" width="200" height="26"/><text class="t" x="826" y="230">ব্যস্ত এক্সক্লুসিভ</text>
+
+  <!-- 语聊房 -->
+  <rect class="mod" x="130" y="290" width="320" height="40"/>
+  <text class="tm" x="290" y="315">ভয়েস চ্যাট রুম</text>
+  <path class="edge" d="M 480 60 L 290 290"/>
+  <rect class="fn" x="130" y="342" width="320" height="26"/><text class="t" x="290" y="360">তৈরি / যোগ / ছাড়া / বিলুপ্ত · ৮ আসন</text>
+  <rect class="fn" x="130" y="374" width="320" height="26"/><text class="t" x="290" y="392">mediasoup SFU · ৫ মিনিট রিসাইকেল</text>
+
+  <!-- 规划中 -->
+  <rect class="plan" x="510" y="290" width="320" height="40"/>
+  <text class="tm" x="670" y="315">লাইভ / ভার্চুয়াল অর্থনীতি (M5)</text>
+  <path class="edge" d="M 480 60 L 670 290"/>
+  <rect class="plan" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">লাইভ স্ট্রিম (SRS)</text>
+  <rect class="plan" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">কয়েন / টিপস / উপহার</text>
+</svg>

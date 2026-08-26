@@ -1,0 +1,68 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    .lane { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 10 }
+    .b1   { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.4; rx: 8 }
+    .b2   { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.4; rx: 8 }
+    .b3   { fill: #fffbeb; stroke: #d97706; stroke-width: 1.4; rx: 8 }
+    .lbl  { font-size: 14px; font-weight: 700; fill: #334155 }
+    .t    { font-size: 12.5px; fill: #0f172a; text-anchor: middle }
+    .ts   { font-size: 10.5px; fill: #64748b; text-anchor: middle }
+    .edge { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arr) }
+  </style>
+
+  <text class="lbl" x="24" y="36">ক্লায়েন্ট (Android / iOS / HarmonyOS)</text>
+  <rect class="lane" x="20" y="48" width="920" height="118"/>
+  <rect class="b1" x="44" y="76" width="180" height="64"/>
+  <text class="t" x="134" y="100">নিবন্ধন / লগইন</text>
+  <text class="ts" x="134" y="118">JWT + X-Api-Version বহন</text>
+  <rect class="b1" x="272" y="76" width="180" height="64"/>
+  <text class="t" x="362" y="100">পোস্ট / ইন্টারঅ্যাক্ট</text>
+  <text class="ts" x="362" y="118">পোস্ট · লাইক · মন্তব্য · ফলো</text>
+  <rect class="b1" x="500" y="76" width="180" height="64"/>
+  <text class="t" x="590" y="100">IM বার্তা</text>
+  <text class="ts" x="590" y="118">টেক্সট / ভয়েস (WS ফ্রেম)</text>
+  <rect class="b1" x="728" y="76" width="180" height="64"/>
+  <text class="t" x="818" y="100">ভয়েস কল / ভয়েস রুম</text>
+  <text class="ts" x="818" y="118">সিগন্যালিং + RTP মিডিয়া</text>
+
+  <text class="lbl" x="24" y="206">service（webman）</text>
+  <rect class="lane" x="20" y="218" width="920" height="118"/>
+  <rect class="b2" x="44" y="246" width="180" height="64"/>
+  <text class="t" x="134" y="270">প্রমাণীকরণ মিডলওয়্যার</text>
+  <text class="ts" x="134" y="288">JWT যাচাই · রুটের আগে</text>
+  <rect class="b2" x="272" y="246" width="180" height="64"/>
+  <text class="t" x="362" y="270">REST ব্যবসা</text>
+  <text class="ts" x="362" y="288">Post / Follow / Notify</text>
+  <rect class="b2" x="500" y="246" width="180" height="64"/>
+  <text class="t" x="590" y="270">WsServer ফ্রেম প্রসেসিং</text>
+  <text class="ts" x="590" y="288">Envelope ডিকোড · Deliverer</text>
+  <rect class="b2" x="728" y="246" width="180" height="64"/>
+  <text class="t" x="818" y="270">CallCenter / RoomCenter</text>
+  <text class="ts" x="818" y="288">কল স্টেট · রুম · SFU</text>
+
+  <text class="lbl" x="24" y="376">ডেটা / মিডিয়া</text>
+  <rect class="lane" x="20" y="388" width="920" height="72"/>
+  <rect class="b3" x="44" y="402" width="180" height="44"/>
+  <text class="t" x="134" y="429">MySQL ব্যবহারকারী / পোস্ট</text>
+  <rect class="b3" x="272" y="402" width="180" height="44"/>
+  <text class="t" x="362" y="429">Redis সেশন / বিজ্ঞপ্তি</text>
+  <rect class="b3" x="500" y="402" width="180" height="44"/>
+  <text class="t" x="590" y="429">Redis IM সূচক / অনলাইন</text>
+  <rect class="b3" x="728" y="402" width="180" height="44"/>
+  <text class="t" x="818" y="429">SFU মিডিয়া / ভয়েস স্টোরেজ</text>
+
+  <path class="edge" d="M 134 140 L 134 246"/>
+  <path class="edge" d="M 362 140 L 362 246"/>
+  <path class="edge" d="M 590 140 L 590 246"/>
+  <path class="edge" d="M 818 140 L 818 246"/>
+  <path class="edge" d="M 134 310 L 134 402"/>
+  <path class="edge" d="M 362 310 L 362 402"/>
+  <path class="edge" d="M 590 310 L 590 402"/>
+  <path class="edge" d="M 818 310 L 818 402"/>
+</svg>

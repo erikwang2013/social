@@ -1,0 +1,588 @@
+{
+    "timestamp": "2026-08-27 03:42:46",
+    "total": 116,
+    "pass": 113,
+    "fail": 3,
+    "results": [
+        {
+            "name": "S01 健康检查 \/health",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S02 注册成功返回 token",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S03 重复邮箱注册 409",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S04 非法邮箱 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S05 密码过短 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S06 注册 u2\/u3",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S06b 获取 u2\/u3 ID",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S07 错误密码登录 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S08 不存在用户登录 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S09 无效刷新令牌 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S10 刷新令牌成功",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S11 未认证访问 \/auth\/me 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S12 当前用户信息",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S13 查看个人资料",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S14 更新个人资料",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S15 非法性别 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S16 非法生日 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S17 关注自己 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S18 关注不存在用户 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S19 u2 关注 u1",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S20 u1 粉丝列表包含 u2",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S21 u1 关注 u2",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S22 u1 关注列表包含 u2",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S23 关注关系查询",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S24 取消关注",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S25 空内容发动态 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S26 u1 发布动态",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S27 u2 发布动态",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S28 时间线",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S29 动态详情",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S30 动态详情 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S31 u1 点赞 u2 动态",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S32 取消点赞",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S33 点赞不存在动态 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S34 评论列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S35 u2 发表评论",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S36 空评论 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S37 评论不存在动态 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S38 u2 通知列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S39 未读通知数",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S40 标记单条已读",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S41 全部已读",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S42 搜索缺关键词 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S43 搜索用户",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S44 搜索动态(ES 可用则命中\/不可用则 503 降级)",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S44b 搜索动态 ES 降级说明",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S45 会话列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S46 私聊自己 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S47 创建私聊会话",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S48 群聊缺群名 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S49 创建群聊",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S50 非法会话类型 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S51 会话消息历史",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S52 非成员读消息 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S53 上报推送令牌",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S54 空推送令牌 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S55 上传语音",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S56 语音文件访问",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S57 语音路径穿越拦截",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S57b 非法文件名 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S58 通话历史",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S59 空房名 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S60 u1 创建语聊房",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S61 开放房间列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S62 房间详情",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S63 房间详情 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S64 非房主关房 403",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S65 房主关房",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S66 关不存在房间 404",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S67 登出",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "S68 登出后旧 token 失效 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A01 健康检查",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A02 Prometheus 指标",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A03 security.txt",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A04 OpenAPI 文档",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A05 生成验证码",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A06 错误验证码 422",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A07 缺验证码参数 422",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A08 验证码答案可获取(click)",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A09 验证码校验通过",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A10 错误密码 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A11 管理端登录",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A12 刷新令牌",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A13 无效 token 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A14 未认证访问管理端 401",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A15 非法 API 版本 400",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A16 个人中心",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A17 仪表盘",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A18 用户列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A19 用户详情",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A20 非法 hashid 用户详情 404",
+            "pass": false,
+            "detail": "{\"code\":500,\"msg\":\"\\u65e0\\u6548\\u7684\\u52a0\\u5bc6ID\",\"traces\":\"InvalidArgumentException: \\u65e0\\u6548\\u7684\\u52a0\\u5bc6ID in \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/common\\\/HashidsService.php:28\\nStack trace:\\n#0 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/admin\\\/controller\\\/BaseController.php(52): app\\\\common\\\\HashidsService::decode()\\n#1 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/admin\\\/controller\\\/UserController.php(148): app\\\\admin\\\\controller\\\\BaseController->decodeId()\\n#2 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(428): app\\\\admin\\\\controller\\\\UserController->show()\\n#3 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(444): Webman\\\\App::Webman\\\\{closure}()\\n#4 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/OperationLog.php(22): Webman\\\\App::Webman\\\\{closure}()\\n#5 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\OperationLog->process()\\n#6 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/AdminPermission.php(46): Webman\\\\App::Webman\\\\{closure}()\\n#7 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\AdminPermission->process()\\n#8 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/AdminAuth.php(57): Webman\\\\App::Webman\\\\{closure}()\\n#9 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\AdminAuth->process()\\n#10 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/webman\\\/validation\\\/src\\\/Middleware.php(26): Webman\\\\App::Webman\\\\{closure}()\\n#11 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): Webman\\\\Validation\\\\Middleware->process()\\n#12 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/RateLimit.php(60): Webman\\\\App::Webman\\\\{closure}()\\n#13 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\RateLimit->process()\\n#14 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/SecurityFilter.php(78): Webman\\\\App::Webman\\\\{closure}()\\n#15 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\SecurityFilter->process()\\n#16 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/Locale.php(52): Webman\\\\App::Webman\\\\{closure}()\\n#17 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\Locale->process()\\n#18 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/Cors.php(27): Webman\\\\App::Webman\\\\{closure}()\\n#19 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\Cors->process()\\n#20 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(931): Webman\\\\App::Webman\\\\{closure}()\\n#21 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(167): Webman\\\\App::findRoute()\\n#22 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Connection\\\/TcpConnection.php(805): Webman\\\\App->onMessage()\\n#23 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Events\\\/Select.php(406): Workerman\\\\Connection\\\\TcpConnection->baseRead()\\n#24 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1758): Workerman\\\\Events\\\\Select->run()\\n#25 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1554): Workerman\\\\Worker::forkOneWorkerForLinux()\\n#26 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1534): Workerman\\\\Worker::forkWorkersForLinux()\\n#27 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(603): Workerman\\\\Worker::forkWorkers()\\n#28 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/support\\\/App.php(147): Workerman\\\\Worker::runAll()\\n#29 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/start.php(5): support\\\\App::run()\\n#30 {main}\"}"
+        },
+        {
+            "name": "A21 创建用户",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A22 更新用户",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A23 删除用户错误二次确认密码 422",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A24 删除用户(密码确认)",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A25 角色列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A26 创建角色",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A27 更新角色",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A28 删除角色(密码确认)",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A29 权限树",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A30 配置列表",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A31 创建配置",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A32 更新配置",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A33 删除配置(密码确认)",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A34 操作日志",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A35 更新个人信息",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A36 修改密码错误旧密码 422",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A37 修改密码",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A38 修改密码还原",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A39 导出 Excel",
+            "pass": false,
+            "detail": "status=200 HTTP\/1.1 200 OK\r\nContent-Type: application\/json\r\nAccess-Control-Allow-Origin: *\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\nX-XSS-Protection: 1; mode=block\r\nReferrer-Policy: strict-origin-when-cross-origin\r\nPermissions-Policy: camera=(), microphone=(), geolocation=()\r\nContent-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:;\r\nX-Permitted-Cross-Domain-Policies: none\r\nConnection: keep-alive\r\nContent-Length: 3629\r\n\r\n"
+        },
+        {
+            "name": "A40 导出 PDF",
+            "pass": false,
+            "detail": "status=200 HTTP\/1.1 200 OK\r\nContent-Type: application\/json\r\nAccess-Control-Allow-Origin: *\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\nX-XSS-Protection: 1; mode=block\r\nReferrer-Policy: strict-origin-when-cross-origin\r\nPermissions-Policy: camera=(), microphone=(), geolocation=()\r\nContent-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:;\r\nX-Permitted-Cross-Domain-Policies: none\r\nConnection: keep-alive\r\nContent-Length: 3623\r\n\r\n"
+        },
+        {
+            "name": "A41 Excel 导入用户",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A42 文件上传",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A43 上传非法类型 422",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A44 登出",
+            "pass": true,
+            "detail": ""
+        },
+        {
+            "name": "A45 登出后旧 token 失效 401",
+            "pass": true,
+            "detail": ""
+        }
+    ]
+}

@@ -1,0 +1,69 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <style>
+    .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
+    .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
+    .tm   { font-size: 14px; font-weight: 700; fill: #1e3a8a; text-anchor: middle }
+    .t    { font-size: 11.5px; fill: #0f172a; text-anchor: middle }
+  </style>
+
+  <!-- 接入层 -->
+  <rect class="mod" x="20" y="20" width="920" height="86"/>
+  <text class="tm" x="480" y="44">Access Layer · service/config/process.php (Http + WsServer)</text>
+  <rect class="it" x="40" y="56" width="440" height="38"/>
+  <text class="t" x="260" y="70">HTTP :8788 · X-Api-Version before routing</text>
+  <text class="t" x="260" y="84" font-size="10" fill="#64748b">default v1 · validate v\d+ · /api/vX compat (Http.php)</text>
+  <rect class="it" x="500" y="56" width="420" height="38"/>
+  <text class="t" x="710" y="70">WS :8789 · Envelope frame protocol</text>
+  <text class="t" x="710" y="84" font-size="10" fill="#64748b">ActionHandler dispatch · ConnectionRegistry uid→fd</text>
+
+  <!-- IM 模块 -->
+  <rect class="mod" x="20" y="126" width="440" height="150"/>
+  <text class="tm" x="240" y="150">IM Module · app/ws + app/im</text>
+  <rect class="it" x="40" y="162" width="400" height="30"/>
+  <text class="t" x="240" y="181">Deliverer push · WsRedis session state</text>
+  <rect class="it" x="40" y="198" width="400" height="30"/>
+  <text class="t" x="240" y="217">1v1 chat / text / voice msgs (type=3)</text>
+  <rect class="it" x="40" y="234" width="400" height="30"/>
+  <text class="t" x="240" y="253">Voice upload → service/storage/voice (m4a)</text>
+
+  <!-- 通话模块 -->
+  <rect class="mod" x="480" y="126" width="460" height="150"/>
+  <text class="tm" x="710" y="150">1v1 Call · app/call/CallCenter</text>
+  <rect class="it" x="500" y="162" width="420" height="30"/>
+  <text class="t" x="710" y="181">Redis im:call:{id} state machine (HSET)</text>
+  <rect class="it" x="500" y="198" width="420" height="30"/>
+  <text class="t" x="710" y="217">im:callbusy busy lock (SETNX TTL 300)</text>
+  <rect class="it" x="500" y="234" width="420" height="30"/>
+  <text class="t" x="710" y="253">30s ring timeout · finish once-gate (NX+EX 3600)</text>
+
+  <!-- 语聊房模块 -->
+  <rect class="mod" x="20" y="296" width="440" height="150"/>
+  <text class="tm" x="240" y="320">Voice Room · app/room/RoomCenter</text>
+  <rect class="it" x="40" y="332" width="400" height="30"/>
+  <text class="t" x="240" y="351">DB rooms/room_members source of truth · Redis online map</text>
+  <rect class="it" x="40" y="368" width="400" height="30"/>
+  <text class="t" x="240" y="387">8 mic seats · join TOCTOU recheck · close broadcast</text>
+  <rect class="it" x="40" y="404" width="400" height="30"/>
+  <text class="t" x="240" y="423">sfuRelay signaling translation · raw HTTP → SFU</text>
+
+  <!-- SFU 模块 -->
+  <rect class="mod" x="480" y="296" width="460" height="150"/>
+  <text class="tm" x="710" y="320">Media Layer · media/sfu/server.js (mediasoup 3.14)</text>
+  <rect class="it" x="500" y="332" width="420" height="30"/>
+  <text class="t" x="710" y="351">One Router per room · transports/producers/consumers</text>
+  <rect class="it" x="500" y="368" width="420" height="30"/>
+  <text class="t" x="710" y="387">RTC UDP 10000-10200 · 5min idle recycle</text>
+  <rect class="it" x="500" y="404" width="420" height="30"/>
+  <text class="t" x="710" y="423">coturn TURN :3478 · 64KB request limit</text>
+
+  <!-- 数据与状态 -->
+  <rect class="mod" x="20" y="466" width="920" height="76"/>
+  <text class="tm" x="480" y="490">State &amp; Consistency Design</text>
+  <rect class="it" x="40" y="502" width="290" height="30"/>
+  <text class="t" x="185" y="521">MySQL: business facts (users/posts/rooms)</text>
+  <rect class="it" x="350" y="502" width="290" height="30"/>
+  <text class="t" x="495" y="521">Redis: session / IM / call / room online</text>
+  <rect class="it" x="660" y="502" width="260" height="30"/>
+  <text class="t" x="790" y="521">REST broadcast cross-process no-op (known)</text>
+</svg>

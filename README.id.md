@@ -1,0 +1,173 @@
+# Platform Sosial
+
+**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+
+Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + live/suara + ekonomi virtual.
+
+## Pengenalan Proyek
+
+- **Tiga klien native**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus konsol admin Flutter
+- **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
+- **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
+- **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
+- **Pencapaian**: M0–M4 selesai (pesan suara, panggilan 1v1, ruang obrolan suara); M5 merencanakan live streaming (SRS) dan ekonomi virtual
+
+## Ringkasan Fitur
+
+![Ringkasan Fitur](docs/diagrams/features.id.svg)
+
+## Desain Arsitektur
+
+![Desain Arsitektur](docs/diagrams/architecture.id.svg)
+
+## Proses Bisnis Inti
+
+![Proses Bisnis Inti](docs/diagrams/core-flow.id.svg)
+
+## Siklus Hidup
+
+![Siklus Hidup](docs/diagrams/lifecycle.id.svg)
+
+## Desain Modul
+
+![Desain Modul](docs/diagrams/module-design.id.svg)
+
+## Struktur Proyek
+
+| Direktori | Deskripsi | Teknologi |
+|------|------|------|
+| contracts/ | Kontrak gRPC (proto, titik masuk pembuatan buf) | protobuf / buf |
+| service/ | Layanan bisnis sisi pengguna (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
+| admin/ | Konsol admin (berbasis open-admin) | webman v2 + Flutter |
+| infrastructure/ | Lapisan komputasi throughput tinggi | bee-rust (tonic) |
+| media/sfu/ | Lapisan media sendiri (mediasoup SFU :8790 + coturn :3478) | Node.js (diaktifkan di M4) |
+| apps/ | Tiga klien native | SwiftUI / Kotlin+Compose / ArkTS |
+
+Struktur internal service:
+
+```
+service/
+├── app/
+│   ├── controller/   # Kontroler REST (auth/post/follow/im/voice/...)
+│   ├── ws/           # WsServer · protokol frame Envelope · push Deliverer · ConnectionRegistry
+│   ├── call/         # CallCenter: state machine panggilan 1v1 (timeout dering 30 detik · saling mengecualikan saat sibuk)
+│   ├── room/         # RoomCenter: ruang obrolan suara (8 kursi · terjemahan sinyal SFU)
+│   ├── model/        # Model data
+│   ├── process/      # Proses kustom Http / WsServer
+│   └── storage/      # Penyimpanan file suara (m4a, tidak disimpan di database)
+├── config/           # route.php (grup rute /api/v1) · process.php (:8788/:8789)
+└── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php
+```
+
+## Petunjuk Penggunaan
+
+### Dependensi
+
+- PHP ≥ 8.3 (composer)
+- Redis (default 127.0.0.1:6379)
+- Node.js ≥ 18 (debug lokal SFU)
+- Docker (kontainer SFU / coturn)
+
+### Menjalankan layanan bisnis
+
+```bash
+cd service
+composer install
+php start.php start -d      # HTTP :8788 · WS :8789
+```
+
+Konfigurasikan `REDIS`, `SFU_URL` (default 127.0.0.1:8790) di `service/.env` sesuai kebutuhan.
+
+### Menjalankan lapisan media
+
+```bash
+cd media/sfu
+docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
+```
+
+### Klien
+
+| Platform | Cara membuka / membangun | Persyaratan platform |
+|----|----------------|----------|
+| Android | `cd apps/android && ./gradlew assembleDebug` | Dapat dibangun di Linux / macOS |
+| iOS | Buka `apps/ios/SocialApp` di Xcode | Perlu macOS |
+| HarmonyOS | Buka `apps/harmonyos` di DevEco Studio | Perlu DevEco Studio |
+
+### Pengujian
+
+```bash
+cd service
+vendor/bin/phpunit                    # Unit test (79 tests / 230 assertions)
+
+php tests/im_e2e.php                  # E2E black-box IM (perlu :8788/:8789 berjalan + Redis)
+php tests/voice_e2e.php               # E2E suara: versi / pesan suara / panggilan / ruang obrolan suara
+
+cd media/sfu
+npm run smoke                         # Smoke test protokol SFU /signal (perlu kontainer Docker atau node lokal)
+```
+
+## Dukungan sangat diterima
+
+Jika proyek ini membantu Anda, pindai kode QR untuk mendukung kami, terima kasih!
+
+**WeChat Pay**
+
+<img src="docs/weixinpay.png" width="160" height="175" alt="WeChat Pay">
+
+
+**Alipay**
+
+<img src="docs/alipay.png" width="160" height="175" alt="Alipay">
+
+**Transfer global (transfer bank)**
+
+
+
+
+Jika proyek ini bermanfaat bagi Anda, silakan dukung pengembangannya melalui transfer bank global.
+
+**Informasi Penerima**
+
+| Item | Isi |
+|------|------|
+| Nama Penerima | WANG KEXUN |
+| Nomor Rekening Penerima | 881015918251 |
+
+**Bank Penerima — ZA Bank**
+
+| Item | Isi |
+|------|------|
+| SWIFT Code | AABLHKHHXXX |
+| Nama Bank | ZA Bank Limited |
+| Kode Bank | 387 |
+| Alamat Bank | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
+
+**Bank Koresponden untuk Transfer Lintas Negara (jika diperlukan)**
+
+> Berikut adalah informasi bank koresponden (bank perantara) untuk transfer lintas negara, bukan bank penerima. Silakan tanyakan ke bank pengirim apakah informasi bank koresponden diperlukan.
+
+Bank koresponden untuk transfer dolar Hong Kong, renminbi, dan dolar AS adalah **Citibank**:
+
+| Item | Isi |
+|------|------|
+| Nama Bank | Citibank N.A. Hong Kong |
+| SWIFT Code | CITIHKHXXXX |
+| Kode Bank | 006 |
+| Nama Cabang | Hong Kong Branch |
+| Kode Cabang | 391 |
+| Alamat Bank | Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong |
+
+Untuk transfer mata uang lainnya, bank korespondennya adalah **BNY Mellon**:
+
+| Item | Isi |
+|------|------|
+| Nama Bank | THE BANK OF NEW YORK MELLON |
+| SWIFT Code | IRVTUS3NXXX |
+| Alamat Bank | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
+
+
+## Dokumentasi
+
+- Desain keseluruhan: `docs/superpowers/specs/2026-08-16-social-platform-design.md`
+- Desain suara M4: `docs/superpowers/specs/2026-08-17-m4-voice-design.md`
+- Rencana implementasi: `docs/superpowers/plans/2026-08-17-m4-voice.md`

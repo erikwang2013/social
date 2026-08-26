@@ -1,4 +1,5 @@
 # M1 闭环里程碑实现计划
+**语言 / Languages:** [中文](2026-08-17-m1-closed-loop.md) · [English](2026-08-17-m1-closed-loop.en.md) · [한국어](2026-08-17-m1-closed-loop.ko.md) · [Русский](2026-08-17-m1-closed-loop.ru.md) · [Deutsch](2026-08-17-m1-closed-loop.de.md) · [Français](2026-08-17-m1-closed-loop.fr.md) · [Español](2026-08-17-m1-closed-loop.es.md) · [Português](2026-08-17-m1-closed-loop.pt.md) · [हिन्दी](2026-08-17-m1-closed-loop.hi.md) · [العربية](2026-08-17-m1-closed-loop.ar.md) · [বাংলা](2026-08-17-m1-closed-loop.bn.md) · [Bahasa Indonesia](2026-08-17-m1-closed-loop.id.md) · [日本語](2026-08-17-m1-closed-loop.ja.md)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

@@ -1,0 +1,72 @@
+<div style="padding:18px;max-width: 1024px;margin:0 auto;background-color:#fff;color:#333">
+<h1>webman</h1>
+
+**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+
+<a href="https://www.workerman.net" target="__blank">workerman</a>-এর উপর ভিত্তি করে অতি-উচ্চ কর্মক্ষমতার PHP ফ্রেমওয়ার্ক
+
+
+<h1>শেখা</h1>
+
+<ul>
+  <li>
+    <a href="https://www.workerman.net/webman" target="__blank">হোম পেজ / Home page</a>
+  </li>
+  <li>
+    <a href="https://webman.workerman.net" target="__blank">ডকুমেন্টেশন / Document</a>
+  </li>
+  <li>
+    <a href="https://www.workerman.net/doc/webman/install.html" target="__blank">ইনস্টল / Install</a>
+  </li>
+  <li>
+    <a href="https://www.workerman.net/questions" target="__blank">প্রশ্ন / Questions</a>
+  </li>
+  <li>
+    <a href="https://www.workerman.net/apps" target="__blank">অ্যাপ / Apps</a>
+  </li>
+  <li>
+    <a href="https://www.workerman.net/sponsor" target="__blank">স্পনসর / Sponsors</a>
+  </li>
+  <li>
+    <a href="https://www.workerman.net/doc/webman/thanks.html" target="__blank">ধন্যবাদ / Thanks</a>
+  </li>
+</ul>
+
+<div style="float:left;padding-bottom:30px;">
+
+  <h1>স্পনসর</h1>
+
+  <h4>বিশেষ স্পনসর</h4>
+  <a href="https://www.crmeb.com/?form=workerman" target="__blank">
+    <img src="https://www.workerman.net/img/sponsors/6429/20230719111500.svg" width="200">
+  </a>
+
+  <h4>প্ল্যাটিনাম স্পনসর</h4>
+  <a href="https://www.fadetask.com/?from=workerman" target="__blank"><img src="https://www.workerman.net/img/sponsors/1/20230719084316.png" width="200"></a>
+  <a href="https://www.yilianyun.net/?from=workerman" target="__blank" style="margin-left:20px;"><img src="https://www.workerman.net/img/sponsors/6218/20230720114049.png" width="200"></a>
+
+
+</div>
+
+
+<div style="float:left;padding-bottom:30px;clear:both">
+
+  <h1>লেখককে কফি খাওয়ান</h1>
+
+<img src="https://www.workerman.net/img/wx_donate.png" width="200">
+<img src="https://www.workerman.net/img/ali_donate.png" width="200">
+<br>
+<b>webman আপনার কাজে লাগলে দান স্বাগত।</b>
+
+
+</div>
+
+
+<div style="clear: both">
+<h1>LICENSE</h1>
+webman MIT লাইসেন্সের অধীনে লাইসেন্সপ্রাপ্ত ওপেন-সোর্স সফটওয়্যার।
+</div>
+
+</div>
+
+
