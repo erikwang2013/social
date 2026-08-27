@@ -9,7 +9,6 @@
     .root { fill: #1e3a8a; stroke: #1e3a8a; rx: 10 }
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; rx: 8 }
     .fn   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
-    .plan { fill: #fffbeb; stroke: #d97706; stroke-width: 1.2; rx: 6; stroke-dasharray: 5 3 }
     .t    { font-size: 13.5px; fill: #0f172a; text-anchor: middle }
     .tr   { font-size: 16px; font-weight: 700; fill: #ffffff; text-anchor: middle }
     .tm   { font-size: 14px; font-weight: 700; fill: #1e3a8a; text-anchor: middle }
@@ -58,10 +57,10 @@
   <rect class="fn" x="130" y="342" width="320" height="26"/><text class="t" x="290" y="360">Create / Join / Leave / Dissolve · 8 mic seats</text>
   <rect class="fn" x="130" y="374" width="320" height="26"/><text class="t" x="290" y="392">mediasoup SFU relay · 5min idle recycle</text>
 
-  <!-- 规划中 -->
-  <rect class="plan" x="510" y="290" width="320" height="40"/>
-  <text class="tm" x="670" y="315">Live / Virtual Economy (M5 planned)</text>
+  <!-- 直播与虚拟经济 -->
+  <rect class="mod" x="510" y="290" width="320" height="40"/>
+  <text class="tm" x="670" y="315">Live / Virtual Economy</text>
   <path class="edge" d="M 480 60 L 670 290"/>
-  <rect class="plan" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">Live push/pull streams (SRS)</text>
-  <rect class="plan" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">Coins / Tips / Gifts</text>
+  <rect class="fn" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">Live · Rust state machine · gRPC</text>
+  <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">Wallet · gift tips · streamer split · IAP recharge</text>
 </svg>

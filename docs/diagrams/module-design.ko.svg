@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 730" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -57,13 +57,33 @@
   <rect class="it" x="500" y="404" width="420" height="30"/>
   <text class="t" x="710" y="423">coturn TURN :3478 · 요청 64KB 제한</text>
 
+  <!-- 直播模块 -->
+  <rect class="mod" x="20" y="466" width="440" height="150"/>
+  <text class="tm" x="240" y="490">라이브 모듈 · Rust bee_live (HTTP는 gRPC · WS는 PHP)</text>
+  <rect class="it" x="40" y="502" width="400" height="30"/>
+  <text class="t" x="240" y="521">방/스트림 상태 머신 (MySQL 사실)</text>
+  <rect class="it" x="40" y="538" width="400" height="30"/>
+  <text class="t" x="240" y="557">WS 브로드캐스트 채널 (live:{room}:online)</text>
+  <rect class="it" x="40" y="574" width="400" height="30"/>
+  <text class="t" x="240" y="593">선물 효과 live_gift 같은 채널</text>
+
+  <!-- 虚拟经济 -->
+  <rect class="mod" x="480" y="466" width="460" height="150"/>
+  <text class="tm" x="710" y="490">가상경제 · app/common (PHP)</text>
+  <rect class="it" x="500" y="502" width="420" height="30"/>
+  <text class="t" x="710" y="521">지갑 잔액/원장 (MySQL 유일한 사실 소스)</text>
+  <rect class="it" x="500" y="538" width="420" height="30"/>
+  <text class="t" x="710" y="557">선물 차감/분배 (client_ref 멱등)</text>
+  <rect class="it" x="500" y="574" width="420" height="30"/>
+  <text class="t" x="710" y="593">IAP 충전 3측 검증 멱등 입금</text>
+
   <!-- 数据与状态 -->
-  <rect class="mod" x="20" y="466" width="920" height="76"/>
-  <text class="tm" x="480" y="490">상태와 일관성 설계</text>
-  <rect class="it" x="40" y="502" width="290" height="30"/>
-  <text class="t" x="185" y="521">MySQL: 비즈니스 사실 (사용자/게시물/방)</text>
-  <rect class="it" x="350" y="502" width="290" height="30"/>
-  <text class="t" x="495" y="521">Redis: 세션 / IM / 통화 / 방 온라인</text>
-  <rect class="it" x="660" y="502" width="260" height="30"/>
-  <text class="t" x="790" y="521">REST 브로드캐스트 타프로세스 no-op (알려짐)</text>
+  <rect class="mod" x="20" y="636" width="920" height="76"/>
+  <text class="tm" x="480" y="660">상태와 일관성 설계</text>
+  <rect class="it" x="40" y="672" width="290" height="30"/>
+  <text class="t" x="185" y="691">MySQL: 비즈니스 사실 (사용자/게시물/방)</text>
+  <rect class="it" x="350" y="672" width="290" height="30"/>
+  <text class="t" x="495" y="691">Redis: 세션 / IM / 통화 / 방 온라인</text>
+  <rect class="it" x="660" y="672" width="260" height="30"/>
+  <text class="t" x="790" y="691">REST 브로드캐스트 타프로세스 no-op (알려짐)</text>
 </svg>

@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 730" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -57,13 +57,33 @@
   <rect class="it" x="500" y="404" width="420" height="30"/>
   <text class="t" x="710" y="423">coturn TURN :3478 · лимит 64KB</text>
 
+  <!-- 直播模块 -->
+  <rect class="mod" x="20" y="466" width="440" height="150"/>
+  <text class="tm" x="240" y="490">Модуль трансляций · Rust bee_live (HTTP через gRPC · WS через PHP)</text>
+  <rect class="it" x="40" y="502" width="400" height="30"/>
+  <text class="t" x="240" y="521">Машина состояний комнаты/стрима (MySQL факт)</text>
+  <rect class="it" x="40" y="538" width="400" height="30"/>
+  <text class="t" x="240" y="557">WS-канал рассылки (live:{room}:online)</text>
+  <rect class="it" x="40" y="574" width="400" height="30"/>
+  <text class="t" x="240" y="593">Эффекты подарков live_gift тем же каналом</text>
+
+  <!-- 虚拟经济 -->
+  <rect class="mod" x="480" y="466" width="460" height="150"/>
+  <text class="tm" x="710" y="490">Виртуальная экономика · app/common (PHP)</text>
+  <rect class="it" x="500" y="502" width="420" height="30"/>
+  <text class="t" x="710" y="521">Кошелёк баланс/операции (MySQL единственный источник)</text>
+  <rect class="it" x="500" y="538" width="420" height="30"/>
+  <text class="t" x="710" y="557">Подарок списание/доля (client_ref идемпотентно)</text>
+  <rect class="it" x="500" y="574" width="420" height="30"/>
+  <text class="t" x="710" y="593">Пополнение IAP проверка 3 сторон идемпотентно</text>
+
   <!-- 数据与状态 -->
-  <rect class="mod" x="20" y="466" width="920" height="76"/>
-  <text class="tm" x="480" y="490">Состояние и консистентность</text>
-  <rect class="it" x="40" y="502" width="290" height="30"/>
-  <text class="t" x="185" y="521">MySQL: факты (пользователи/посты/комнаты)</text>
-  <rect class="it" x="350" y="502" width="290" height="30"/>
-  <text class="t" x="495" y="521">Redis: сессии / IM / звонки / комнаты</text>
-  <rect class="it" x="660" y="502" width="260" height="30"/>
-  <text class="t" x="790" y="521">REST-рассылка no-op (известно)</text>
+  <rect class="mod" x="20" y="636" width="920" height="76"/>
+  <text class="tm" x="480" y="660">Состояние и консистентность</text>
+  <rect class="it" x="40" y="672" width="290" height="30"/>
+  <text class="t" x="185" y="691">MySQL: факты (пользователи/посты/комнаты)</text>
+  <rect class="it" x="350" y="672" width="290" height="30"/>
+  <text class="t" x="495" y="691">Redis: сессии / IM / звонки / комнаты</text>
+  <rect class="it" x="660" y="672" width="260" height="30"/>
+  <text class="t" x="790" y="691">REST-рассылка no-op (известно)</text>
 </svg>
