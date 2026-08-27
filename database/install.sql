@@ -389,3 +389,76 @@ INSERT INTO `erik_admin_user_role` (`user_id`, `role_id`) VALUES
 ('21000000000000100', '10000000000000001');
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ############### 虚拟经济 (M6a) ###############
+CREATE TABLE IF NOT EXISTS social_wallets (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL UNIQUE,
+  coins BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '虚拟币余额',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='虚拟币钱包';
+
+CREATE TABLE IF NOT EXISTS social_currency_transactions (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  type VARCHAR(32) NOT NULL COMMENT 'recharge/gift_sent/gift_received/admin_adjust',
+  amount BIGINT NOT NULL COMMENT '有符号余额变更',
+  balance_after BIGINT NOT NULL COMMENT '变更后余额',
+  ref_type VARCHAR(32) NULL COMMENT '外部引用类型（如 iap_apple）',
+  ref_id VARCHAR(64) NULL COMMENT '外部引用 ID（事务号/订单号）',
+  note VARCHAR(255) NOT NULL DEFAULT '',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  UNIQUE KEY uniq_ref (ref_type, ref_id),
+  KEY idx_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='资金流水';
+
+CREATE TABLE IF NOT EXISTS social_gift_catalog (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(64) NOT NULL,
+  coins_price BIGINT UNSIGNED NOT NULL DEFAULT 1,
+  effect_key VARCHAR(32) NOT NULL DEFAULT '',
+  status TINYINT NOT NULL DEFAULT 1 COMMENT '1上架 0下架',
+  sort INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='礼物目录';
+
+CREATE TABLE IF NOT EXISTS social_gifts_given (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  from_uid BIGINT UNSIGNED NOT NULL,
+  to_uid BIGINT UNSIGNED NOT NULL,
+  room_id BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  room_type TINYINT NOT NULL DEFAULT 1 COMMENT '1直播 2语聊',
+  gift_id BIGINT UNSIGNED NOT NULL,
+  quantity INT UNSIGNED NOT NULL DEFAULT 1,
+  coins_total BIGINT UNSIGNED NOT NULL,
+  client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（重试去重）',
+  created_at TIMESTAMP NULL,
+  UNIQUE KEY uniq_client_ref (client_ref),
+  KEY idx_from (from_uid, created_at),
+  KEY idx_to (to_uid, created_at),
+  KEY idx_room (room_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='送礼记录';
+
+CREATE TABLE IF NOT EXISTS social_streamer_earnings (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  streamer_uid BIGINT UNSIGNED NOT NULL,
+  gift_given_id BIGINT UNSIGNED NOT NULL UNIQUE,
+  ratio INT UNSIGNED NOT NULL COMMENT '主播分成比例（百分数，如 70）',
+  coins_amount BIGINT UNSIGNED NOT NULL COMMENT '入账币值',
+  created_at TIMESTAMP NULL,
+  KEY idx_streamer (streamer_uid, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='主播分成入账';
+
+CREATE TABLE IF NOT EXISTS social_products (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  platform VARCHAR(16) NOT NULL COMMENT 'apple/google/huawei',
+  sku VARCHAR(128) NOT NULL,
+  coins BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  status TINYINT NOT NULL DEFAULT 1 COMMENT '1上架 0下架',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  UNIQUE KEY uniq_platform_sku (platform, sku)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IAP 商品（SKU↔币值）';

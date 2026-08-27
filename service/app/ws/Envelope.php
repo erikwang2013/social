@@ -42,6 +42,7 @@ final class Envelope
     public const T_LIVE_MIC_UP = 'live_mic_up';
     public const T_LIVE_MIC_DOWN = 'live_mic_down';
     public const T_LIVE_CLOSED = 'live_closed';
+    public const T_LIVE_GIFT = 'live_gift';
 
     public static function decode(string $raw): ?array
     {

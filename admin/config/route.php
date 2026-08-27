@@ -153,3 +153,13 @@ Route::group('/admin/social-user', function () {
     Route::get('/{id}', [app\admin\controller\SocialUserController::class, 'detail']);
     Route::post('/{id}/status', [app\admin\controller\SocialUserController::class, 'status']);
 })->middleware([app\middleware\AdminAuth::class]);
+
+// ============================================================
+// 礼物目录管理（M6a 虚拟币+礼物，直查 social_gift_catalog）
+// ============================================================
+Route::group('/admin/gift-catalog', function () {
+    Route::get('', [app\admin\controller\GiftCatalogController::class, 'list']);
+    Route::post('', [app\admin\controller\GiftCatalogController::class, 'create']);
+    Route::put('/{id}', [app\admin\controller\GiftCatalogController::class, 'update']);
+    Route::post('/{id}/status', [app\admin\controller\GiftCatalogController::class, 'status']);
+})->middleware([app\middleware\AdminAuth::class]);

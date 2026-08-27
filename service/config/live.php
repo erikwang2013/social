@@ -13,6 +13,8 @@ return [
     'mic_limit' => (int) (getenv('LIVE_MIC_LIMIT') ?: 8),
     // 弹幕 Redis List 保留条数（上限即全量，不入库）
     'danmaku_keep' => (int) (getenv('LIVE_DANMAKU_KEEP') ?: 200),
+    // 主播礼物分成比例（百分数，M6a）
+    'split_streamer_percent' => (int) (getenv('LIVE_SPLIT_STREAMER_PERCENT') ?: 70),
     // Rust live/voice gRPC 服务地址（M6 状态机迁移）
     'grpc_host' => getenv('GRPC_HOST') ?: '127.0.0.1:50051',
 ];

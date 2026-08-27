@@ -55,6 +55,8 @@ Route::group('/api/v1', function () {
         Route::post('/notifications/read-all', [app\controller\NotificationController::class, 'readAll']);
         Route::get('/search/posts', [app\controller\SearchController::class, 'posts']);
         Route::get('/search/users', [app\controller\SearchController::class, 'users']);
+        Route::get('/wallet/balance', [app\controller\WalletController::class, 'balance']);
+        Route::get('/wallet/transactions', [app\controller\WalletController::class, 'transactions']);
         Route::get('/im/conversations', [app\controller\ImController::class, 'conversations']);
         Route::post('/im/conversations', [app\controller\ImController::class, 'create']);
         Route::get('/im/conversations/{id}/messages', [app\controller\ImController::class, 'messages']);
@@ -72,6 +74,8 @@ Route::group('/api/v1', function () {
         Route::post('/live/rooms/{id}/close', [LiveController::class, 'close']);
         Route::post('/live/rooms/{id}/mic', [LiveController::class, 'micUp']);
         Route::delete('/live/rooms/{id}/mic', [LiveController::class, 'micDown']);
+        Route::post('/live/rooms/{id}/gift', [app\controller\GiftController::class, 'send']);
+        Route::get('/gifts', [app\controller\GiftController::class, 'catalog']);
     })->middleware(AuthMiddleware::class);
 });
 
