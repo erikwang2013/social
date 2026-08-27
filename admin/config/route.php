@@ -163,3 +163,13 @@ Route::group('/admin/gift-catalog', function () {
     Route::put('/{id}', [app\admin\controller\GiftCatalogController::class, 'update']);
     Route::post('/{id}/status', [app\admin\controller\GiftCatalogController::class, 'status']);
 })->middleware([app\middleware\AdminAuth::class]);
+
+// ============================================================
+// IAP 商品管理（M6a 阶段3，直查 social_products）
+// ============================================================
+Route::group('/admin/iap-product', function () {
+    Route::get('', [app\admin\controller\IapProductController::class, 'list']);
+    Route::post('', [app\admin\controller\IapProductController::class, 'create']);
+    Route::put('/{id}', [app\admin\controller\IapProductController::class, 'update']);
+    Route::post('/{id}/status', [app\admin\controller\IapProductController::class, 'status']);
+})->middleware([app\middleware\AdminAuth::class]);

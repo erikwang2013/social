@@ -57,6 +57,7 @@ Route::group('/api/v1', function () {
         Route::get('/search/users', [app\controller\SearchController::class, 'users']);
         Route::get('/wallet/balance', [app\controller\WalletController::class, 'balance']);
         Route::get('/wallet/transactions', [app\controller\WalletController::class, 'transactions']);
+        Route::post('/iap/recharge', [app\controller\RechargeController::class, 'recharge']);
         Route::get('/im/conversations', [app\controller\ImController::class, 'conversations']);
         Route::post('/im/conversations', [app\controller\ImController::class, 'create']);
         Route::get('/im/conversations/{id}/messages', [app\controller\ImController::class, 'messages']);
