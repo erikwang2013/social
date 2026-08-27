@@ -15,28 +15,30 @@ use support\Request;
 class GiftControllerTest extends TestCase
 {
     private const UID = 99013;
-    private const GIFT_ID = 999002;
-    private const OFF_GIFT_ID = 999003;
-    private const ROOM_ID = 998002;
+    private const ROOM_TITLE = '控制器测试房间';
+
+    private int $giftId;
+    private int $offGiftId;
+    private int $roomId;
 
     protected function setUp(): void
     {
-        GiftGiven::where('room_id', self::ROOM_ID)->delete();
+        GiftGiven::where('from_uid', self::UID)->delete();
         CurrencyTransaction::where('user_id', self::UID)->delete();
         Wallet::where('user_id', self::UID)->delete();
-        GiftCatalog::whereIn('id', [self::GIFT_ID, self::OFF_GIFT_ID])->delete();
-        LiveRoom::where('id', self::ROOM_ID)->delete();
-        GiftCatalog::create([
-            'id' => self::GIFT_ID, 'name' => '鲜花', 'coins_price' => 50,
+        GiftCatalog::whereIn('name', ['鲜花', '下架礼物'])->delete();
+        LiveRoom::where('title', self::ROOM_TITLE)->delete();
+        $this->giftId = GiftCatalog::create([
+            'name' => '鲜花', 'coins_price' => 50,
             'effect_key' => 'flower', 'status' => 1, 'sort' => 1,
-        ]);
-        GiftCatalog::create([
-            'id' => self::OFF_GIFT_ID, 'name' => '下架礼物', 'coins_price' => 10,
+        ])->id;
+        $this->offGiftId = GiftCatalog::create([
+            'name' => '下架礼物', 'coins_price' => 10,
             'effect_key' => 'off', 'status' => 0, 'sort' => 2,
-        ]);
-        LiveRoom::create([
-            'id' => self::ROOM_ID, 'owner_id' => 99014, 'title' => '控制器测试房间', 'status' => 1,
-        ]);
+        ])->id;
+        $this->roomId = LiveRoom::create([
+            'owner_id' => 99014, 'title' => self::ROOM_TITLE, 'status' => 1,
+        ])->id;
         WalletService::credit(self::UID, 500, 'test', 'gc1');
     }
 
@@ -58,14 +60,14 @@ class GiftControllerTest extends TestCase
         $data = $this->body($res);
         $this->assertSame(0, $data['code']);
         $ids = array_column($data['data']['list'], 'id');
-        $this->assertContains(self::GIFT_ID, $ids);
-        $this->assertNotContains(self::OFF_GIFT_ID, $ids);
+        $this->assertContains($this->giftId, $ids);
+        $this->assertNotContains($this->offGiftId, $ids);
     }
 
     public function testSendSuccess(): void
     {
-        $body = http_build_query(['gift_id' => self::GIFT_ID, 'quantity' => 2, 'client_ref' => 'client-ref-gc-0001']);
-        $res = (new GiftController())->send($this->request('POST', '/api/v1/live/rooms/' . self::ROOM_ID . '/gift', $body), (string) self::ROOM_ID);
+        $body = http_build_query(['gift_id' => $this->giftId, 'quantity' => 2, 'client_ref' => 'client-ref-gc-0001']);
+        $res = (new GiftController())->send($this->request('POST', '/api/v1/live/rooms/' . $this->roomId . '/gift', $body), (string) $this->roomId);
         $data = $this->body($res);
         $this->assertSame(0, $data['code']);
         $this->assertSame(400, $data['data']['balance']); // 500 - 50*2

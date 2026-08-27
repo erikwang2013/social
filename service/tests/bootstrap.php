@@ -1,6 +1,15 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
+// 每个测试文件都会 require 本文件，同库（sqlite :memory: 共享连接）只初始化一次
+if (defined('TESTS_BOOTSTRAPPED')) {
+    return;
+}
+define('TESTS_BOOTSTRAPPED', true);
+
+// 测试默认走 sqlite（config/database.php 的 test 连接），须在 Config::load 之前设置
+putenv('DB_CONNECTION=test');
+
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', __DIR__ . '/..');
 }
@@ -9,18 +18,10 @@ if (!defined('BASE_PATH')) {
 \Webman\Config::load(BASE_PATH . '/config', ['route']);
 
 use Illuminate\Database\Capsule\Manager as Capsule;
-use Illuminate\Events\Dispatcher;
-use Illuminate\Container\Container;
 
-$capsule = new Capsule;
-$capsule->addConnection([
-    'driver' => 'sqlite',
-    'database' => ':memory:',
-    'prefix' => 'social_',
-]);
-$capsule->setEventDispatcher(new Dispatcher(new Container));
-$capsule->setAsGlobal();
-$capsule->bootEloquent();
+// 立即触发 webman Initializer 建 sqlite 全局单例：
+// 否则首个 support\Db 调用会以默认 mysql 连接重建 capsule，把这里建的表架空
+\support\Db::connection('test');
 
 Capsule::schema()->create('users', function ($t) {
     $t->increments('id');
@@ -167,6 +168,70 @@ Capsule::schema()->create('live_rooms', function ($t) {
     $t->timestamp('ended_at')->nullable();
     $t->timestamps();
     $t->index(['status', 'updated_at']);
+});
+
+// M6a 虚拟经济六表（与 database/install.sql 对齐）
+Capsule::schema()->create('wallets', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id')->unique();
+    $t->unsignedBigInteger('coins')->default(0);
+    $t->timestamps();
+});
+Capsule::schema()->create('currency_transactions', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id');
+    $t->string('type', 32);
+    $t->integer('amount');
+    $t->unsignedBigInteger('balance_after')->default(0);
+    $t->string('ref_type', 32)->nullable();
+    $t->string('ref_id', 64)->nullable();
+    $t->string('note', 500)->default('');
+    $t->timestamps();
+    $t->unique(['ref_type', 'ref_id']);
+    $t->index(['user_id', 'created_at']);
+});
+Capsule::schema()->create('gift_catalog', function ($t) {
+    $t->increments('id');
+    $t->string('name', 64);
+    $t->unsignedBigInteger('coins_price')->default(1);
+    $t->string('effect_key', 32)->default('');
+    $t->tinyInteger('status')->default(1);
+    $t->integer('sort')->default(0);
+    $t->timestamps();
+});
+Capsule::schema()->create('gifts_given', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('from_uid');
+    $t->unsignedBigInteger('to_uid');
+    $t->unsignedBigInteger('room_id')->default(0);
+    $t->tinyInteger('room_type')->default(1);
+    $t->unsignedBigInteger('gift_id');
+    $t->unsignedInteger('quantity')->default(1);
+    $t->unsignedBigInteger('coins_total');
+    $t->string('client_ref', 64)->nullable();
+    $t->timestamps();
+    $t->unique('client_ref');
+    $t->index(['from_uid', 'created_at']);
+    $t->index(['to_uid', 'created_at']);
+    $t->index('room_id');
+});
+Capsule::schema()->create('streamer_earnings', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('streamer_uid');
+    $t->unsignedBigInteger('gift_given_id')->unique();
+    $t->unsignedInteger('ratio');
+    $t->unsignedBigInteger('coins_amount');
+    $t->timestamps();
+    $t->index(['streamer_uid', 'created_at']);
+});
+Capsule::schema()->create('products', function ($t) {
+    $t->increments('id');
+    $t->string('platform', 16);
+    $t->string('sku', 128);
+    $t->unsignedBigInteger('coins')->default(0);
+    $t->tinyInteger('status')->default(1);
+    $t->timestamps();
+    $t->unique(['platform', 'sku']);
 });
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求

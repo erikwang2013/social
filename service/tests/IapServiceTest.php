@@ -54,7 +54,7 @@ class IapServiceTest extends TestCase
     public function testChannelNotConfigured(): void
     {
         // 默认真实校验器；config('iap.*') 未配置时直接 503，不发网络请求
-        $res = IapService::recharge(self::UID, 'google', self::SKU, 'fake-receipt');
+        $res = IapService::recharge(self::UID, 'apple', self::SKU, 'fake-receipt');
         $this->assertSame(503, $res['code']);
         $this->assertSame('iap.channel_not_configured', $res['lang_key']);
         $this->assertSame(0, WalletService::balance(self::UID));

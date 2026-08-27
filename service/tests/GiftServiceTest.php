@@ -16,36 +16,37 @@ class GiftServiceTest extends TestCase
 {
     private const UID = 99011;
     private const STREAMER = 99012;
-    private const GIFT_ID = 999001;
-    private const ROOM_ID = 998001;
     private const COINS_PRICE = 100;
+
+    private int $giftId;
+    private int $roomId;
 
     protected function setUp(): void
     {
-        GiftGiven::where('room_id', self::ROOM_ID)->delete();
+        GiftGiven::where('from_uid', self::UID)->delete();
         StreamerEarning::where('streamer_uid', self::STREAMER)->delete();
         CurrencyTransaction::whereIn('user_id', [self::UID, self::STREAMER])->delete();
         Wallet::whereIn('user_id', [self::UID, self::STREAMER])->delete();
-        GiftCatalog::where('id', self::GIFT_ID)->delete();
-        LiveRoom::where('id', self::ROOM_ID)->delete();
+        GiftCatalog::where('name', '火箭')->delete();
+        LiveRoom::where('title', '测试直播间')->delete();
         $this->seed();
     }
 
     private function seed(): void
     {
-        GiftCatalog::create([
-            'id' => self::GIFT_ID, 'name' => '火箭', 'coins_price' => self::COINS_PRICE,
+        $this->giftId = GiftCatalog::create([
+            'name' => '火箭', 'coins_price' => self::COINS_PRICE,
             'effect_key' => 'rocket', 'status' => 1, 'sort' => 1,
-        ]);
-        LiveRoom::create([
-            'id' => self::ROOM_ID, 'owner_id' => self::STREAMER, 'title' => '测试直播间', 'status' => 1,
-        ]);
+        ])->id;
+        $this->roomId = LiveRoom::create([
+            'owner_id' => self::STREAMER, 'title' => '测试直播间', 'status' => 1,
+        ])->id;
         WalletService::credit(self::UID, 1000, 'test', 'gs1');
     }
 
     public function testSendDeductsAndSplits(): void
     {
-        $res = GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 2, 'client-ref-gs-0001');
+        $res = GiftService::send(self::UID, $this->roomId, $this->giftId, 2, 'client-ref-gs-0001');
         $this->assertSame(0, $res['code']);
         $this->assertSame(800, $res['data']['balance']); // 1000 - 100*2
         $this->assertSame(800, WalletService::balance(self::UID));
@@ -65,8 +66,8 @@ class GiftServiceTest extends TestCase
 
     public function testSendRetryIdempotent(): void
     {
-        $first = GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 2, 'client-ref-gs-0002');
-        $second = GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 2, 'client-ref-gs-0002');
+        $first = GiftService::send(self::UID, $this->roomId, $this->giftId, 2, 'client-ref-gs-0002');
+        $second = GiftService::send(self::UID, $this->roomId, $this->giftId, 2, 'client-ref-gs-0002');
         $this->assertSame(0, $second['code']);
         $this->assertSame($first['data']['gift_given_id'], $second['data']['gift_given_id']);
         $this->assertSame(1, GiftGiven::where('client_ref', 'client-ref-gs-0002')->count());
@@ -77,7 +78,7 @@ class GiftServiceTest extends TestCase
     public function testSendInsufficient(): void
     {
         WalletService::debit(self::UID, 900, 'test', 'gs2'); // 剩 100
-        $res = GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 2, 'client-ref-gs-0003'); // 需 200
+        $res = GiftService::send(self::UID, $this->roomId, $this->giftId, 2, 'client-ref-gs-0003'); // 需 200
         $this->assertSame(422, $res['code']);
         $this->assertSame('wallet.insufficient', $res['lang_key']);
         $this->assertSame(100, WalletService::balance(self::UID));
@@ -86,26 +87,26 @@ class GiftServiceTest extends TestCase
 
     public function testSendRoomNotFound(): void
     {
-        $res = GiftService::send(self::UID, 999999, self::GIFT_ID, 1, 'client-ref-gs-0004');
+        $res = GiftService::send(self::UID, 999999, $this->giftId, 1, 'client-ref-gs-0004');
         $this->assertSame(404, $res['code']);
         $this->assertSame('live.room_not_found', $res['lang_key']);
     }
 
     public function testSendGiftNotFound(): void
     {
-        $res = GiftService::send(self::UID, self::ROOM_ID, 999999, 1, 'client-ref-gs-0005');
+        $res = GiftService::send(self::UID, $this->roomId, 999999, 1, 'client-ref-gs-0005');
         $this->assertSame(404, $res['code']);
         $this->assertSame('gift.not_found', $res['lang_key']);
     }
 
     public function testSendQuantityInvalid(): void
     {
-        $this->assertSame(422, GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 0, 'client-ref-gs-0006')['code']);
-        $this->assertSame(422, GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 101, 'client-ref-gs-0007')['code']);
+        $this->assertSame(422, GiftService::send(self::UID, $this->roomId, $this->giftId, 0, 'client-ref-gs-0006')['code']);
+        $this->assertSame(422, GiftService::send(self::UID, $this->roomId, $this->giftId, 101, 'client-ref-gs-0007')['code']);
     }
 
     public function testSendClientRefInvalid(): void
     {
-        $this->assertSame(422, GiftService::send(self::UID, self::ROOM_ID, self::GIFT_ID, 1, 'short')['code']);
+        $this->assertSame(422, GiftService::send(self::UID, $this->roomId, $this->giftId, 1, 'short')['code']);
     }
 }
