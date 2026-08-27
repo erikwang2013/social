@@ -7,4 +7,5 @@ pub mod live;
 pub mod protocol;
 pub mod resilience;
 pub mod store;
+pub mod upload;
 pub mod voice;

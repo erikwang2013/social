@@ -6,9 +6,10 @@
 use crate::live::{InMemoryLiveStore, LiveCenter, LiveConfig, LiveError};
 use crate::resilience::{BreakerError, CircuitBreaker, RateLimiter};
 use crate::store::RedisConn;
-use crate::voice::{InMemoryRoomStore, RoomCenter, RoomError};
-use axum::extract::{Path, State};
-use axum::http::{HeaderMap, StatusCode};
+use crate::upload::{valid_file_name, VoiceStorage};
+use crate::voice::{sfu_http, InMemoryRoomStore, RoomCenter, RoomError};
+use axum::extract::{Multipart, Path, State};
+use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -20,6 +21,7 @@ use std::time::Duration;
 pub struct AppState {
     pub live: Arc<LiveCenter<InMemoryLiveStore>>,
     pub voice: Arc<RoomCenter<InMemoryRoomStore>>,
+    pub voice_storage: Arc<VoiceStorage>,
     pub limiter: Arc<RateLimiter>,
     pub breaker: Arc<CircuitBreaker>,
 }
@@ -45,7 +47,9 @@ pub fn app() -> Router {
                     q.enqueue_broadcast(&payload);
                 }
             }),
+            Box::new(sfu_http),
         )),
+        voice_storage: Arc::new(VoiceStorage::new(std::env::var("VOICE_DIR").unwrap_or_else(|_| "storage/voice".into()))),
         limiter: Arc::new(RateLimiter::new(60, Duration::from_secs(60))),
         breaker: Arc::new(CircuitBreaker::new(3, Duration::from_secs(10))),
     };
@@ -58,6 +62,8 @@ pub fn app() -> Router {
         .route("/api/v1/voice/rooms", get(voice_rooms).post(voice_create_room))
         .route("/api/v1/voice/rooms/{id}", get(voice_room_detail))
         .route("/api/v1/voice/rooms/{id}/close", post(voice_close_room))
+        .route("/api/v1/im/voice", post(voice_upload))
+        .route("/api/v1/voice/{file}", get(voice_file))
         .with_state(state)
 }
 
@@ -212,5 +218,56 @@ async fn voice_close_room(State(st): State<AppState>, headers: HeaderMap, Path(i
             let (s, c, m, k) = voice_map(&e);
             fail(s, c, m, k)
         }
+    }
+}
+
+/// 上传语音：multipart field=voice → {voice_url, voice_duration}（对齐 PHP ImVoiceController::upload）
+async fn voice_upload(State(st): State<AppState>, headers: HeaderMap, mut multipart: Multipart) -> Response {
+    let uid = uid_of(&headers);
+    if !st.limiter.allow(&format!("{}:/api/v1/im/voice", uid)) {
+        return fail(StatusCode::TOO_MANY_REQUESTS, 429, "请求过于频繁", "rate_limited");
+    }
+    let mut bytes = None;
+    while let Ok(Some(field)) = multipart.next_field().await {
+        if field.name() == Some("voice") {
+            match field.bytes().await {
+                Ok(b) => {
+                    bytes = Some(b);
+                    break;
+                }
+                Err(_) => return fail(StatusCode::BAD_REQUEST, 400, "缺少 voice 文件", "voice.file_required"),
+            }
+        }
+    }
+    let Some(bytes) = bytes else {
+        return fail(StatusCode::BAD_REQUEST, 400, "缺少 voice 文件", "voice.file_required");
+    };
+    if bytes.len() as u64 > crate::upload::MAX_BYTES {
+        return fail(StatusCode::PAYLOAD_TOO_LARGE, 413, "voice.too_large", "voice.too_large");
+    }
+    let tmp = std::env::temp_dir().join(format!("voice_up_{}_{}.upload", uid, std::process::id()));
+    if std::fs::write(&tmp, &bytes).is_err() {
+        return fail(StatusCode::INTERNAL_SERVER_ERROR, 500, "voice.io_failed", "voice.io_failed");
+    }
+    let out = match st.voice_storage.ingest(&tmp) {
+        Ok(v) => v,
+        Err(e) => {
+            let _ = std::fs::remove_file(&tmp);
+            let (s, c, k) = e.status();
+            return fail(StatusCode::from_u16(s).unwrap(), c, k, k); // PHP: message = lang_key
+        }
+    };
+    let _ = std::fs::remove_file(&tmp);
+    ok(json!({"voice_url": format!("/api/v1{}", out.url), "voice_duration": out.duration}))
+}
+
+/// 静态语音文件（白名单防路径穿越），对齐 PHP ImVoiceController::voiceFile
+async fn voice_file(State(st): State<AppState>, Path(file): Path<String>) -> Response {
+    if !valid_file_name(&file) {
+        return fail(StatusCode::BAD_REQUEST, 400, "bad file", "voice.bad_file");
+    }
+    match std::fs::read(st.voice_storage.path_of(&file)) {
+        Ok(bytes) => (StatusCode::OK, [(header::CONTENT_TYPE, "audio/mp4")], bytes).into_response(),
+        Err(_) => fail(StatusCode::NOT_FOUND, 404, "not found", "voice.not_found"),
     }
 }

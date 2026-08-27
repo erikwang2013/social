@@ -9,7 +9,9 @@ tonic = "0.12"
 tonic-health = "0.12"
 prost = "0.13"
 serde_json = { workspace = true }
+mysql_async = "0.34"
 bee_search = { path = "../bee_search", features = ["elasticsearch"] }
+bee_live = { path = "../bee_live" }
 
 [build-dependencies]
 tonic-build = "0.12"

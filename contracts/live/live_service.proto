@@ -1,0 +1,67 @@
+// Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+// M6: live/voice gRPC contract — PHP controllers → Rust state machines.
+
+syntax = "proto3";
+
+package social.live.v1;
+
+option php_namespace = "Live\\V1";
+option php_metadata_namespace = "Live\\V1\\GPBMetadata";
+
+// 统一响应：code=0 成功；否则 code=HTTP status、message=lang_key、data_json=业务数据。
+message LiveReply {
+  int32 code = 1;
+  string message = 2;
+  string lang_key = 3;
+  string data_json = 4;
+  bytes bytes_data = 5;
+}
+
+message CreateRoomRequest {
+  int64 uid = 1;
+  string title = 2;
+}
+
+message CreateVoiceRoomRequest {
+  int64 uid = 1;
+  string name = 2;
+}
+
+message ListRoomsRequest {
+  int64 uid = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message IdRequest {
+  int64 uid = 1;
+  int64 id = 2;
+}
+
+message UploadVoiceRequest {
+  int64 uid = 1;
+  bytes voice = 2;
+}
+
+message GetVoiceFileRequest {
+  string file = 1;
+}
+
+service LiveService {
+  rpc CreateRoom(CreateRoomRequest) returns (LiveReply);
+  rpc ListRooms(ListRoomsRequest) returns (LiveReply);
+  rpc RoomDetail(IdRequest) returns (LiveReply);
+  rpc CloseRoom(IdRequest) returns (LiveReply);
+  rpc MicUp(IdRequest) returns (LiveReply);
+  rpc MicDown(IdRequest) returns (LiveReply);
+}
+
+service VoiceService {
+  rpc CreateRoom(CreateVoiceRoomRequest) returns (LiveReply);
+  rpc ListRooms(ListRoomsRequest) returns (LiveReply);
+  rpc RoomDetail(IdRequest) returns (LiveReply);
+  rpc CloseRoom(IdRequest) returns (LiveReply);
+  rpc ListCalls(ListRoomsRequest) returns (LiveReply);
+  rpc UploadVoice(UploadVoiceRequest) returns (LiveReply);
+  rpc GetVoiceFile(GetVoiceFileRequest) returns (LiveReply);
+}

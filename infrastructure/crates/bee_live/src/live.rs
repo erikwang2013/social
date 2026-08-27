@@ -41,6 +41,7 @@ pub trait LiveStore: Send + Sync {
     fn create_room(&self, owner: i64, title: &str) -> i64;
     fn set_room_urls(&self, id: i64, push_url: &str, play_url: &str);
     fn find_room(&self, id: i64) -> Option<RoomRow>;
+    fn list_rooms(&self, offset: u64, limit: u64) -> Vec<RoomRow>;
     fn set_room_closed(&self, id: i64, ended_at: &str);
     fn sadd(&self, key: &str, member: i64);
     fn srem(&self, key: &str, member: i64);
@@ -105,6 +106,12 @@ impl<S: LiveStore> LiveCenter<S> {
 
     pub fn find_room(&self, id: i64) -> Option<RoomRow> {
         self.store.find_room(id)
+    }
+
+    /// 直播中列表（status=1），PHP: `where('status', 1)->forPage($page, 20)`。
+    /// 调用方补 online_count/mic_count 实时字段（gRPC/HTTP 壳）。
+    pub fn list_rooms(&self, offset: u64, limit: u64) -> Vec<RoomRow> {
+        self.store.list_rooms(offset, limit)
     }
 
     pub fn join(&self, room_id: i64, uid: i64, broadcast: bool) -> Result<(), LiveError> {
@@ -281,6 +288,19 @@ impl LiveStore for InMemoryLiveStore {
             r.status = 0;
             r.ended_at = Some(ended_at.into());
         }
+    }
+
+    fn list_rooms(&self, offset: u64, limit: u64) -> Vec<RoomRow> {
+        let mut v: Vec<RoomRow> = self
+            .rooms
+            .lock()
+            .unwrap()
+            .values()
+            .filter(|r| r.status == 1)
+            .cloned()
+            .collect();
+        v.sort_by_key(|r| std::cmp::Reverse(r.id)); // 新开播在前（对齐 started_at DESC）
+        v.into_iter().skip(offset as usize).take(limit as usize).collect()
     }
 
     fn sadd(&self, key: &str, member: i64) {

@@ -1,8 +1,10 @@
 tonic::include_proto!("social");
+mod live;
 mod search;
 
 use bee_search::SearchEngine;
 use bee_search::elasticsearch::Elasticsearch;
+use live::{LiveSrvServer, LiveSvc, VoiceSrvServer, VoiceSvc};
 use search::{SearchServiceServer as SearchServer2, SearchSvc};
 use social::common::v1::Pong;
 use social::infra::v1::{
@@ -32,14 +34,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (mut health_reporter, health_service) = tonic_health::server::health_reporter();
     health_reporter.set_serving::<InfraServiceServer<InfraSvc>>().await;
     health_reporter.set_serving::<SearchServer2<SearchSvc>>().await;
+    let mut builder = Server::builder()
+        .add_service(health_service)
+        .add_service(InfraServiceServer::new(InfraSvc))
+        .add_service(SearchServer2::new(SearchSvc { engine }));
+    // M6: live/voice 服务依赖 MySQL+Redis，就绪才注册；否则 health 报 UNKNOWN → PHP 端降级
+    if let Some(svc) = LiveSvc::from_env() {
+        health_reporter.set_serving::<LiveSrvServer<LiveSvc>>().await;
+        builder = builder.add_service(LiveSrvServer::new(svc));
+    }
+    if let Some(svc) = VoiceSvc::from_env() {
+        health_reporter.set_serving::<VoiceSrvServer<VoiceSvc>>().await;
+        builder = builder.add_service(VoiceSrvServer::new(svc));
+    }
     // HealthReporter drop 时会把所有服务标记 NOT_SERVING，forget 保持存活至进程退出
     std::mem::forget(health_reporter);
 
-    Server::builder()
-        .add_service(health_service)
-        .add_service(InfraServiceServer::new(InfraSvc))
-        .add_service(SearchServer2::new(SearchSvc { engine }))
-        .serve(addr)
-        .await?;
+    builder.serve(addr).await?;
     Ok(())
 }

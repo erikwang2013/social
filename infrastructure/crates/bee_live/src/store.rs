@@ -15,7 +15,7 @@ use std::sync::Mutex;
 /// 广播队列键（PHP LiveCenter/WsServer 同键：rpush → lrange/ltrim 消费）。
 pub const BROADCAST_QUEUE: &str = "social:live:broadcast";
 
-fn mysql_opts() -> Opts {
+pub fn mysql_opts() -> Opts {
     let host = std::env::var("DB_HOST").unwrap_or_else(|_| "127.0.0.1".into());
     let port = std::env::var("DB_PORT").ok().and_then(|v| v.parse().ok()).unwrap_or(3306);
     let db = std::env::var("DB_DATABASE").unwrap_or_else(|_| "social".into());
@@ -192,6 +192,31 @@ impl LiveStore for MySqlLiveStore {
         });
     }
 
+    fn list_rooms(&self, offset: u64, limit: u64) -> Vec<RoomRow> {
+        let opts = self.opts.clone();
+        self.rt.block_on(async move {
+            let Ok(mut conn) = Conn::new(opts).await else { return Vec::new() };
+            conn.exec::<(i64, i64, String, i32, String, String, Option<String>, Option<String>), _, _>(
+                "SELECT id, owner_id, title, status, push_url, play_url, DATE_FORMAT(started_at, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(ended_at, '%Y-%m-%d %H:%i:%s') FROM social_live_rooms WHERE status = 1 ORDER BY started_at DESC LIMIT ? OFFSET ?",
+                Params::from((limit, offset)),
+            )
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(id, owner_id, title, status, push_url, play_url, started_at, ended_at)| RoomRow {
+                id,
+                owner_id,
+                title,
+                status,
+                push_url,
+                play_url,
+                started_at,
+                ended_at,
+            })
+            .collect()
+        })
+    }
+
     fn sadd(&self, key: &str, member: i64) {
         self.redis.sadd(key, member)
     }
@@ -272,6 +297,22 @@ impl RoomStore for MySqlRoomStore {
                 .exec_drop("UPDATE social_voice_rooms SET status = 0, updated_at = NOW() WHERE id = ?", Params::from((id,)))
                 .await;
         });
+    }
+
+    fn list_rooms(&self, offset: u64, limit: u64) -> Vec<VoiceRoomRow> {
+        let opts = self.opts.clone();
+        self.rt.block_on(async move {
+            let Ok(mut conn) = Conn::new(opts).await else { return Vec::new() };
+            conn.exec::<(i64, i64, String, i32), _, _>(
+                "SELECT id, owner_id, name, status FROM social_voice_rooms WHERE status = 1 ORDER BY updated_at DESC LIMIT ? OFFSET ?",
+                Params::from((limit, offset)),
+            )
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .map(|(id, owner_id, name, status)| VoiceRoomRow { id, owner_id, name, status })
+            .collect()
+        })
     }
 
     fn member_role(&self, room_id: i64, uid: i64) -> Option<i32> {
@@ -358,6 +399,9 @@ impl RoomStore for MySqlRoomStore {
     }
     fn smembers(&self, key: &str) -> Vec<i64> {
         self.redis.smembers(key)
+    }
+    fn scard(&self, key: &str) -> u64 {
+        self.redis.scard(key)
     }
     fn del(&self, key: &str) {
         self.redis.del(key)
