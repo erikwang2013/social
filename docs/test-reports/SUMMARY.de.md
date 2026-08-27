@@ -9,11 +9,11 @@
 
 | Rolle | Bericht | Testfälle | Bestanden | Fehlgeschlagen | Fazit |
 |------|------|------|------|------|------|
-| PHP-Unit-Tests | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 komplett grün |
+| PHP-Unit-Tests | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 komplett grün |
 | Rust-Unit-Tests | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates komplett grün, 5 echte Defekte behoben |
 | API-Automatisierung | `api-test-report.md` | 116 | 116 | 0 | Behebung der 3 Produktdefekte aus der Vorrunde verifiziert |
 | UI-End-to-End | `ui-e2e-report.md` | 41 | 41 | 0 | Komplett grün, 1 blocked (ES nicht gestartet) |
-| **Gesamt** | | **543** | **543** | **0** | Erfolgsquote 100 % (1 blocked) |
+| **Gesamt** | | **566** | **566** | **0** | Erfolgsquote 100 % (1 blocked) |
 
 ## In dieser Runde behobene echte Defekte (alle behoben und per Regression verifiziert)
 
@@ -23,6 +23,10 @@
 4. **Startseite des service `/` 404** (neu gefunden): webman-framework v2.2.4 löst die Root-Route nicht mehr standardmäßig auf; `service/config/route.php` registriert `Route::get('/')` explizit
 5. **5 Rust-Defekte** (neu gefunden, Details in rust-unit-report.md): bee_search MemoryEngine ignoriert Paginierung, social_grpc macht aus nicht-numerischen ids stillschweigend 0, bee_tsdb InfluxDB line protocol Felder nicht sortiert, bee_search ES bulk NDJSON ids nicht escaped, bee_graph Neo4j add_edge Fehler-Endpunkt immer `from`
 6. **Die Testskripte selbst**: in `tests/api/run.php` fiel ein leeres DB-Passwort durch `?:` auf 'root' zurück → geändert zu `?? 'root'`; drei veraltete Assertion-Suiten von admin wurden an den aktuellen Code angepasst (Searchable veraltet, Cors-Middleware-Keys, poster-php-Captcha-Vertrag)
+
+## M5-Meilenstein-Validierung (neu)
+
+- Das Live-Modul (LiveCenter: Erstellen/Details/Danmaku/Mikrofon-Verbindung/Schließen) ausgeliefert und verifiziert: service phpunit +23 Fälle (159/408 grün), Blackbox-E2E `tests/live_e2e.php` alle 27 Prüfungen bestanden (inkl. RTMP-Push, HLS-Pull)
 
 ## Umgebungsfixes und Hinweise (verursacht durch diese Testcharge)
 

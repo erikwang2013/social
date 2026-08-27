@@ -9,7 +9,7 @@
 
 | Projekt | Testfälle | Assertions | Ergebnis |
 |------|------|------|------|
-| service | 136 | 348 | ✅ Alle bestanden (OK) |
+| service | 159 | 408 | ✅ Alle bestanden (OK) |
 | admin | 67 | 180 | ✅ Alle bestanden (OK) |
 
 ## Umgebungshinweise
@@ -20,10 +20,10 @@
 - service und admin haben beide kein `.env` (das Repo hat die fälschlich eingecheckten env entfernt, commit e5379fc); die Apps laufen über die Fallbacks `getenv('X') ?: Standardwert` in `config/*.php`
 - **Imagick-Erweiterung geladen, aber Konstante `RESOURCETYPE_PIXELS` fehlt** (dieser Build hat nur den neuen RESOURCETYPE_*-Konstantensatz); der ImagickDriver-Konstruktor von poster-php referenziert diese Konstante und stürzt ab
 
-## service (136/136 komplett grün)
+## service (159/159 komplett grün)
 
 - Identisch mit der Baseline der letzten Charge; abgedeckt: Authentifizierung/Middleware/JWT, Benutzer, Beiträge, Kommentare, Follower, Benachrichtigungen, Such-Synchronisierung, IM, Räume, Anrufe (CallCenter/CallState), Sprache, Modellbeziehungen, Aktionsverarbeitung (WS)
-- In dieser Charge keine Codeänderungen, keine Fehlschläge
+- M5 ergänzte das Live-Modul (LiveCenter: erstellen/detail/danmaku/mikro-link/schließen), 23 Fälle, keine Regressionen
 
 ## admin (letzte Charge 49/60 → diese Charge 67/67 komplett grün)
 

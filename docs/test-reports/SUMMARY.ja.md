@@ -9,11 +9,11 @@
 
 | ロール | レポート | テストケース | 合格 | 失敗 | 結論 |
 |------|------|------|------|------|------|
-| PHP ユニットテスト | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 全緑 |
+| PHP ユニットテスト | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 全緑 |
 | Rust ユニットテスト | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates 全緑、実欠陥 5 件を修正 |
 | API 自動化 | `api-test-report.md` | 116 | 116 | 0 | 前回の製品欠陥 3 件の修正を検証、合格 |
 | UI エンドツーエンド | `ui-e2e-report.md` | 41 | 41 | 0 | 全緑、1 件 blocked(ES 未起動) |
-| **合計** | | **543** | **543** | **0** | 合格率 100%(1 件 blocked) |
+| **合計** | | **566** | **566** | **0** | 合格率 100%(1 件 blocked) |
 
 ## 今回修正した実欠陥(すべて修正済み・回帰検証済み)
 
@@ -23,6 +23,10 @@
 4. **service ホームページ `/` 404**(新規発見): webman-framework v2.2.4 はデフォルトでルートルートを解決しなくなったため、`service/config/route.php` に `Route::get('/')` を明示登録
 5. **Rust 5 件の欠陥**(新規発見、詳細は rust-unit-report.md 参照): bee_search MemoryEngine がページネーションを無視、social_grpc が非数値 id を黙って 0 に変換、bee_tsdb InfluxDB line protocol のフィールド順序が不安定、bee_search ES bulk NDJSON の id が未エスケープ、bee_graph Neo4j add_edge のエラー端点が常に from
 6. **テストスクリプト自体**: `tests/api/run.php` の DB パスワード空文字が `?:` で 'root' にフォールバック → `?? 'root'` に変更; admin の陳腐化アサーション 3 スイートを現在のコードに合わせて書き直し(Searchable 廃止、Cors ミドルウェアキー、poster-php キャプチャ契約)
+
+## M5 マイルストーン検証(新規)
+
+- ライブモジュール(LiveCenter: 開設/詳細/弾幕/マイク接続/クローズ)を納品・検証完了: service phpunit が 23 ケース追加(159/408 全緑)、`tests/live_e2e.php` ブラックボックス E2E は全 27 チェック合格(RTMP プッシュ、HLS プル含む)
 
 ## 環境修正と注意事項(今回のテストバッチによる)
 

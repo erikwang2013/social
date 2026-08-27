@@ -10,7 +10,7 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
 - **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M4 entregados (mensajes de voz, llamadas 1v1, salas de voz); M5 planea streaming en vivo (SRS) y economía virtual
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6 planea economía virtual
 
 ## Resumen de funciones
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · protocolo de tramas Envelope · push de Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: máquina de estados de llamada 1v1 (timeout de timbre 30 s · exclusión mutua por ocupado)
 │   ├── room/         # RoomCenter: salas de voz (8 asientos · traducción de señalización SFU)
+│   ├── live/         # LiveCenter: salas en vivo (push RTMP / pull HLS · danmaku · 8 micrófonos)
 │   ├── model/        # Modelos de datos
 │   ├── process/      # Procesos personalizados Http / WsServer
 │   └── storage/      # Almacenamiento de archivos de voz (m4a, fuera de la base de datos)
 ├── config/           # route.php (grupo de rutas /api/v1) · process.php (:8788/:8789)
-└── tests/            # Pruebas unitarias phpunit + E2E de caja negra im_e2e.php / voice_e2e.php
+└── tests/            # Pruebas unitarias phpunit + E2E de caja negra im_e2e.php / voice_e2e.php / live_e2e.php
 ```
 
 ## Uso
@@ -101,6 +102,7 @@ vendor/bin/phpunit                    # Pruebas unitarias (79 tests / 230 assert
 
 php tests/im_e2e.php                  # E2E de caja negra IM (requiere :8788/:8789 en ejecución + Redis)
 php tests/voice_e2e.php               # E2E de voz: versionado / mensajes de voz / llamadas / salas de voz
+php tests/live_e2e.php                # E2E en vivo: salas / danmaku / micrófonos / cierre (push RTMP, pull HLS)
 
 cd media/sfu
 npm run smoke                         # Smoke test del protocolo SFU /signal (requiere contenedor Docker o node local)

@@ -1,8 +1,7 @@
 <div style="padding:18px;max-width: 1024px;margin:0 auto;background-color:#fff;color:#333">
 <h1>webman</h1>
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
+**语言 / Languages:** [中文](README.md) · [English](README.en.md) 
 Ultra-high-performance PHP framework built on <a href="https://www.workerman.net" target="__blank">workerman</a>
 
 

@@ -381,22 +381,22 @@
         },
         {
             "name": "erikwang2013/encryptable",
-            "version": "v2.0.3",
+            "version": "v2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/encryptable.git",
-                "reference": "4dc0ff12ec9f198f65edfa4378ea06ec8075c69b"
+                "reference": "ff3a1fe17fb34099f0c8af35e5f13983b372a02b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/encryptable/zipball/4dc0ff12ec9f198f65edfa4378ea06ec8075c69b",
-                "reference": "4dc0ff12ec9f198f65edfa4378ea06ec8075c69b",
+                "url": "https://api.github.com/repos/erikwang2013/encryptable/zipball/ff3a1fe17fb34099f0c8af35e5f13983b372a02b",
+                "reference": "ff3a1fe17fb34099f0c8af35e5f13983b372a02b",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^2.2",
                 "ext-openssl": "*",
-                "php": "^8.2",
+                "php": "^8.0",
                 "psr/container": "^1.1|^2.0"
             },
             "require-dev": {
@@ -463,31 +463,31 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/encryptable/issues",
-                "source": "https://github.com/erikwang2013/encryptable/tree/v2.0.3"
+                "source": "https://github.com/erikwang2013/encryptable/tree/v2.0.4"
             },
-            "time": "2026-08-17T04:47:01+00:00"
+            "time": "2026-08-26T19:38:15+00:00"
         },
         {
             "name": "erikwang2013/encryption",
-            "version": "v1.0.6",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/encryption.git",
-                "reference": "19823d519a47376738babcb12bcc399ec2c4a307"
+                "reference": "5708029add24e70bfbbb2d052349b7e4144ca648"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/encryption/zipball/19823d519a47376738babcb12bcc399ec2c4a307",
-                "reference": "19823d519a47376738babcb12bcc399ec2c4a307",
+                "url": "https://api.github.com/repos/erikwang2013/encryption/zipball/5708029add24e70bfbbb2d052349b7e4144ca648",
+                "reference": "5708029add24e70bfbbb2d052349b7e4144ca648",
                 "shasum": ""
             },
             "require": {
                 "ext-openssl": "*",
-                "php": "^8.1",
+                "php": "^8.0",
                 "pohoc/crypto-sm": "^0.0.2"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5"
+                "phpunit/phpunit": "^9.6 || ^10.5"
             },
             "suggest": {
                 "ext-gmp": "SM2 加解密与密钥生成（pohoc/crypto-sm 的 SM2 依赖 GMP 大数运算）",
@@ -516,32 +516,32 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/encryption/issues",
-                "source": "https://github.com/erikwang2013/encryption/tree/v1.0.6"
+                "source": "https://github.com/erikwang2013/encryption/tree/v1.0.7"
             },
-            "time": "2026-08-17T05:11:11+00:00"
+            "time": "2026-08-26T18:31:00+00:00"
         },
         {
             "name": "erikwang2013/hashids",
-            "version": "v1.0.5",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/hashids.git",
-                "reference": "8286d88470bbe5095c7663b23db99ec48d394a03"
+                "reference": "d7f0c6129add012bf7c25ea6fd8e3ca243f3b489"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/hashids/zipball/8286d88470bbe5095c7663b23db99ec48d394a03",
-                "reference": "8286d88470bbe5095c7663b23db99ec48d394a03",
+                "url": "https://api.github.com/repos/erikwang2013/hashids/zipball/d7f0c6129add012bf7c25ea6fd8e3ca243f3b489",
+                "reference": "d7f0c6129add012bf7c25ea6fd8e3ca243f3b489",
                 "shasum": ""
             },
             "require": {
-                "hashids/hashids": "^5.0",
-                "php": "^8.1"
+                "hashids/hashids": "^4.1 || ^5.0",
+                "php": "^8.0"
             },
             "require-dev": {
-                "illuminate/support": "^10.0|^11.0|^12.0",
+                "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
                 "mockery/mockery": "^1.6",
-                "phpunit/phpunit": "^10.5|^11.0"
+                "phpunit/phpunit": "^9.6|^10.5|^11.0"
             },
             "suggest": {
                 "hyperf/framework": "For Hyperf integration.",
@@ -593,20 +593,20 @@
                 "issues": "https://github.com/erikwang2013/hashids/issues",
                 "source": "https://github.com/erikwang2013/hashids"
             },
-            "time": "2026-08-02T08:15:43+00:00"
+            "time": "2026-08-26T18:34:04+00:00"
         },
         {
             "name": "erikwang2013/jwt-webman",
-            "version": "v2.0.6",
+            "version": "v2.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/jwt-webman.git",
-                "reference": "4425825ed55ec4fe6b433041704dcef3dc91309a"
+                "reference": "6aebaa9ee6f0c09792ab40648278cf161e441db5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/jwt-webman/zipball/4425825ed55ec4fe6b433041704dcef3dc91309a",
-                "reference": "4425825ed55ec4fe6b433041704dcef3dc91309a",
+                "url": "https://api.github.com/repos/erikwang2013/jwt-webman/zipball/6aebaa9ee6f0c09792ab40648278cf161e441db5",
+                "reference": "6aebaa9ee6f0c09792ab40648278cf161e441db5",
                 "shasum": ""
             },
             "require": {
@@ -671,20 +671,20 @@
                 "issues": "https://github.com/erikwang2013/jwt-webman/issues",
                 "source": "https://github.com/erikwang2013/jwt-webman"
             },
-            "time": "2026-08-17T04:50:57+00:00"
+            "time": "2026-08-26T20:35:20+00:00"
         },
         {
             "name": "erikwang2013/poster-php",
-            "version": "v1.2.3",
+            "version": "v1.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/poster-php.git",
-                "reference": "f0e2f9efed86c8196d174296112326df821860ba"
+                "reference": "7332519ef23699e3471e7231625f46376b15ff36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/poster-php/zipball/f0e2f9efed86c8196d174296112326df821860ba",
-                "reference": "f0e2f9efed86c8196d174296112326df821860ba",
+                "url": "https://api.github.com/repos/erikwang2013/poster-php/zipball/7332519ef23699e3471e7231625f46376b15ff36",
+                "reference": "7332519ef23699e3471e7231625f46376b15ff36",
                 "shasum": ""
             },
             "require": {
@@ -746,9 +746,9 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/poster-php/issues",
-                "source": "https://github.com/erikwang2013/poster-php/tree/v1.2.3"
+                "source": "https://github.com/erikwang2013/poster-php/tree/v1.2.4"
             },
-            "time": "2026-08-17T05:41:56+00:00"
+            "time": "2026-08-26T18:33:25+00:00"
         },
         {
             "name": "erikwang2013/season",
@@ -834,21 +834,21 @@
         },
         {
             "name": "erikwang2013/security-php",
-            "version": "v1.2.0",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/security-php.git",
-                "reference": "767d100115e90fad6b17d1b48b4c8cfb1ebb458d"
+                "reference": "3e75abf0e13c2c102455b2c66bac828680279535"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/767d100115e90fad6b17d1b48b4c8cfb1ebb458d",
-                "reference": "767d100115e90fad6b17d1b48b4c8cfb1ebb458d",
+                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/3e75abf0e13c2c102455b2c66bac828680279535",
+                "reference": "3e75abf0e13c2c102455b2c66bac828680279535",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^2.0",
-                "php": ">=8.1"
+                "php": ">=8.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^12.5"
@@ -898,9 +898,9 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/security-php/issues",
-                "source": "https://github.com/erikwang2013/security-php/tree/v1.2.0"
+                "source": "https://github.com/erikwang2013/security-php/tree/v1.2.1"
             },
-            "time": "2026-08-17T03:01:48+00:00"
+            "time": "2026-08-26T20:20:55+00:00"
         },
         {
             "name": "erikwang2013/snowflake-php",

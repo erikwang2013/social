@@ -10,7 +10,7 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 - **Business-Services**: webman v2 (PHP 8.3) bedient sowohl REST als auch WebSocket; die API wird über `X-Api-Version` versioniert (Standard v1, kompatibel mit alten `/api/vX`-Pfaden)
 - **Eigene Medienebene**: mediasoup SFU + coturn TURN für die Medienweiterleitung bei 1v1-Sprachanrufen und Sprachräumen (8 Plätze)
 - **Status-Schichtung**: MySQL als Quelle der Geschäftsdaten, Redis für den Echtzeitstatus von Sitzung / IM / Anruf / Raum
-- **Meilensteine**: M0–M4 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume); M5 plant Live-Streaming (SRS) und virtuelle Wirtschaft
+- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6 plant virtuelle Wirtschaft
 
 ## Funktionsübersicht
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · Envelope-Frame-Protokoll · Deliverer-Push · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1-Anruf-Zustandsmaschine (30s Klingel-Timeout · Besetzt-Mutex)
 │   ├── room/         # RoomCenter: Sprachräume (8 Plätze · SFU-Signalübersetzung)
+│   ├── live/         # LiveCenter: Live-Räume (RTMP-Push / HLS-Pull · Danmaku · 8-Platz-Mikrofon)
 │   ├── model/        # Datenmodelle
 │   ├── process/      # Benutzerdefinierte Http-/WsServer-Prozesse
 │   └── storage/      # Speicherung von Sprachdateien (m4a, nicht in der DB)
 ├── config/           # route.php (/api/v1-Routengruppe) · process.php (:8788/:8789)
-└── tests/            # phpunit-Unit-Tests + Blackbox-E2E im_e2e.php / voice_e2e.php
+└── tests/            # phpunit-Unit-Tests + Blackbox-E2E im_e2e.php / voice_e2e.php / live_e2e.php
 ```
 
 ## Verwendung
@@ -101,6 +102,7 @@ vendor/bin/phpunit                    # Unit-Tests (79 tests / 230 assertions)
 
 php tests/im_e2e.php                  # IM-Blackbox-E2E (erfordert laufende :8788/:8789 + Redis)
 php tests/voice_e2e.php               # Sprach-E2E: Versionierung / Sprachnachrichten / Anrufe / Sprachräume
+php tests/live_e2e.php                # Live-E2E: Räume / Danmaku / Mikrofon / Schließen (RTMP-Push, HLS-Pull)
 
 cd media/sfu
 npm run smoke                         # Smoke-Test des SFU-/signal-Protokolls (erfordert Docker-Container oder lokalen node)

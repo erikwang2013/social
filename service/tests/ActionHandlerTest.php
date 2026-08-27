@@ -4,11 +4,13 @@ require __DIR__ . '/bootstrap.php';
 
 use app\model\Conversation;
 use app\model\ConversationMember;
+use app\model\LiveRoom;
 use app\model\Message;
 use app\model\MessageRead;
 use app\ws\ActionHandler;
 use app\ws\ConnectionRegistry;
 use app\ws\Envelope;
+use app\ws\WsRedis;
 use app\ws\WsServer;
 use PHPUnit\Framework\TestCase;
 use Workerman\Connection\TcpConnection;
@@ -25,6 +27,11 @@ class ActionHandlerTest extends TestCase
     protected function setUp(): void
     {
         ConnectionRegistry::reset();
+        try {
+            WsRedis::call(fn($r) => $r->flushdb());
+        } catch (\Throwable) {
+        }
+        LiveRoom::query()->delete();
         // 快照 Worker 静态注册表：new Worker() 会污染全局（令后续测试的
         // Worker::getAllWorkers() 非空 → CallCenter 会走 pcntl_alarm 定时路径导致挂起）
         $this->workersSnapshot = Worker::getAllWorkers();
@@ -193,5 +200,42 @@ class ActionHandlerTest extends TestCase
     {
         $this->handle(['type' => 'typing', 'data' => []]);
         $this->assertSame('invalid typing payload', $this->lastFrame()['data']['msg']);
+    }
+
+    public function testLiveJoinUnknownRoomReturnsError(): void
+    {
+        $this->handle(['type' => 'live_join', 'seq' => 5, 'data' => ['room_id' => 999]]);
+        $frame = $this->lastFrame();
+        $this->assertSame('error', $frame['type']);
+        $this->assertSame(5, $frame['seq']);
+        $this->assertSame('live_room_not_found', $frame['data']['msg']);
+    }
+
+    public function testDanmakuInvalidReturnsError(): void
+    {
+        $roomId = LiveRoom::create(['owner_id' => 1, 'title' => '直播', 'status' => 1, 'push_url' => '', 'play_url' => ''])->id;
+        $this->handle(['type' => 'danmaku_send', 'data' => ['room_id' => $roomId, 'content' => ' ']]);
+        $this->assertSame('danmaku invalid', $this->lastFrame()['data']['msg']);
+    }
+
+    /** 进房→弹幕→上麦→下麦→退房：每步广播回本机 fd，Redis 实时态随之更新 */
+    public function testLiveJoinDanmakuMicLifecycle(): void
+    {
+        $roomId = LiveRoom::create(['owner_id' => 1, 'title' => '直播', 'status' => 1, 'push_url' => '', 'play_url' => ''])->id;
+        $this->handle(['type' => 'live_join', 'data' => ['room_id' => $roomId]]);
+        $this->assertSame('live_join', $this->lastFrame()['type']);
+        $this->handle(['type' => 'danmaku_send', 'data' => ['room_id' => $roomId, 'content' => '大家好']]);
+        $frame = $this->lastFrame();
+        $this->assertSame('danmaku', $frame['type']);
+        $this->assertSame('大家好', $frame['data']['content']);
+        $this->handle(['type' => 'live_mic_up', 'data' => ['room_id' => $roomId]]);
+        $this->assertSame('live_mic_up', $this->lastFrame()['type']);
+        $this->assertSame([1], array_map('intval', WsRedis::call(fn($r) => $r->smembers('live:room:' . $roomId . ':mic')) ?? []));
+        $this->handle(['type' => 'live_mic_down', 'data' => ['room_id' => $roomId]]);
+        $this->assertSame('live_mic_down', $this->lastFrame()['type']);
+        $this->handle(['type' => 'live_leave', 'data' => ['room_id' => $roomId]]);
+        // leave 先从 online 移除再广播，退房者不再收自己的 live_leave（留给房内其他人）
+        $this->assertSame('live_mic_down', $this->lastFrame()['type']);
+        $this->assertSame(0, (int) WsRedis::call(fn($r) => $r->scard('live:room:' . $roomId . ':online')));
     }
 }

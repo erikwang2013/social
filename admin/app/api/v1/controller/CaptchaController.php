@@ -62,10 +62,10 @@ class CaptchaController
      * @Apidoc\Group("验证码")
      * @Apidoc\Method("POST")
      * @Apidoc\Url("/api/captcha/verify")
-     * @Apidoc\Desc("校验验证码答案。clicks 格式: click=[{x,y}], slider=int, rotate=int")
+     * @Apidoc\Desc("校验验证码答案。clicks 格式: click=[[x,y]], slider=int, rotate=int")
      * @Apidoc\Param("key", type="string", require=true, desc="验证码key")
      * @Apidoc\Param("type", type="string", require=true, desc="验证码类型: click|slider|rotate")
-     * @Apidoc\Param("clicks", type="mixed", require=true, desc="click=[{x,y}], slider=偏移量, rotate=角度")
+     * @Apidoc\Param("clicks", type="mixed", require=true, desc="click=[[x,y]] 坐标对数组, slider=偏移量, rotate=角度")
      * @Apidoc\Returned("valid", type="bool", desc="是否校验通过")
      */
     public function verify(Request $request): Response

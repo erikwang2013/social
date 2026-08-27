@@ -35,6 +35,13 @@ final class Envelope
     public const T_ROOM_ICE = 'room_ice';
     public const T_ROOM_KICK_MIC = 'room_kick_mic';
     public const T_ROOM_CLOSED = 'room_closed';
+    public const T_LIVE_JOIN = 'live_join';
+    public const T_LIVE_LEAVE = 'live_leave';
+    public const T_DANMAKU_SEND = 'danmaku_send';
+    public const T_DANMAKU = 'danmaku';
+    public const T_LIVE_MIC_UP = 'live_mic_up';
+    public const T_LIVE_MIC_DOWN = 'live_mic_down';
+    public const T_LIVE_CLOSED = 'live_closed';
 
     public static function decode(string $raw): ?array
     {

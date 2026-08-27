@@ -170,6 +170,17 @@ CREATE TABLE IF NOT EXISTS `social_voice_room_members` (
   `created_at` TIMESTAMP NULL, `updated_at` TIMESTAMP NULL,
   PRIMARY KEY (`id`), UNIQUE KEY `uk_room_uid` (`room_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='语聊房成员';
+CREATE TABLE IF NOT EXISTS `social_live_rooms` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `owner_id` BIGINT UNSIGNED NOT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1直播中 0已结束',
+  `push_url` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'RTMP推流地址',
+  `play_url` VARCHAR(255) NOT NULL DEFAULT '' COMMENT 'HLS播放地址',
+  `started_at` TIMESTAMP NULL, `ended_at` TIMESTAMP NULL,
+  `created_at` TIMESTAMP NULL, `updated_at` TIMESTAMP NULL,
+  PRIMARY KEY (`id`), KEY `idx_status_updated` (`status`, `updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='直播间';
 
 -- ############### 五、后台管理表 (open_admin) ###############
 SET FOREIGN_KEY_CHECKS = 0;

@@ -16,6 +16,7 @@ use Webman\Route;
 use app\middleware\AuthMiddleware;
 use app\controller\ImVoiceController;
 use app\controller\VoiceController;
+use app\controller\LiveController;
 
 Route::get('/health', [\app\controller\HealthController::class, 'index']);
 
@@ -65,6 +66,12 @@ Route::group('/api/v1', function () {
         Route::get('/voice/rooms/{id}', [VoiceController::class, 'roomDetail']);
         Route::post('/voice/rooms/{id}/close', [VoiceController::class, 'closeRoom']);
         Route::get('/voice/{file}', [ImVoiceController::class, 'voiceFile']);
+        Route::post('/live/rooms', [LiveController::class, 'create']);
+        Route::get('/live/rooms', [LiveController::class, 'rooms']);
+        Route::get('/live/rooms/{id}', [LiveController::class, 'detail']);
+        Route::post('/live/rooms/{id}/close', [LiveController::class, 'close']);
+        Route::post('/live/rooms/{id}/mic', [LiveController::class, 'micUp']);
+        Route::delete('/live/rooms/{id}/mic', [LiveController::class, 'micDown']);
     })->middleware(AuthMiddleware::class);
 });
 

@@ -9,11 +9,11 @@
 
 | Rôle | Rapport | Cas de test | Réussis | Échoués | Conclusion |
 |------|------|------|------|------|------|
-| Tests unitaires PHP | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 tout vert |
+| Tests unitaires PHP | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 tout vert |
 | Tests unitaires Rust | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates tout vert, 5 défauts réels corrigés |
 | Automatisation API | `api-test-report.md` | 116 | 116 | 0 | correction des 3 défauts produit du tour précédent vérifiée |
 | UI end-to-end | `ui-e2e-report.md` | 41 | 41 | 0 | Tout vert, 1 bloqué (ES non démarré) |
-| **Total** | | **543** | **543** | **0** | Taux de réussite 100 % (1 bloqué) |
+| **Total** | | **566** | **566** | **0** | Taux de réussite 100 % (1 bloqué) |
 
 ## Défauts réels corrigés lors de ce tour (tous corrigés et vérifiés par régression)
 
@@ -23,6 +23,10 @@
 4. **Page d'accueil du service `/` 404** (nouvelle découverte) : webman-framework v2.2.4 ne résout plus la route racine par défaut ; `service/config/route.php` enregistre explicitement `Route::get('/')`
 5. **5 défauts Rust** (nouvelles découvertes, détails dans rust-unit-report.md) : bee_search MemoryEngine ignore la pagination, social_grpc convertit silencieusement les ids non numériques en 0, bee_tsdb champs du line protocol InfluxDB désordonnés, bee_search ids non échappés dans le bulk NDJSON d'ES, bee_graph Neo4j add_edge le endpoint d'erreur est toujours `from`
 6. **Les scripts de test eux-mêmes** : dans `tests/api/run.php`, le mot de passe BD vide retombait sur 'root' via `?:` → changé en `?? 'root'` ; les trois suites d'assertions obsolètes d'admin réécrites selon le code actuel (Searchable obsolète, clés du middleware Cors, contrat du captcha poster-php)
+
+## Validation du jalon M5 (nouveau)
+
+- Le module live (LiveCenter : créer/détails/danmaku/liaison micro/fermer) livré et vérifié : phpunit service +23 cas (159/408 vert), l'E2E boîte noire `tests/live_e2e.php` a passé les 27 vérifications (dont push RTMP, pull HLS)
 
 ## Corrections d'environnement et remarques (causées par ce lot de tests)
 

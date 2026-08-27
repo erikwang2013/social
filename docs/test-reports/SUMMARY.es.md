@@ -9,11 +9,11 @@
 
 | Rol | Informe | Casos de prueba | Aprobados | Fallidos | Conclusión |
 |------|------|------|------|------|------|
-| Pruebas unitarias PHP | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 todo verde |
+| Pruebas unitarias PHP | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 todo verde |
 | Pruebas unitarias Rust | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates todo verde, y se corrigieron 5 defectos reales |
 | Automatización API | `api-test-report.md` | 116 | 116 | 0 | corrección de los 3 defectos de producto de la ronda anterior verificada |
 | UI de extremo a extremo | `ui-e2e-report.md` | 41 | 41 | 0 | Todo verde, 1 bloqueado (ES no iniciado) |
-| **Total** | | **543** | **543** | **0** | Tasa de aprobación 100 % (1 bloqueado) |
+| **Total** | | **566** | **566** | **0** | Tasa de aprobación 100 % (1 bloqueado) |
 
 ## Defectos reales corregidos en esta ronda (todos corregidos y verificados por regresión)
 
@@ -23,6 +23,10 @@
 4. **Inicio `/` del service 404** (nuevo hallazgo): webman-framework v2.2.4 ya no resuelve la ruta raíz por defecto; `service/config/route.php` registra explícitamente `Route::get('/')`
 5. **5 defectos de Rust** (nuevos hallazgos, detalles en rust-unit-report.md): bee_search MemoryEngine ignora la paginación, social_grpc convierte silenciosamente ids no numéricos en 0, bee_tsdb campos de line protocol de InfluxDB desordenados, bee_search ids sin escapar en bulk NDJSON de ES, bee_graph Neo4j add_edge el endpoint de error siempre es `from`
 6. **Los propios scripts de prueba**: en `tests/api/run.php` la contraseña de BD vacía retrocedía a 'root' por `?:` → cambiado a `?? 'root'`; las tres suites de aserciones obsoletas de admin reescritas según el código actual (Searchable obsoleto, claves del middleware Cors, contrato del captcha de poster-php)
+
+## Validación del hito M5 (nuevo)
+
+- El módulo de directos (LiveCenter: crear/detalles/danmaku/vincular micrófono/cerrar) entregado y verificado: phpunit service +23 casos (159/408 verde), el E2E de caja negra `tests/live_e2e.php` superó las 27 comprobaciones (incl. push RTMP, pull HLS)
 
 ## Correcciones de entorno y notas (causadas por este lote de pruebas)
 

@@ -10,7 +10,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M4 selesai (pesan suara, panggilan 1v1, ruang obrolan suara); M5 merencanakan live streaming (SRS) dan ekonomi virtual
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6 merencanakan ekonomi virtual
 
 ## Ringkasan Fitur
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · protokol frame Envelope · push Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: state machine panggilan 1v1 (timeout dering 30 detik · saling mengecualikan saat sibuk)
 │   ├── room/         # RoomCenter: ruang obrolan suara (8 kursi · terjemahan sinyal SFU)
+│   ├── live/         # LiveCenter: ruang live (push RTMP / pull HLS · danmaku · tautan mikrofon 8 kursi)
 │   ├── model/        # Model data
 │   ├── process/      # Proses kustom Http / WsServer
 │   └── storage/      # Penyimpanan file suara (m4a, tidak disimpan di database)
 ├── config/           # route.php (grup rute /api/v1) · process.php (:8788/:8789)
-└── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php
+└── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php / live_e2e.php
 ```
 
 ## Petunjuk Penggunaan
@@ -101,6 +102,7 @@ vendor/bin/phpunit                    # Unit test (79 tests / 230 assertions)
 
 php tests/im_e2e.php                  # E2E black-box IM (perlu :8788/:8789 berjalan + Redis)
 php tests/voice_e2e.php               # E2E suara: versi / pesan suara / panggilan / ruang obrolan suara
+php tests/live_e2e.php                # E2E live: ruang / danmaku / mikrofon / tutup (push RTMP, pull HLS)
 
 cd media/sfu
 npm run smoke                         # Smoke test protokol SFU /signal (perlu kontainer Docker atau node lokal)

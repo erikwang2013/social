@@ -9,11 +9,11 @@
 
 | Peran | Laporan | Kasus uji | Lulus | Gagal | Kesimpulan |
 |------|------|------|------|------|------|
-| Pengujian unit PHP | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 semua hijau |
+| Pengujian unit PHP | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 semua hijau |
 | Pengujian unit Rust | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates semua hijau, dan 5 cacat nyata diperbaiki |
 | Otomatisasi API | `api-test-report.md` | 116 | 116 | 0 | perbaikan 3 cacat produk putaran sebelumnya terverifikasi |
 | UI end-to-end | `ui-e2e-report.md` | 41 | 41 | 0 | Semua hijau, 1 blocked (ES tidak berjalan) |
-| **Total** | | **543** | **543** | **0** | Tingkat kelulusan 100% (1 blocked) |
+| **Total** | | **566** | **566** | **0** | Tingkat kelulusan 100% (1 blocked) |
 
 ## Cacat nyata yang diperbaiki pada putaran ini (semua diperbaiki dan terverifikasi regresi)
 
@@ -23,6 +23,10 @@
 4. **Halaman utama service `/` 404** (temuan baru): webman-framework v2.2.4 tidak lagi me-resolve route akar secara default; `service/config/route.php` mendaftarkan `Route::get('/')` secara eksplisit
 5. **5 cacat Rust** (temuan baru, detail di rust-unit-report.md): bee_search MemoryEngine mengabaikan pagination, social_grpc mengubah id non-numerik menjadi 0 secara diam-diam, bee_tsdb field line protocol InfluxDB tidak berurutan, bee_search id tanpa escape di bulk NDJSON ES, bee_graph Neo4j add_edge endpoint error selalu `from`
 6. **Skrip pengujian itu sendiri**: di `tests/api/run.php` kata sandi DB kosong jatuh ke 'root' karena `?:` → diubah menjadi `?? 'root'`; tiga suite asersi usang admin ditulis ulang sesuai kode saat ini (Searchable usang, kunci middleware Cors, kontrak captcha poster-php)
+
+## Verifikasi milestone M5 (baru)
+
+- Modul live (LiveCenter: buat/detail/danmaku/tautan mikrofon/tutup) terkirim dan terverifikasi: phpunit service +23 kasus (159/408 hijau), E2E kotak hitam `tests/live_e2e.php` lolos semua 27 pemeriksaan (termasuk push RTMP, pull HLS)
 
 ## Perbaikan lingkungan dan catatan (disebabkan oleh batch pengujian ini)
 

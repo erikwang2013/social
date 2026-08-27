@@ -9,11 +9,11 @@
 
 | Role | Report | Test cases | Passed | Failed | Conclusion |
 |------|------|------|------|------|------|
-| PHP unit tests | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 all green |
+| PHP unit tests | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 all green |
 | Rust unit tests | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates all green, and 5 real defects fixed |
 | API automation | `api-test-report.md` | 116 | 116 | 0 | last round's 3 product defects verified fixed |
 | UI end-to-end | `ui-e2e-report.md` | 41 | 41 | 0 | All green, 1 blocked (ES not started) |
-| **Total** | | **543** | **543** | **0** | Pass rate 100% (1 blocked) |
+| **Total** | | **566** | **566** | **0** | Pass rate 100% (1 blocked) |
 
 ## Real defects fixed this round (all fixed and regression-verified)
 
@@ -23,6 +23,10 @@
 4. **service homepage `/` 404** (newly found): webman-framework v2.2.4 no longer resolves the root route by default; `service/config/route.php` explicitly registers `Route::get('/')`
 5. **5 Rust defects** (newly found, see rust-unit-report.md for details): bee_search MemoryEngine ignores pagination, social_grpc silently converts non-numeric ids to 0, bee_tsdb InfluxDB line protocol fields out of order, bee_search ES bulk NDJSON unescaped ids, bee_graph Neo4j add_edge error endpoint always `from`
 6. **Test scripts themselves**: `tests/api/run.php` DB password empty string was fallbacked to 'root' by `?:` → changed to `?? 'root'`; admin's three outdated assertion suites rewritten per current code (Searchable deprecated, Cors middleware keys, poster-php captcha contract)
+
+## M5 milestone verification (new)
+
+- The live module (LiveCenter: create/detail/danmaku/mic link/close) shipped and verified: service phpunit added 23 cases (159/408 green), black-box E2E `tests/live_e2e.php` passed all 27 checks (incl. RTMP push, HLS pull)
 
 ## Environment fixes and caveats (caused by this test batch)
 

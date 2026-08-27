@@ -22,7 +22,8 @@ class ImVoiceController
             return json(['code' => $code, 'message' => $e->getMessage(), 'lang_key' => $e->getMessage()], $code);
         }
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => [
-            'voice_url' => $out['url'],
+            // VoiceStorage 返回 /voice/{md5}.m4a 相对路径，补上路由组前缀成完整 API 路径
+            'voice_url' => '/api/v1' . $out['url'],
             'voice_duration' => $out['duration'],
         ]]);
     }

@@ -9,7 +9,7 @@
 
 | Proyek | Kasus uji | Asersi | Hasil |
 |------|------|------|------|
-| service | 136 | 348 | ✅ Semua lulus (OK) |
+| service | 159 | 408 | ✅ Semua lulus (OK) |
 | admin | 67 | 180 | ✅ Semua lulus (OK) |
 
 ## Catatan lingkungan
@@ -20,10 +20,10 @@
 - Baik service maupun admin tidak memiliki `.env` (repositori telah menghapus env yang tidak sengaja di-commit, commit e5379fc); aplikasi berjalan dengan fallback `getenv('X') ?: nilai default` di `config/*.php`
 - **Ekstensi Imagick dimuat tetapi konstanta `RESOURCETYPE_PIXELS` hilang** (build mesin ini hanya memiliki set konstanta RESOURCETYPE_* yang baru); konstruktor ImagickDriver milik poster-php mereferensikan konstanta itu dan langsung crash
 
-## service (136/136 semua hijau)
+## service (159/159 semua hijau)
 
 - Konsisten dengan baseline batch sebelumnya; mencakup: autentikasi/middleware/JWT, pengguna, postingan, komentar, mengikuti, notifikasi, sinkronisasi pencarian, IM, ruangan, panggilan (CallCenter/CallState), suara, relasi model, penanganan aksi (WS)
-- Tidak ada perubahan kode, tidak ada kegagalan pada batch ini
+- M5 menambahkan modul live (LiveCenter: buat/detail/danmaku/tautan mikrofon/tutup), 23 kasus, tanpa regresi
 
 ## admin (batch sebelumnya 49/60 → batch ini 67/67 semua hijau)
 

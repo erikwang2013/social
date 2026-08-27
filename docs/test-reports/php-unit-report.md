@@ -9,7 +9,7 @@
 
 | 项目 | 用例 | 断言 | 结果 |
 |------|------|------|------|
-| service | 136 | 348 | ✅ 全部通过(OK) |
+| service | 159 | 408 | ✅ 全部通过(OK) |
 | admin | 67 | 180 | ✅ 全部通过(OK) |
 
 ## 环境说明
@@ -20,10 +20,10 @@
 - service 与 admin 均无 `.env`(仓库已移除误入库的 env,commit e5379fc),应用依赖 `config/*.php` 中 `getenv('X') ?: 默认值` 兜底运行
 - **Imagick 扩展已加载但缺 `RESOURCETYPE_PIXELS` 常量**(本机构建仅有 RESOURCETYPE_* 新常量集),poster-php 的 ImagickDriver 构造时引用该常量即崩
 
-## service(136/136 全绿)
+## service(159/159 全绿)
 
 - 与上批次基线一致,覆盖: 认证/中间件/JWT、用户、帖子、评论、关注、通知、搜索同步、IM、房间、通话(CallCenter/CallState)、语音、模型关系、动作处理(WS)
-- 本批次无代码改动、无失败
+- M5 新增直播模块（LiveCenter：开播/详情/弹幕/连麦/关闭）23 用例，无回归失败
 
 ## admin(上批次 49/60 → 本批次 67/67 全绿)
 

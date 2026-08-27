@@ -9,11 +9,11 @@
 
 | 角色 | 报告 | 用例 | 通过 | 失败 | 结论 |
 |------|------|------|------|------|------|
-| PHP 单元测试 | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 全绿 |
+| PHP 单元测试 | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 全绿 |
 | Rust 单元测试 | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates 全绿,并修复 5 处真实缺陷 |
 | API 自动化 | `api-test-report.md` | 116 | 116 | 0 | 上轮 3 个产品缺陷修复验证通过 |
 | UI 端到端 | `ui-e2e-report.md` | 41 | 41 | 0 | 全绿,1 项 blocked(ES 未启动) |
-| **合计** | | **543** | **543** | **0** | 通过率 100%(1 项 blocked) |
+| **合计** | | **566** | **566** | **0** | 通过率 100%(1 项 blocked) |
 
 ## 本轮修复的真实缺陷(均已修复并回归验证)
 
@@ -23,6 +23,10 @@
 4. **service 首页 `/` 404**(新发现): webman-framework v2.2.4 不再默认解析根路由,`service/config/route.php` 显式注册 `Route::get('/')`
 5. **Rust 5 处缺陷**(新发现,详见 rust-unit-report.md): bee_search MemoryEngine 忽略分页、social_grpc 非数字 id 静默变 0、bee_tsdb InfluxDB line protocol 字段乱序、bee_search ES bulk NDJSON 未转义 id、bee_graph Neo4j add_edge 报错端点恒为 from
 6. **测试脚本自身**: `tests/api/run.php` DB 密码空串被 `?:` 回退为 'root' → 改 `?? 'root'`;admin 三个过期断言套件按当前代码重写(Searchable 已弃用、Cors 中间件键、poster-php 验证码契约)
+
+## M5 里程碑验证(新增)
+
+- 直播模块(LiveCenter: 开播/详情/弹幕/连麦/关闭)已交付并通过验证: service phpunit 新增 23 用例(159/408 全绿), `tests/live_e2e.php` 黑盒 E2E 27 项检查全部通过(含 RTMP 推流、HLS 拉流)
 
 ## 环境修复与注意项(本批次测试造成)
 

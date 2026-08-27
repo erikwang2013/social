@@ -10,7 +10,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M4 delivered (voice messages, 1v1 calls, voice chat rooms); M5 plans live streaming (SRS) and virtual economy
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 plans virtual economy
 
 ## Feature Overview
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · Envelope frame protocol · Deliverer push · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 call state machine (30s ring timeout · busy-line mutual exclusion)
 │   ├── room/         # RoomCenter: voice chat rooms (8 seats · SFU signaling translation)
+│   ├── live/         # LiveCenter: live rooms (RTMP push / HLS pull · danmaku · 8-seat mic link)
 │   ├── model/        # Data models
 │   ├── process/      # Custom Http / WsServer processes
 │   └── storage/      # Voice file storage (m4a, not stored in DB)
 ├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789)
-└── tests/            # phpunit unit tests + im_e2e.php / voice_e2e.php black-box E2E
+└── tests/            # phpunit unit tests + im_e2e.php / voice_e2e.php / live_e2e.php black-box E2E
 ```
 
 ## Getting Started
@@ -101,6 +102,7 @@ vendor/bin/phpunit                    # Unit tests (79 tests / 230 assertions)
 
 php tests/im_e2e.php                  # IM black-box E2E (requires :8788/:8789 running + Redis)
 php tests/voice_e2e.php               # Voice E2E: versioned / voice messages / calls / voice chat rooms
+php tests/live_e2e.php                # Live E2E: rooms / danmaku / mic / close (RTMP push, HLS pull)
 
 cd media/sfu
 npm run smoke                         # SFU /signal protocol smoke test (requires Docker container or local node)

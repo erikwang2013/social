@@ -10,7 +10,7 @@
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
 - **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M4 완료(음성 메시지, 1v1 통화, 보이스 채팅방); M5는 라이브 스트리밍(SRS)과 가상 경제 계획
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6는 가상 경제 계획
 
 ## 기능 개요
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · Envelope 프레임 프로토콜 · Deliverer 푸시 · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 통화 상태 머신(30초 벨 울림 타임아웃 · 통화 중 상호 배타)
 │   ├── room/         # RoomCenter: 보이스 채팅방(8개 마이크 슬롯 · SFU 시그널링 변환)
+│   ├── live/         # LiveCenter: 라이브 룸(RTMP 푸시 / HLS 풀 · 단마쿠 · 8석 마이크 링크)
 │   ├── model/        # 데이터 모델
 │   ├── process/      # Http / WsServer 커스텀 프로세스
 │   └── storage/      # 음성 파일 저장소(m4a, DB 미저장)
 ├── config/           # route.php(/api/v1 라우트 그룹) · process.php(:8788/:8789)
-└── tests/            # phpunit 단위 테스트 + im_e2e.php / voice_e2e.php 블랙박스 E2E
+└── tests/            # phpunit 단위 테스트 + im_e2e.php / voice_e2e.php / live_e2e.php 블랙박스 E2E
 ```
 
 ## 사용 방법
@@ -101,6 +102,7 @@ vendor/bin/phpunit                    # 단위 테스트(79 tests / 230 assertio
 
 php tests/im_e2e.php                  # IM 블랙박스 E2E(:8788/:8789 실행 중 + Redis 필요)
 php tests/voice_e2e.php               # 음성 E2E: 버전 관리 / 음성 메시지 / 통화 / 보이스 채팅방
+php tests/live_e2e.php                # 라이브 E2E: 룸 / 단마쿠 / 마이크 / 닫기(RTMP 푸시, HLS 풀)
 
 cd media/sfu
 npm run smoke                         # SFU /signal 프로토콜 스모크(Docker 컨테이너 또는 로컬 node 필요)

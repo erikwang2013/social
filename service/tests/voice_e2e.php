@@ -286,8 +286,8 @@ check($badStatus === 400 && str_contains($badBody, 'api.version_invalid'), '非�
 // 4. 上传语音（版本化路径 + v1 头）→ voice_url / voice_duration=1；GET 回读 200
 $up = httpUpload('/api/im/voice', $sample, $aTok, $v1);
 $voiceUrl = (string) ($up['data']['voice_url'] ?? '');
-check($up['code'] === 0 && preg_match('#^/voice/[a-f0-9]{32}\.m4a$#', $voiceUrl) && (int) ($up['data']['voice_duration'] ?? 0) === 1, '上传语音 voice_url + voice_duration=1');
-[$fileStatus, $fileBody] = httpRaw('/api/v1' . $voiceUrl, $aTok, $v1);
+check($up['code'] === 0 && preg_match('#^/api/v1/voice/[a-f0-9]{32}\.m4a$#', $voiceUrl) && (int) ($up['data']['voice_duration'] ?? 0) === 1, '上传语音 voice_url + voice_duration=1');
+[$fileStatus, $fileBody] = httpRaw($voiceUrl, $aTok, $v1);
 check($fileStatus === 200 && strlen($fileBody) > 0, 'GET voice_url → 200 音频');
 
 // 会话 + 语音消息收发

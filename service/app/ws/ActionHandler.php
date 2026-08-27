@@ -52,6 +52,13 @@ final class ActionHandler
             case Envelope::T_ROOM_ICE:
                 self::handleRoom($fd, $uid, $type, $data);
                 break;
+            case Envelope::T_LIVE_JOIN:
+            case Envelope::T_LIVE_LEAVE:
+            case Envelope::T_DANMAKU_SEND:
+            case Envelope::T_LIVE_MIC_UP:
+            case Envelope::T_LIVE_MIC_DOWN:
+                self::handleLive($fd, $uid, $type, $data, $seq);
+                break;
             default:
                 self::send($fd, Envelope::T_ERROR, ['msg' => 'unknown type'], $seq);
         }
@@ -69,7 +76,8 @@ final class ActionHandler
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid send payload'], $seq);
             return;
         }
-        if ($voiceUrl !== '' && !preg_match('#^/voice/[a-f0-9]{32}\.m4a$#', $voiceUrl)) {
+        // 兼容旧格式 /voice/{md5}.m4a 与上传接口返回的完整路径 /api/v1/voice/{md5}.m4a
+        if ($voiceUrl !== '' && !preg_match('#^/(?:api/v1/)?voice/[a-f0-9]{32}\.m4a$#', $voiceUrl)) {
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid voice url'], $seq);
             return;
         }
@@ -219,6 +227,40 @@ final class ActionHandler
             }
         } catch (\RuntimeException $e) {
             self::send($fd, Envelope::T_ERROR, ['msg' => $e->getMessage()]);
+        }
+    }
+
+    /** 直播帧：进房/退房/弹幕/上下麦，异常回 error 帧（仿 handleRoom） */
+    private static function handleLive(int $fd, int $uid, string $type, array $data, ?int $seq): void
+    {
+        static $lc = null;
+        $lc ??= new \app\live\LiveCenter();
+        $roomId = (int) ($data['room_id'] ?? 0);
+        try {
+            switch ($type) {
+                case Envelope::T_LIVE_JOIN:
+                    $lc->join($roomId, $uid);
+                    break;
+                case Envelope::T_LIVE_LEAVE:
+                    $lc->leave($roomId, $uid);
+                    break;
+                case Envelope::T_DANMAKU_SEND:
+                    $content = trim((string) ($data['content'] ?? ''));
+                    if ($content === '' || mb_strlen($content) > 200) {
+                        self::send($fd, Envelope::T_ERROR, ['msg' => 'danmaku invalid'], $seq);
+                        return;
+                    }
+                    $lc->sendDanmaku($roomId, $uid, $content);
+                    break;
+                case Envelope::T_LIVE_MIC_UP:
+                    $lc->micUp($roomId, $uid);
+                    break;
+                case Envelope::T_LIVE_MIC_DOWN:
+                    $lc->micDown($roomId, $uid);
+                    break;
+            }
+        } catch (\RuntimeException $e) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => $e->getMessage()], $seq);
         }
     }
 

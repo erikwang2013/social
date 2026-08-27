@@ -9,7 +9,7 @@
 
 | Item | Test cases | Assertions | Result |
 |------|------|------|------|
-| service | 136 | 348 | ✅ All passed (OK) |
+| service | 159 | 408 | ✅ All passed (OK) |
 | admin | 67 | 180 | ✅ All passed (OK) |
 
 ## Environment notes
@@ -20,10 +20,10 @@
 - Neither service nor admin has a `.env` (the repo removed the mistakenly committed env, commit e5379fc); the apps run on the `getenv('X') ?: default` fallbacks in `config/*.php`
 - **The Imagick extension is loaded but lacks the `RESOURCETYPE_PIXELS` constant** (this build only has the new RESOURCETYPE_* constant set); poster-php's ImagickDriver constructor references that constant and crashes
 
-## service (136/136 all green)
+## service (159/159 all green)
 
 - Consistent with the last batch's baseline; covers: auth/middleware/JWT, users, posts, comments, follows, notifications, search sync, IM, rooms, calls (CallCenter/CallState), voice, model relations, action handling (WS)
-- No code changes, no failures in this batch
+- M5 added the live module (LiveCenter: create/detail/danmaku/mic link/close), 23 cases, no regressions
 
 ## admin (last batch 49/60 → this batch 67/67 all green)
 

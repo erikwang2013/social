@@ -13,6 +13,7 @@ use app\common\JwtHelper;
 class WsServer
 {
     private static ?Worker $worker = null;
+    private static bool $liveDrainStarted = false;
 
     public function __construct(string $nodeId = '')
     {
@@ -22,6 +23,40 @@ class WsServer
     public function onWorkerStart(Worker $worker): void
     {
         self::$worker = $worker;
+    }
+
+    /** 跨进程直播广播桥定时器：仅子进程事件循环运行中注册才生效（webman 自定义进程 onWorkerStart 在 master 执行） */
+    private static function ensureLiveDrain(): void
+    {
+        if (self::$liveDrainStarted) {
+            return;
+        }
+        self::$liveDrainStarted = true;
+        // HTTP worker 入队 social:live:broadcast，ws worker 定时消费直推
+        // ponytail: 单 ws worker（config/process.php）独占消费无竞争；多 ws worker 时需换 stream/claim
+        \Workerman\Timer::add(0.1, fn() => self::drainLiveBroadcast());
+    }
+
+    private static function drainLiveBroadcast(): void
+    {
+        $frames = WsRedis::call(function ($r) {
+            $frames = $r->lrange('social:live:broadcast', 0, 20) ?: [];
+            if ($frames !== []) {
+                $r->ltrim('social:live:broadcast', count($frames), -1);
+            }
+            return $frames;
+        });
+        foreach ($frames as $frame) {
+            $dec = json_decode((string) $frame, true);
+            $roomId = (int) ($dec['data']['room_id'] ?? 0);
+            if ($roomId <= 0) {
+                continue;
+            }
+            $uids = WsRedis::call(fn($r) => $r->smembers('live:room:' . $roomId . ':online')) ?? [];
+            foreach ($uids as $uid) {
+                Deliverer::pushToMember((int) $uid, (string) $frame, false);
+            }
+        }
     }
 
     public function onWebSocketConnect(TcpConnection $conn, \Workerman\Protocols\Http\Request $request): void
@@ -42,6 +77,7 @@ class WsServer
         }
         $conn->send(Envelope::encode(Envelope::T_READY, ['uid' => $uid]));
         self::drainOffline($conn, $uid);
+        self::ensureLiveDrain();
     }
 
     /** 连接就绪后冲刷离线队列（先 ready 后帧，客户端按序处理；单连接策略下无并发消费） */
@@ -85,6 +121,9 @@ class WsServer
             static $rc = null;
             $rc ??= new \app\room\RoomCenter();
             $rc->onDisconnect($uid);
+            static $lc = null;
+            $lc ??= new \app\live\LiveCenter();
+            $lc->onDisconnect($uid);
         }
     }
 

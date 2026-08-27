@@ -9,11 +9,11 @@
 
 | 역할 | 보고서 | 테스트 케이스 | 통과 | 실패 | 결론 |
 |------|------|------|------|------|------|
-| PHP 유닛 테스트 | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 전부 그린 |
+| PHP 유닛 테스트 | `php-unit-report.md` | 226 | 226 | 0 | service 159/408 + admin 67/67 전부 그린 |
 | Rust 유닛 테스트 | `rust-unit-report.md` | 183 | 183 | 0 | 16개 crates 전부 그린, 실제 결함 5건 수정 |
 | API 자동화 | `api-test-report.md` | 116 | 116 | 0 | 지난 차수 제품 결함 3건 수정 검증 통과 |
 | UI 엔드투엔드 | `ui-e2e-report.md` | 41 | 41 | 0 | 전부 그린, 1건 blocked(ES 미기동) |
-| **합계** | | **543** | **543** | **0** | 통과율 100%(1건 blocked) |
+| **합계** | | **566** | **566** | **0** | 통과율 100%(1건 blocked) |
 
 ## 이번 차수에 수정된 실제 결함(모두 수정 및 회귀 검증 완료)
 
@@ -23,6 +23,10 @@
 4. **service 홈페이지 `/` 404**(신규 발견): webman-framework v2.2.4가 더 이상 루트 라우트를 기본 해석하지 않음, `service/config/route.php`에 `Route::get('/')` 명시 등록
 5. **Rust 5건 결함**(신규 발견, 상세는 rust-unit-report.md 참조): bee_search MemoryEngine 페이지네이션 무시, social_grpc 비숫자 id를 0으로 조용히 변환, bee_tsdb InfluxDB line protocol 필드 순서 불안정, bee_search ES bulk NDJSON id 미이스케이프, bee_graph Neo4j add_edge 오류 엔드포인트가 항상 from
 6. **테스트 스크립트 자체**: `tests/api/run.php` DB 비밀번호 빈 문자열이 `?:`로 'root'에 폴백 → `?? 'root'`로 변경; admin의 노후 어서션 3개 스위트를 현재 코드 기준으로 재작성(Searchable 폐기, Cors 미들웨어 키, poster-php 캡차 계약)
+
+## M5 마일스톤 검증(신규)
+
+- 라이브 모듈(LiveCenter: 개설/상세/탄막/마이크 연결/종료)이 인도되어 검증 완료: service phpunit 신규 23 케이스(159/408 전부 그린), `tests/live_e2e.php` 블랙박스 E2E 27개 검사 전부 통과(RTMP 푸시, HLS 풀 포함)
 
 ## 환경 수정 및 주의 사항(이번 테스트 배치로 인한)
 

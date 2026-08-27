@@ -9,7 +9,7 @@
 
 | Projet | Cas de test | Assertions | Résultat |
 |------|------|------|------|
-| service | 136 | 348 | ✅ Tout réussi (OK) |
+| service | 159 | 408 | ✅ Tout réussi (OK) |
 | admin | 67 | 180 | ✅ Tout réussi (OK) |
 
 ## Notes d'environnement
@@ -20,10 +20,10 @@
 - Ni service ni admin n'a de `.env` (le dépôt a retiré les env committés par erreur, commit e5379fc) ; les applis s'appuient sur les fallbacks `getenv('X') ?: valeur par défaut` dans `config/*.php`
 - **L'extension Imagick est chargée mais la constante `RESOURCETYPE_PIXELS` manque** (ce build n'a que le nouvel ensemble de constantes RESOURCETYPE_*) ; le constructeur d'ImagickDriver de poster-php référence cette constante et plante
 
-## service (136/136 tout vert)
+## service (159/159 tout vert)
 
 - Conforme à la baseline du lot précédent ; couvert : authentification/middleware/JWT, utilisateurs, publications, commentaires, abonnements, notifications, synchronisation de recherche, IM, salles, appels (CallCenter/CallState), voix, relations de modèles, traitement d'actions (WS)
-- Aucun changement de code, aucun échec dans ce lot
+- M5 a ajouté le module live (LiveCenter : créer/détail/danmaku/liaison micro/fermer), 23 cas, aucune régression
 
 ## admin (lot précédent 49/60 → ce lot 67/67 tout vert)
 

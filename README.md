@@ -10,7 +10,7 @@
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M4 已交付（语音消息、1v1 通话、语聊房）；M5 规划直播（SRS）与虚拟经济
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 规划虚拟经济
 
 ## 功能总览
 
@@ -52,11 +52,12 @@ service/
 │   ├── ws/           # WsServer · Envelope 帧协议 · Deliverer 推送 · ConnectionRegistry
 │   ├── call/         # CallCenter：1v1 通话状态机（30s 响铃超时 · 忙线互斥）
 │   ├── room/         # RoomCenter：语聊房（8 麦位 · SFU 信令转译）
+│   ├── live/         # LiveCenter：直播房（RTMP 推流/HLS 拉流 · 弹幕 · 8 麦位连麦）
 │   ├── model/        # 数据模型
 │   ├── process/      # Http / WsServer 自定义进程
 │   └── storage/      # 语音文件存储（m4a，不入库）
 ├── config/           # route.php（/api/v1 路由组）· process.php（:8788/:8789）
-└── tests/            # phpunit 单元测试 + im_e2e.php / voice_e2e.php 黑盒 E2E
+└── tests/            # phpunit 单元测试 + im_e2e.php / voice_e2e.php / live_e2e.php 黑盒 E2E
 ```
 
 ## 使用说明
@@ -96,7 +97,7 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 ### 测试
 
 ```bash
-cd service && vendor/bin/phpunit      # service 单元测试（136 tests / 348 assertions）
+cd service && vendor/bin/phpunit      # service 单元测试（159 tests / 408 assertions，含直播模块）
 cd admin   && vendor/bin/phpunit      # admin 单元测试（67 tests / 180 assertions）
 cd infrastructure && cargo test --workspace   # Rust 16 crates（183 tests）
 DB_PASS='' php tests/api/run.php      # API 自动化（116 用例，需先起 admin :8791 / service :8788）

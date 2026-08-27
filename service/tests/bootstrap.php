@@ -156,6 +156,18 @@ Capsule::schema()->create('voice_room_members', function ($t) {
     $t->timestamps();
     $t->unique(['room_id', 'user_id']);
 });
+Capsule::schema()->create('live_rooms', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('owner_id');
+    $t->string('title', 100);
+    $t->tinyInteger('status')->default(1);
+    $t->string('push_url', 255)->default('');
+    $t->string('play_url', 255)->default('');
+    $t->timestamp('started_at')->nullable();
+    $t->timestamp('ended_at')->nullable();
+    $t->timestamps();
+    $t->index(['status', 'updated_at']);
+});
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
 \Webman\Context::set(\Webman\Http\Request::class, new \support\Request('GET / HTTP/1.1'));
