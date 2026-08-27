@@ -10,7 +10,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 plans virtual economy
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting)
 
 ## Feature Overview
 

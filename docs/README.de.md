@@ -10,7 +10,7 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 - **Business-Services**: webman v2 (PHP 8.3) bedient sowohl REST als auch WebSocket; die API wird über `X-Api-Version` versioniert (Standard v1, kompatibel mit alten `/api/vX`-Pfaden)
 - **Eigene Medienebene**: mediasoup SFU + coturn TURN für die Medienweiterleitung bei 1v1-Sprachanrufen und Sprachräumen (8 Plätze)
 - **Status-Schichtung**: MySQL als Quelle der Geschäftsdaten, Redis für den Echtzeitstatus von Sitzung / IM / Anruf / Raum
-- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6 plant virtuelle Wirtschaft
+- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6 liefert die Rust-Migration der Live-/Voice-Zustandsmaschinen (PHP ruft Rust direkt über gRPC auf; Circuit Breaker / Degradation / Rate Limiting)
 
 ## Funktionsübersicht
 

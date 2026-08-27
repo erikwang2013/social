@@ -10,7 +10,7 @@
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 规划虚拟经济
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）
 
 ## 功能总览
 

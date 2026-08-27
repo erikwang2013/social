@@ -10,7 +10,7 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
 - **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6 planea economía virtual
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6 entrega la migración a Rust de las máquinas de estado live/voice (PHP llama a Rust directamente por gRPC; disyuntor / degradación / limitación de tasa)
 
 ## Resumen de funciones
 

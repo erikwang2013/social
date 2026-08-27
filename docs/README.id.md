@@ -10,7 +10,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6 merencanakan ekonomi virtual
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6 menghadirkan migrasi Rust untuk state machine live/voice (PHP memanggil Rust langsung lewat gRPC; circuit breaker / degradasi / rate limiting)
 
 ## Ringkasan Fitur
 
