@@ -345,6 +345,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "bee_live"
+version = "1.0.6"
+dependencies = [
+ "axum 0.8.9",
+ "mysql_async",
+ "redis",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.19",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "bee_logs"
 version = "1.0.6"
 dependencies = [

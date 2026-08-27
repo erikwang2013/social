@@ -1,0 +1,17 @@
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+[package]
+name = "bee_live"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "M6: live/voice state machines + circuit breaker / rate limiter / fallback, ported from PHP service"
+
+[dependencies]
+axum = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+redis = "0.27"
+mysql_async = "0.34"

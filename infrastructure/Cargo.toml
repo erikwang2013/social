@@ -18,6 +18,7 @@ members = [
     "crates/bee_cli",
     "crates/bee_rust",
     "crates/social_grpc",
+    "crates/bee_live",
     "examples/hello",
 ]
 
