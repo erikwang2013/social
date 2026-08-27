@@ -201,6 +201,49 @@ test.describe('admin 登录与管理页面', () => {
       expect(body.code).toBe(0);
     });
 
+    test('批量操作: 批量启用用户 + 空 ids 校验 422', async ({ request }) => {
+      const list = await request.get(`${ADMIN}/admin/user?page=1`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body = await list.json();
+      expect(body.code).toBe(0);
+      expect(body.data.list.length).toBeGreaterThan(0);
+
+      // 取列表首个用户的 hashid 做批量启用（幂等，不改变数据状态）
+      const batch = await request.post(`${ADMIN}/admin/user/batch/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { ids: [body.data.list[0].id], status: 1 },
+      });
+      expect((await batch.json()).code).toBe(0);
+
+      const empty = await request.post(`${ADMIN}/admin/user/batch/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { ids: [], status: 1 },
+      });
+      expect((await empty.json()).code).toBe(422);
+    });
+
+    test('导出: /admin/export/excel 导出 admin_user 表为 xlsx', async ({ request }) => {
+      const res = await request.post(`${ADMIN}/admin/export/excel`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { table: 'admin_user', title: 'E2E 导出' },
+      });
+      expect(res.status()).toBe(200);
+      expect(res.headers()['content-disposition'] || '').toContain('.xlsx');
+      const buf = await res.body();
+      // xlsx = zip 容器，文件头为 PK 魔数
+      expect(buf[0]).toBe(0x50);
+      expect(buf[1]).toBe(0x4b);
+    });
+
+    test('个人中心: 修改密码缺少旧密码 422', async ({ request }) => {
+      const res = await request.put(`${ADMIN}/admin/profile/password`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { new_password: 'Whatever_1' },
+      });
+      expect((await res.json()).code).toBe(422);
+    });
+
     test('登出后原 token 失效', async ({ request }) => {
       const res = await request.post(`${ADMIN}/admin/profile/logout`, {
         headers: { Authorization: `Bearer ${token}` },

@@ -1,7 +1,7 @@
 # সমস্ত পরীক্ষার সামগ্রিক সারাংশ রিপোর্ট
 **语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md) · [한국어](SUMMARY.ko.md) · [Русский](SUMMARY.ru.md) · [Deutsch](SUMMARY.de.md) · [Français](SUMMARY.fr.md) · [Español](SUMMARY.es.md) · [Português](SUMMARY.pt.md) · [हिन्दी](SUMMARY.hi.md) · [العربية](SUMMARY.ar.md) · [বাংলা](SUMMARY.bn.md) · [Bahasa Indonesia](SUMMARY.id.md) · [日本語](SUMMARY.ja.md)
 
-- তারিখ: 2026-08-27
+- তারিখ: 2026-08-27 (দ্বিতীয় পূর্ণ রিগ্রেশন)
 - পরীক্ষা দল: PHP ইউনিট টেস্ট / Rust ইউনিট টেস্ট / API অটোমেশন / UI এন্ড-টু-এন্ড (GO ভূমিকা সম্পর্কে শেষে ব্যাখ্যা দেখুন)
 - চারটি আলাদা রিপোর্ট + এই সারাংশ সব স্থানীয়ভাবে `docs/test-reports/`-এ সংরক্ষিত
 
@@ -9,24 +9,32 @@
 
 | ভূমিকা | রিপোর্ট | টেস্ট কেস | পাস | ফেল | উপসংহার |
 |------|------|------|------|------|------|
-| PHP ইউনিট টেস্ট | `php-unit-report.md` | 196 | 185 | 11 (admin পূর্ব-বিদ্যমান কেস, পরিবেশনির্ভর) | service 136/136 সম্পূর্ণ সবুজ; admin 49/60 |
-| Rust ইউনিট টেস্ট | `rust-unit-report.md` | 180 | 180 | 0 | 15 crates সম্পূর্ণ সবুজ, এবং ৭টি প্রকৃত ত্রুটি পাওয়া গেছে |
-| API অটোমেশন | `api-test-report.md` | 116 | 113 | 3 | ৩টি প্রকৃত পণ্য ত্রুটি, মূল কারণ শনাক্ত |
-| UI এন্ড-টু-এন্ড | `ui-e2e-report.md` | 35 | 35 | 0 | সম্পূর্ণ সবুজ, ১টি blocked (ES চালু নয়) |
-| **মোট** | | **527** | **513** | **14** | পাসের হার 97% |
+| PHP ইউনিট টেস্ট | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 সম্পূর্ণ সবুজ |
+| Rust ইউনিট টেস্ট | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates সম্পূর্ণ সবুজ, এবং ৫টি প্রকৃত ত্রুটি মেরামত করা হয়েছে |
+| API অটোমেশন | `api-test-report.md` | 116 | 116 | 0 | আগের রাউন্ডের ৩টি পণ্য ত্রুটির মেরামত যাচাই হয়েছে |
+| UI এন্ড-টু-এন্ড | `ui-e2e-report.md` | 41 | 41 | 0 | সম্পূর্ণ সবুজ, ১টি blocked (ES চালু নয়) |
+| **মোট** | | **543** | **543** | **0** | পাসের হার 100% (১টি blocked) |
 
-## প্রকৃত ত্রুটির তালিকা (মেরামতের পরামর্শ)
+## এই রাউন্ডে মেরামত করা প্রকৃত ত্রুটি (সব মেরামত ও রিগ্রেশন-যাচাইকৃত)
 
-1. **A20 অবৈধ hashid** → 500-এর বদলে 404 হওয়া উচিত: `admin/app/common/HashidsService.php:28` `InvalidArgumentException` ধরতে পারে না
-2. **A39/A40 Excel/PDF এক্সপোর্ট** → নিশ্চিত ব্যর্থতা: `ExportController`-এ `use support\Response` নেই বলে রিটার্ন টাইপ সমাধান ভেঙে যায়; একই ফাইলে আগে থেকেই cast করা ফোন/ইমেইল দ্বিতীয়বার ডিক্রিপ্ট করায় `Invalid ciphertext prefix` আসে
-3. **Rust-এর পাওয়া ৭টি ত্রুটি**: বিস্তারিত `rust-unit-report.md`-এ (প্রোটোকল পার্সিং, সীমা প্রক্রিয়াকরণ ইত্যাদি, প্রতিটির সাথে মেরামত সংযুক্ত)
-4. **admin ইউনিট টেস্টের ১১টি ব্যর্থতা পরিবেশ/কনফিগারেশন সমস্যা**: `admin/.env` নেই, ক্যাপচা চলমান সার্ভিস/Redis-এর উপর নির্ভরশীল, Cors মিডলওয়্যার ও admin_user searchable-এর অ্যাসারশন পুরনো — কোড ত্রুটি নয়
+1. **A20 অবৈধ hashid 500→404** (আগের রাউন্ডের বাকি): `BaseController::decodeId()` `InvalidArgumentException` ধরে `support\exception\NotFoundException(404)` (body code) ছোড়ে; ব্যাচ মেথডগুলো 422 অর্থ বজায় রাখে
+2. **A39/A40 Excel/PDF এক্সপোর্ট নিশ্চিত ব্যর্থতা** (আগের রাউন্ডের বাকি): `ExportController`-এ `use support\Response;` যোগ করা হয়েছে (রিটার্ন টাইপ আগে অস্তিত্বহীন ক্লাসে রেজলভ হতো); Encryptable cast-এ আগে থেকেই ডিক্রিপ্ট হওয়া ফিল্ডের দ্বিতীয় ডিক্রিপশন সরানো হয়েছে
+3. **ক্যাপচা Imagick ড্রাইভার ক্র্যাশ** (নতুন আবিষ্কার, প্রোডাকশনও আক্রান্ত): স্থানীয় ImageMagick 7-এ `RESOURCETYPE_PIXELS` কনস্ট্যান্ট নেই; `config/poster.php`-এ ড্রাইভার শনাক্তকরণে কনস্ট্যান্ট গার্ড যোগ করা হয়েছে, অনুপস্থিত থাকলে স্বয়ংক্রিয়ভাবে GD-তে ফলব্যাক
+4. **service হোমপেজ `/` 404** (নতুন আবিষ্কার): webman-framework v2.2.4 আর ডিফল্টভাবে রুট রুট রেজলভ করে না; `service/config/route.php`-এ `Route::get('/')` স্পষ্টভাবে নিবন্ধিত
+5. **Rust-এর ৫টি ত্রুটি** (নতুন আবিষ্কার, বিস্তারিত rust-unit-report.md-এ): bee_search MemoryEngine পেজিনেশন উপেক্ষা করে, social_grpc নন-সংখ্যাসূচক id নীরবে 0 বানায়, bee_tsdb InfluxDB line protocol ফিল্ড ক্রমবিহীন, bee_search ES bulk NDJSON id আনএস্কেপড, bee_graph Neo4j add_edge ত্রুটির এন্ডপয়েন্ট সবসময় `from`
+6. **টেস্ট স্ক্রিপ্টগুলো নিজেই**: `tests/api/run.php`-এ DB পাসওয়ার্ড খালি স্ট্রিং `?:`-এর কারণে 'root'-এ ফলব্যাক হতো → `?? 'root'` করা হয়েছে; admin-এর তিনটি পুরনো অ্যাসারশন স্যুট বর্তমান কোড অনুযায়ী নতুন করে লেখা হয়েছে (Searchable অপ্রচলিত, Cors মিডলওয়্যার কী, poster-php ক্যাপচা কন্ট্রাক্ট)
 
 ## পরিবেশ মেরামত ও সতর্কতা (এই টেস্ট ব্যাচের কারণে)
 
-- **ডেটাবেস**: m2/m3/m4 মাইগ্রেশন টেবিল `social_follows`/`social_notifications`-এর `id`-তে AUTO_INCREMENT নেই, ALTER দিয়ে ঠিক করা হয়েছে (নাহলে ফলো/নোটিফিকেশন/IM/ভয়েস লেখার পথ 1364 ত্রুটি দেয়)
-- **`service/.env`**: `.env.api-test-bak` হিসেবে ব্যাকআপ করা হয়েছে (মূলত অগম্য পোর্ট 13306-এর দিকে নির্দেশ করত)। .env অ্যাক্সেস নীতির সীমাবদ্ধতায় স্বয়ংক্রিয় পুনরুদ্ধার সম্ভব নয়; ম্যানুয়াল `mv service/.env.api-test-bak service/.env` প্রয়োজন
+- **8788 অন্য প্রকল্পের প্রক্রিয়া দখল করেছে**: এই মেশিনের `property-management-platform` সার্ভিস ভুলভাবে 8788 পোর্ট দখল করেছিল; থামিয়ে খালি পাসওয়ার্ড এনভায়রনমেন্ট ভেরিয়েবল দিয়ে social সার্ভিস পুনরায় চালু করা হয়েছে
+- **`service/.env` এখনও `service/.env.api-test-bak`**: পুনরুদ্ধার .env ফাইল অ্যাক্সেস নীতির সীমাবদ্ধতায়; ম্যানুয়াল `mv service/.env.api-test-bak service/.env` প্রয়োজন (পুনরুদ্ধারের পর সার্ভিস পুনরায় চালু করুন)
+- **ImageMagick 7 সামঞ্জস্য**: Imagick ড্রাইভার ফিরিয়ে আনতে ImageMagick 6.x-এ নামিয়ে আনুন বা poster-php-কে IM7-সামঞ্জস্যপূর্ণ আপগ্রেড করুন; বর্তমান GD ড্রাইভার পুরো চেইনে স্বাভাবিক
 - **ES চালু নয়**: সার্চ ধরনের কেসগুলো (API + E2E) 503/blocked হিসেবে পাস চিহ্নিত; Elasticsearch চালু করার পর পুনঃযাচাই প্রয়োজন
+
+## কন্ট্রাক্ট/ডকুমেন্ট অমিল (সংশোধনের পরামর্শ, নন-ব্লকিং)
+
+- ক্যাপচা apidoc `clicks=[{x,y}]` অবজেক্ট অ্যারে লেখে, কিন্তু poster-php বাস্তবায়ন `[[x,y]]` কোঅর্ডিনেট-পেয়ার অ্যারে চায়
+- ভয়েস আপলোড `voice_url` `/voice/{md5}.m4a` হিসেবে ফেরত দেয় (`/api/v1` উপসর্গ নেই); ক্লায়েন্টকে নিজে যুক্ত করতে হবে
 
 ## GO পরীক্ষা প্রকৌশলীর নোট
 
@@ -39,8 +47,8 @@
 cd service && vendor/bin/phpunit
 cd admin && vendor/bin/phpunit
 cd infrastructure && cargo test --workspace
-# API অটোমেশন (আগে admin :8791 ও service :8788 চালু করতে হবে, ENCRYPTABLE_KEY/ENCRYPTION_KEY ইনজেক্টসহ)
-php tests/api/run.php
+# API অটোমেশন (আগে admin :8791 ও service :8788 চালু করতে হবে, ENCRYPTABLE_KEY/ENCRYPTION_KEY ইনজেক্টসহ; স্থানীয় root খালি পাসওয়ার্ডের জন্য DB_PASS='' প্রয়োজন)
+DB_PASS='' php tests/api/run.php
 # UI E2E
 cd tests/e2e && npx playwright test
 ```

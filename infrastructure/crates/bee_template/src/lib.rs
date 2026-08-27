@@ -60,8 +60,9 @@ impl TemplateEngine {
 ///
 /// # Panics
 ///
-/// Panics if a value cannot be serialized to JSON, e.g. non-finite floats
-/// (`NaN`, `Infinity`, `-Infinity`).
+/// Panics if a value cannot be serialized to JSON at all. Non-finite floats
+/// (`NaN`, `Infinity`, `-Infinity`) do not panic — current serde_json
+/// serializes them as JSON `null`.
 ///
 /// # Examples
 ///

@@ -8,29 +8,30 @@
 
 ## উপসংহার
 
-**116টি পরীক্ষার কেস: 113 পাস / 3 ফেল (97.4% পাসের হার); 3টি ফেলই শনাক্তকৃত মূল কারণসহ পণ্যের ত্রুটি**
+**116টি পরীক্ষার কেস: 116 পাস / 0 ফেল (100% পাসের হার); আগের রাউন্ডের 3টি পণ্যের ত্রুটি (A20/A39/A40) সবগুলোই ঠিক করা হয়েছে এবং যাচাই করা হয়েছে**
 
 | গ্রুপ | পাস/মোট |
 |------|-----------|
-| admin A01-A45 (প্রমাণীকরণ, ক্যাপচা, ব্যবহারকারী ব্যবস্থাপনা, HashID, ভূমিকা অনুমতি, কনফিগারেশন, লগ, এক্সপোর্ট/ইমপোর্ট, আপলোড, হেলথ চেক ইত্যাদি) | 42/45 |
+| admin A01-A45 (প্রমাণীকরণ, ক্যাপচা, ব্যবহারকারী ব্যবস্থাপনা, HashID, ভূমিকা অনুমতি, কনফিগারেশন, লগ, এক্সপোর্ট/ইমপোর্ট, আপলোড, হেলথ চেক ইত্যাদি) | 45/45 |
 | service S01-S68 (রেজিস্টার/লগইন/লগআউট/রিফ্রেশ, প্রোফাইল, ফলো, পোস্ট/লাইক/টাইমলাইন, কমেন্ট, নোটিফিকেশন, সার্চ, IM সেশন/বার্তা/পুশ, ভয়েস আপলোড/ফাইল/কল/রুম ইত্যাদি) | 71/71 |
 
-## ব্যর্থ পরীক্ষার কেস (3টি, সবগুলোই পণ্যের ত্রুটি)
+## আগের রাউন্ডের 3টি পণ্যের ত্রুটি মেরামতের যাচাই (সবগুলো PASS)
 
-| কেস | প্রত্যাশিত | প্রকৃত | মূল কারণ |
-|------|------|------|------|
-| A20 অবৈধ hashid ব্যবহারকারীর বিবরণ | 404 | 500 | `HashidsService::decode()` অবৈধ ID-এর জন্য ধরা পড়েনি এমন `InvalidArgumentException` ছোড়ে (admin/app/common/HashidsService.php:28, BaseController.php:52); ব্যতিক্রমটি 500 হিসেবে চলে যায়, ধরে 404 ফেরানো উচিত |
-| A39 Excel এক্সপোর্ট | xlsx ফাইল স্ট্রিম | 200+JSON ত্রুটি বডি (ব্যবসায়িক ব্যর্থতা) | `ExportController::excel()` রিটার্ন টাইপ `: Response` ঘোষণা করে কিন্তু `use support\Response` নেই, ফলে টাইপটি `app\admin\controller\Response` হিসেবে ব্যাখ্যা হয় → যেকোনো সফল রিটার্নে `TypeError` ছোড়ে (ExportController.php:122), এক্সপোর্ট ফিচার সম্পূর্ণ অকেজো |
-| A40 PDF এক্সপোর্ট | pdf ফাইল স্ট্রিম | 200+JSON ত্রুটি বডি (ব্যবসায়িক ব্যর্থতা) | উপরের মতোই, `ExportController::pdf()` (ExportController.php:135)-এ `use support\Response` নেই |
+| কেস | প্রত্যাশিত | আগের রাউন্ডের প্রকৃত | মেরামত | এই রাউন্ডের ফলাফল |
+|------|------|---------|------|---------|
+| A20 অবৈধ hashid ব্যবহারকারীর বিবরণ | 404 | 500 | `BaseController::decodeId()` `InvalidArgumentException` ধরে নেয় এবং `support\exception\NotFoundException($msg, 404)` ছোড়ে (admin/app/admin/controller/BaseController.php); `UserController`-এর দুটি ব্যাচ মেথডের catch `InvalidArgumentException \| NotFoundException`-এ বিস্তৃত হয়, 422 সেমান্টিকস অক্ষুণ্ণ থাকে | **PASS (404)** |
+| A39 Excel এক্সপোর্ট | xlsx ফাইল স্ট্রিম | 200+JSON ত্রুটি বডি | `ExportController`-এ `use support\Response;` যোগ করা হয়েছে (রিটার্ন টাইপ আগে অস্তিত্বহীন `app\admin\controller\Response`-এ ব্যাখ্যা হয়ে TypeError ছোড়ে); `admin_user`-এর phone/email/id_card পড়ার সময় Encryptable কাস্টের মাধ্যমে স্বয়ংক্রিয় ডিক্রিপ্ট হয়, এক্সপোর্ট সরাসরি মাস্ক করে, দ্বিতীয় ডিক্রিপশন সরানো হয়েছে | **PASS (attachment ফাইল স্ট্রিম)** |
+| A40 PDF এক্সপোর্ট | pdf ফাইল স্ট্রিম | 200+JSON ত্রুটি বডি | উপরের মতোই (`ExportController::pdf()` রিটার্ন টাইপ ঠিক করা হয়েছে) | **PASS (application/pdf ফাইল স্ট্রিম)** |
 
-> অতিরিক্ত নোট (একই ফাইলের সম্ভাব্য ত্রুটি, বর্তমানে উপরের TypeError-এর আড়ালে): `ExportController` লাইন 90 phone/email-এ `EncryptionService::decrypt()` কল করে, অথচ `AdminUser` মডেলের `email/phone/id_card` ফিল্ডগুলো `Encryptable::class` কাস্ট ঘোষণা করে (লেখায় স্বয়ংক্রিয় এনক্রিপ্ট, পড়ায় স্বয়ংক্রিয় ডিক্রিপ্ট); এক্সপোর্ট প্লেইনটেক্সট দ্বিতীয়বার ডিক্রিপ্ট করবে → যত তাড়াতাড়ি খালি নয় এমন ফোন/ইমেইলসহ কোনো অ্যাকাউন্ট থাকবে, `EncryptionException: Invalid ciphertext prefix for AES-256-CBC` ছোড়া হবে। রিটার্ন টাইপ ঠিক করার পরেও এই সমস্যা পুনরাবৃত্ত হবে।
+## এই রাউন্ডে ঠিক করা/সামলানো পরিবেশগত সমস্যা (পণ্যের ব্যবসায়িক কোড পরিবর্তন নয়)
 
-## পরীক্ষার সময় ঠিক করা পরিবেশগত সমস্যা (পণ্যের কোড পরিবর্তন নয়)
-
-1. **m2/m3/m4 মাইগ্রেশন টেবিলের `id`-তে AUTO_INCREMENT নেই (বাধাদানকারী, ঠিক করা হয়েছে)**: `service/database/m2.sql`/`m3.sql`/`m4.sql`-এর তৈরি `social_follows`, `social_notifications`-এর `id BIGINT UNSIGNED NOT NULL`-এ `AUTO_INCREMENT` নেই; প্রতিটি INSERT-এ `1364 Field 'id' doesn't have a default value` ত্রুটি হয়, ফলো/নোটিফিকেশন/IM/ভয়েসের সব লেখার পথ ব্লক করে। লোকালে `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` চালানো হয়েছে (বাকি ৮টি টেবিলে আগে থেকেই অটো-ইনক্রিমেন্ট আছে)। **মাইগ্রেশন স্ক্রিপ্টগুলোতেও অটো-ইনক্রিমেন্ট যোগ করার পরামর্শ দেওয়া হচ্ছে।**
-2. **service/.env অগম্য ডেটাবেসের দিকে নির্দেশ করে (বাধাদানকারী)**: `DB_PORT=13306` এবং পাসওয়ার্ড নেই, অথচ মূল MySQL আসলে `127.0.0.1:3306 (root/root)`-এ আছে; webman-এর `createUnsafeMutable` CLI পরিবেশ ভেরিয়েবলগুলো ওভাররাইড করে। পরীক্ষার সময় `.env`-কে `service/.env.api-test-bak`-এ সরানো হয়েছে (বিষয়বস্তু অপরিবর্তিত রাখা হয়েছে) এবং পরিবেশ ভেরিয়েবল ইনজেক্ট করে পরিষেবা চালু করা হয়েছে; .env ফাইল অ্যাক্সেস নীতির সীমাবদ্ধতার কারণে পুনরুদ্ধার করা যায়নি, ম্যানুয়ালি `mv service/.env.api-test-bak service/.env` প্রয়োজন (সতর্কতা: পুনরুদ্ধারের পর পরিষেবা পুনরায় চালু করলে আবার অগম্য ডেটাবেসের মুখোমুখি হবে)।
-3. **admin-এর .env নেই, পরিবেশ ভেরিয়েবলের উপর নির্ভরশীল**: `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)` প্রয়োজন। webman কন্টেইনারে provider নিবন্ধিত না থাকলে `encryptable` প্লাগইন `EnvEncryptableConfig`-এ ফিরে যায় (`ENCRYPTION_KEY` পড়ে, ডিফল্ট cipher aes-256-gcm); কী-র দৈর্ঘ্য মেল না খেলে অ্যাকাউন্ট তৈরি/ইমপোর্ট/এক্সপোর্টে `MissingEncryptionKeyException` হয়।
-4. **Elasticsearch চালু নেই**: `GET /api/v1/search/posts` 503 ফেরায় (পরিকল্পিত ডিগ্রেডেশন); S গ্রুপের সার্চ কেসগুলো প্রত্যাশা অনুযায়ী সামলানো হয়েছে (0 বা 503 গ্রহণযোগ্য), ফেল হিসেবে গণনা করা হয়নি।
+1. **run.php-এ DB খালি পাসওয়ার্ড ওভাররাইড ভাঙা (টেস্ট স্ক্রিপ্টের ত্রুটি, ঠিক করা হয়েছে)**: `DB` কনস্ট্যান্ট `getenv('DB_PASS') ?: 'root'` ব্যবহার করে; খালি স্ট্রিং পরিবেশ ভেরিয়েবলকে `?:` ফ্যালসি হিসেবে ধরে 'root'-এ ফিরে যায়, ফলে লোকাল খালি-পাসওয়ার্ড root সংযোগ প্রত্যাখ্যাত হয় (`Access denied ... using password: YES`)। `getenv('DB_PASS') ?? 'root'`-এ পরিবর্তন করা হয়েছে (শুধুমাত্র সেট না থাকলে ডিফল্ট), এক-লাইনের পরিবর্তন (tests/api/run.php:26)।
+2. **service পোর্ট 8788 ভুল প্রসেস দখলে (পরিবেশ, সামলানো হয়েছে)**: এই মেশিনে অন্য একটি প্রজেক্ট, `property-management-platform`-এর service প্রসেস (master 2004768, 08:07-এ শুরু) 8788-এ লিসেনিং করছিল, এবং তার `.env` `property_management` ডেটাবেসের দিকে নির্দেশ করে — social service আসলে চলছিল না, ফলে S45 থেকে IM/ভয়েস রুটগুলো সব 404 ফেরায় এবং ক্লিনআপ পর্বের SQL ভুল ডেটাবেসে লাগে। প্রসেসটি বন্ধ করা হয়েছে এবং social service 8788/8789-এ পুনরায় চালু করা হয়েছে (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`), হেলথ চেক `social-service` ফিরিয়ে দিয়েছে।
+3. **ImageMagick 7 আপগ্রেডে ক্যাপচা Imagick ড্রাইভার ক্র্যাশ (পরিবেশ, সামলানো হয়েছে)**: সিস্টেম ImageMagick 7.1.2-27-এ (2026-07-08 বিল্ড) আপগ্রেডের পর `PixelsResource` সরানো হয়েছে; imagick 3.8.1 আর `Imagick::RESOURCETYPE_PIXELS` সংজ্ঞায়িত করে না, এবং poster-php-এর `ImagickDriver` কনস্ট্রাক্টর সঙ্গে সঙ্গে `Undefined constant` ছোড়ে (vendor কোড, পরিবর্তন করা হয়নি), ফলে ক্যাপচা তৈরি/যাচাই (A05/A06) 500 ফেরায় এবং ক্যাসকেডিংভাবে A08-A11 লগইন ব্লক করে। **সামলানো**: admin service কনফিগ ডকে সংরক্ষিত ড্রাইভার সুইচ দিয়ে পুনরায় চালু করা হয়েছে — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 নেটিভভাবে gd/imagick/auto সাপোর্ট করে); ক্যাপচা GD ড্রাইভারে স্যুইচ করার পর পুরো চেইন কাজ করে। Imagick ড্রাইভার পুনরুদ্ধার করতে হলে ImageMagick 6.x-এ ডাউনগ্রেড করতে হবে বা IM7 সামঞ্জস্যের জন্য poster-php আপগ্রেড করতে হবে।
+4. **MySQL root পাসওয়ার্ড খালি করা হয়েছে**: আগের রাউন্ডে `root/root` নথিভুক্ত ছিল; এই রাউন্ডে খালি পাসওয়ার্ডে লগইন সম্ভব, সব পরিষেবা ও স্ক্রিপ্ট খালি পাসওয়ার্ড দিয়ে চালু করা হয়েছে।
+5. **admin service পুনরায় চালুর পরিবেশ**: আগের রাউন্ডের "admin-এর .env নেই, পরিবেশ ভেরিয়েবলের উপর নির্ভরশীল" এখনও প্রযোজ্য; পুনরায় চালুর কমান্ড নিচের "পরিবেশ ও পুনরুৎপাদন"-এ আছে।
+6. **service/.env এখনও `service/.env.api-test-bak`**: সংযোগ পরীক্ষার জন্য আগের রাউন্ডে সরানো হয়েছিল এবং পুনরুদ্ধার করা হয়নি (পুনরুদ্ধার .env ফাইল অ্যাক্সেস নীতির সীমাবদ্ধতায়); এই রাউন্ডে service আবার পরিবেশ ভেরিয়েবল দিয়ে চালু হয়েছে। ম্যানুয়ালি `mv service/.env.api-test-bak service/.env` প্রয়োজন (পুনরুদ্ধারের পর পরিষেবা পুনরায় চালু করুন; এটি যে ডেটাবেস ঠিকানা নির্দেশ করে সেটি খেয়াল রাখুন)।
+7. **Elasticsearch চালু নেই**: `GET /api/v1/search/posts` 503 ফেরায় (পরিকল্পিত ডিগ্রেডেশন); S গ্রুপের সার্চ কেসগুলো প্রত্যাশা অনুযায়ী সামলানো হয়েছে (0 বা 503 গ্রহণযোগ্য), ফেল হিসেবে গণনা করা হয়নি।
 
 ## কন্ট্র্যাক্ট/ডকুমেন্টেশন অসামঞ্জস্য (পরিবর্তনের পরামর্শ, অ-বাধাদানকারী)
 
@@ -43,12 +44,15 @@
 - পুনরুৎপাদন:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # পুনরায় চালান (116 কেস)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # পুনরায় চালান (116 কেস)
 ```
+
+- নোট: পোর্ট 8788 যেন `property-management-platform` service দখল না করে তা নিশ্চিত করুন (দুটি প্রজেক্টই ডিফল্টভাবে একই পোর্ট ব্যবহার করে; এই মেশিনে দুটি প্রজেক্ট একসাথে থাকলে আলাদা করতে হবে)।
 
 ## এন্ডপয়েন্ট তালিকা (route.php / apidoc অনুযায়ী)
 

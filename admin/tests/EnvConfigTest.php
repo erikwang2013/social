@@ -10,79 +10,58 @@ namespace tests;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
+/**
+ * 环境配置测试
+ *
+ * 本仓库已不再入库 .env / .env.example（commit e5379fc 移除误入库的 env 备份），
+ * 应用依赖 config/*.php 中的 getenv('X') ?: 默认值 兜底运行，默认值直接指向本地 MySQL/Redis。
+ * 因此断言目标是：无 .env 时配置可加载、默认值类型正确、指向本地服务。
+ */
 class EnvConfigTest extends TestCase
 {
-    protected function setUp(): void
-    {
-        if (file_exists(__DIR__ . '/../.env')) {
-            $dotenv = \Dotenv\Dotenv::createUnsafeImmutable(__DIR__ . '/..');
-            $dotenv->safeLoad();
-        }
-    }
-
-    #[Test]
-    public function env_file_exists(): void
-    {
-        $this->assertFileExists(__DIR__ . '/../.env');
-    }
-
-    #[Test]
-    public function env_example_file_exists(): void
-    {
-        $this->assertFileExists(__DIR__ . '/../.env.example');
-    }
-
-    #[Test]
-    public function getenv_reads_env_variables(): void
-    {
-        $this->assertNotEmpty(getenv('APP_NAME'), 'APP_NAME 应有值');
-        $this->assertNotEmpty(getenv('JWT_SECRET_KEY'), 'JWT_SECRET_KEY 应有值');
-        $this->assertNotEmpty(getenv('DB_HOST'), 'DB_HOST 应有值');
-    }
-
     #[Test]
     public function getenv_fallback_pattern_works(): void
     {
-        // 存在的变量返回实际值
-        $val = getenv('APP_NAME') ?: 'DEFAULT_APP';
-        $this->assertNotEquals('DEFAULT_APP', $val);
-
         // 不存在的变量返回默认值
         $val2 = getenv('THIS_VAR_DOES_NOT_EXIST_XYZ') ?: 'FALLBACK_OK';
         $this->assertEquals('FALLBACK_OK', $val2);
     }
 
     #[Test]
-    public function config_env_keys_exist_in_dotenv(): void
+    public function config_files_provide_defaults_for_all_env_keys(): void
     {
-        // 收集 .env 中的键
-        $envContent = file_get_contents(__DIR__ . '/../.env');
-        preg_match_all('/^([A-Z_][A-Z0-9_]*)=/m', $envContent, $matches);
-        $envKeys = array_flip($matches[1]);
-
-        // 检查每个配置文件中的 getenv 键
+        // 每个 getenv 键都必须有 ?: 默认值兜底，保证无 .env 也能启动
         $configFiles = glob(__DIR__ . '/../config/*.php');
-        $missingKeys = [];
+        $this->assertNotEmpty($configFiles, 'config/ 下应有配置文件');
 
+        $missingDefaults = [];
         foreach ($configFiles as $file) {
             $content = file_get_contents($file);
             preg_match_all("/getenv\('([A-Z_][A-Z0-9_]*)'\)/", $content, $m);
             foreach ($m[1] as $key) {
-                if (!isset($envKeys[$key])) {
-                    $missingKeys[] = basename($file) . ": $key";
+                if (!preg_match("/getenv\('" . preg_quote($key, '/') . "'\)\s*\?:/", $content)) {
+                    $missingDefaults[] = basename($file) . ": $key";
                 }
             }
         }
 
-        $this->assertEmpty($missingKeys, '以下 env key 在 .env 中缺失: ' . implode(', ', $missingKeys));
+        $this->assertEmpty($missingDefaults, '以下 env key 缺少默认值兜底: ' . implode(', ', $missingDefaults));
+    }
+
+    #[Test]
+    public function default_config_points_to_local_services(): void
+    {
+        $this->assertEquals('127.0.0.1', config('database.connections.mysql.host'));
+        $this->assertEquals(3306, config('database.connections.mysql.port'));
+        $this->assertEquals('open_admin', config('database.connections.mysql.database'));
+        $this->assertNotEmpty(config('jwt.secret'), 'JWT_SECRET_KEY 应有默认值');
     }
 
     #[Test]
     public function critical_config_types(): void
     {
-        $this->assertIsNumeric(getenv('JWT_TTL') ?: 7200, 'JWT_TTL 应为数字');
-        $this->assertIsNumeric(getenv('DB_PORT') ?: 3306, 'DB_PORT 应为数字');
-        $this->assertIsString(getenv('JWT_SECRET_KEY') ?: 'x', 'JWT_SECRET_KEY 应为字符串');
-        $this->assertIsString(getenv('HASHIDS_SALT') ?: 'x', 'HASHIDS_SALT 应为字符串');
+        $this->assertIsNumeric(config('jwt.ttl'), 'JWT_TTL 应为数字');
+        $this->assertIsNumeric(config('database.connections.mysql.port'), 'DB_PORT 应为数字');
+        $this->assertIsString(config('jwt.secret'), 'JWT_SECRET_KEY 应为字符串');
     }
 }

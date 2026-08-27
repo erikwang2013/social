@@ -13,6 +13,7 @@ use app\common\EncryptionService;
 use app\model\AdminUser;
 use support\Request;
 use support\Response;
+use support\exception\NotFoundException;
 
 /**
  * 管理端基础控制器
@@ -49,7 +50,12 @@ class BaseController
      */
     protected function decodeId(string $hashid): int
     {
-        return HashidsService::decode($hashid);
+        try {
+            return HashidsService::decode($hashid);
+        } catch (\InvalidArgumentException $e) {
+            // 非法 hashid 统一按 404 处理（body code），批量接口仍可捕获其父类异常
+            throw new NotFoundException($e->getMessage(), 404);
+        }
     }
 
     /**

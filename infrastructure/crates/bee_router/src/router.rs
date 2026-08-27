@@ -183,10 +183,9 @@ mod tests {
     #[tokio::test]
     async fn post_put_delete_routes_are_registered() {
         let app = Router::new()
-            .ns(
-                "/api",
-                |ns| ns.post("/create", create).put("/update", update).delete("/remove", remove),
-            )
+            .ns("/api", |ns| {
+                ns.post("/create", create).put("/update", update).delete("/remove", remove)
+            })
             .build();
         for (method, uri, expected) in [
             ("POST", "/api/create", "created"),
@@ -195,13 +194,7 @@ mod tests {
         ] {
             let res = app
                 .clone()
-                .oneshot(
-                    Request::builder()
-                        .method(method)
-                        .uri(uri)
-                        .body(Body::empty())
-                        .unwrap(),
-                )
+                .oneshot(Request::builder().method(method).uri(uri).body(Body::empty()).unwrap())
                 .await
                 .unwrap();
             assert_eq!(res.status(), StatusCode::OK, "{method} {uri}");
@@ -223,17 +216,11 @@ mod tests {
 
     #[tokio::test]
     async fn multiple_namespaces_do_not_collide() {
-        let app = Router::new()
-            .ns("/a", |ns| ns.get("/x", hello))
-            .ns("/b", |ns| ns.get("/x", hello));
+        let app =
+            Router::new().ns("/a", |ns| ns.get("/x", hello)).ns("/b", |ns| ns.get("/x", hello));
         let res = app
             .build()
-            .oneshot(
-                Request::builder()
-                    .uri("/b/x?name=bee")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
+            .oneshot(Request::builder().uri("/b/x?name=bee").body(Body::empty()).unwrap())
             .await
             .unwrap();
         assert_eq!(res.status(), StatusCode::OK);

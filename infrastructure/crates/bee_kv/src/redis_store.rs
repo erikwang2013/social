@@ -111,3 +111,62 @@ impl KvStore for RedisStore {
             .map_err(|e| KvError::OperationFailed(e.to_string()))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Unique key prefix per run so parallel test runs never collide.
+    fn key(name: &str) -> String {
+        let nanos =
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+        format!("bee_kv_redis_test:{pid}:{nanos}:{name}", pid = std::process::id())
+    }
+
+    /// Connect to a local Redis; return None (test is skipped) when
+    /// unavailable so the suite still passes on machines without Redis.
+    async fn store() -> Option<RedisStore> {
+        match RedisStore::new("redis://127.0.0.1:6379").await {
+            Ok(s) => Some(s),
+            Err(e) => {
+                eprintln!("SKIP: local Redis unavailable: {e}");
+                None
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn redis_set_get_del_roundtrip() {
+        let Some(store) = store().await else { return };
+        let k = key("roundtrip");
+        assert_eq!(store.get(&k).await.unwrap(), None);
+        store.set(&k, "v1").await.unwrap();
+        assert!(store.exists(&k).await.unwrap());
+        assert_eq!(store.get(&k).await.unwrap(), Some("v1".into()));
+        store.del(&k).await.unwrap();
+        assert!(!store.exists(&k).await.unwrap());
+    }
+
+    #[tokio::test]
+    async fn redis_incr_and_expire() {
+        let Some(store) = store().await else { return };
+        let k = key("incr");
+        store.del(&k).await.ok();
+        assert_eq!(store.incr(&k, 1).await.unwrap(), 1);
+        assert_eq!(store.incr(&k, 4).await.unwrap(), 5);
+        assert_eq!(store.incr(&k, -2).await.unwrap(), 3);
+        store.expire(&k, 1).await.unwrap();
+        store.del(&k).await.ok();
+    }
+
+    #[tokio::test]
+    async fn redis_mset_mget() {
+        let Some(store) = store().await else { return };
+        let (a, b) = (key("mset-a"), key("mset-b"));
+        store.mset(&[(&a, "1"), (&b, "2")]).await.unwrap();
+        let vals = store.mget(&[&a, &b, "bee_kv_no_such_key"]).await.unwrap();
+        assert_eq!(vals, vec![Some("1".into()), Some("2".into()), None]);
+        store.del(&a).await.unwrap();
+        store.del(&b).await.unwrap();
+    }
+}

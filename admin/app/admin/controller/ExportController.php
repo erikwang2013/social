@@ -19,6 +19,7 @@ use app\model\OperationLog;
 use app\model\AdminRole;
 use app\model\SystemConfig;
 use support\Request;
+use support\Response;
 
 /**
  * @Apidoc\Title("数据导出")
@@ -86,12 +87,12 @@ class ExportController extends BaseController
             $colIndex = 'A';
             foreach ($columns as $col) {
                 $value = $item[$col] ?? '';
+                // Encryptable cast 读取时已自动解密，直接脱敏
                 if (in_array($col, $sensitiveFields) && !empty($value)) {
-                    $decrypted = EncryptionService::decrypt((string) $value);
                     if ($col === 'phone') {
-                        $value = EncryptionService::maskPhone($decrypted);
+                        $value = EncryptionService::maskPhone((string) $value);
                     } elseif ($col === 'email') {
-                        $value = EncryptionService::maskEmail($decrypted);
+                        $value = EncryptionService::maskEmail((string) $value);
                     } else {
                         $value = str_repeat('*', 8); // id_card等彻底隐藏
                     }

@@ -96,8 +96,11 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 ### 测试
 
 ```bash
-cd service
-vendor/bin/phpunit                    # 单元测试（79 tests / 230 assertions）
+cd service && vendor/bin/phpunit      # service 单元测试（136 tests / 348 assertions）
+cd admin   && vendor/bin/phpunit      # admin 单元测试（67 tests / 180 assertions）
+cd infrastructure && cargo test --workspace   # Rust 16 crates（183 tests）
+DB_PASS='' php tests/api/run.php      # API 自动化（116 用例，需先起 admin :8791 / service :8788）
+cd tests/e2e && npx playwright test   # UI 端到端（41 用例）
 
 php tests/im_e2e.php                  # IM 黑盒 E2E（需 :8788/:8789 运行中 + Redis）
 php tests/voice_e2e.php               # 语音 E2E：版本化 / 语音消息 / 通话 / 语聊房
@@ -105,6 +108,8 @@ php tests/voice_e2e.php               # 语音 E2E：版本化 / 语音消息 / 
 cd media/sfu
 npm run smoke                         # SFU /signal 协议冒烟（需 Docker 容器或本地 node）
 ```
+
+测试报告（全量汇总 + 4 份分报告，13 种语言）本地存储于 [`docs/test-reports/`](docs/test-reports/SUMMARY.md)。
 
 ## 文档
 

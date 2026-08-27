@@ -154,103 +154,90 @@ impl MemoryEngine {
 #[allow(clippy::needless_lifetimes)]
 #[async_trait]
 impl SearchEngine for MemoryEngine {
-        async fn create_index(
-            &self,
-            name: &str,
-            _mapping: Option<Mapping>,
-        ) -> Result<(), SearchError> {
-            let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            map.entry(name.to_string()).or_default();
-            Ok(())
-        }
+    async fn create_index(&self, name: &str, _mapping: Option<Mapping>) -> Result<(), SearchError> {
+        let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        map.entry(name.to_string()).or_default();
+        Ok(())
+    }
 
-        async fn delete_index(&self, name: &str) -> Result<(), SearchError> {
-            let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            map.remove(name);
-            Ok(())
-        }
+    async fn delete_index(&self, name: &str) -> Result<(), SearchError> {
+        let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        map.remove(name);
+        Ok(())
+    }
 
-        async fn index(
-            &self,
-            index: &str,
-            id: DocumentId,
-            doc: Document,
-        ) -> Result<(), SearchError> {
-            let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            let store = map.entry(index.to_string()).or_default();
-            store.insert(id, doc);
-            Ok(())
-        }
+    async fn index(&self, index: &str, id: DocumentId, doc: Document) -> Result<(), SearchError> {
+        let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        let store = map.entry(index.to_string()).or_default();
+        store.insert(id, doc);
+        Ok(())
+    }
 
-        async fn bulk_index(
-            &self,
-            index: &str,
-            docs: &[(DocumentId, Document)],
-        ) -> Result<BulkResult, SearchError> {
-            let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            let store = map.entry(index.to_string()).or_default();
-            let count = docs.len() as u64;
-            for (id, doc) in docs {
-                store.insert(id.clone(), doc.clone());
-            }
-            Ok(BulkResult { indexed: count, errors: Vec::new() })
+    async fn bulk_index(
+        &self,
+        index: &str,
+        docs: &[(DocumentId, Document)],
+    ) -> Result<BulkResult, SearchError> {
+        let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        let store = map.entry(index.to_string()).or_default();
+        let count = docs.len() as u64;
+        for (id, doc) in docs {
+            store.insert(id.clone(), doc.clone());
         }
+        Ok(BulkResult { indexed: count, errors: Vec::new() })
+    }
 
-        async fn get(&self, index: &str, id: &DocumentId) -> Result<Option<Document>, SearchError> {
-            let map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            let doc = map.get(index).and_then(|store| store.get(id)).cloned();
-            Ok(doc)
-        }
+    async fn get(&self, index: &str, id: &DocumentId) -> Result<Option<Document>, SearchError> {
+        let map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        let doc = map.get(index).and_then(|store| store.get(id)).cloned();
+        Ok(doc)
+    }
 
-        async fn delete(&self, index: &str, id: &DocumentId) -> Result<(), SearchError> {
-            let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            if let Some(store) = map.get_mut(index) {
-                store.remove(id);
-            }
-            Ok(())
+    async fn delete(&self, index: &str, id: &DocumentId) -> Result<(), SearchError> {
+        let mut map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(store) = map.get_mut(index) {
+            store.remove(id);
         }
+        Ok(())
+    }
 
-        async fn search(
-            &self,
-            index: &str,
-            query: SearchQuery,
-        ) -> Result<SearchResult, SearchError> {
-            let needle = query.get("query").and_then(|v| v.as_str()).unwrap_or("");
-            let map = self.data.lock().unwrap_or_else(|e| e.into_inner());
-            let hits: Vec<SearchHit> = map
-                .get(index)
-                .map(|store| {
-                    store
-                        .iter()
-                        .filter(|(id, doc)| {
-                            needle.is_empty()
-                                || id.contains(needle)
-                                || doc.to_string().contains(needle)
-                        })
-                        .enumerate()
-                        .map(|(i, (id, doc))| SearchHit {
-                            id: id.clone(),
-                            score: 1.0 / (i as f64 + 1.0),
-                            source: doc.clone(),
-                        })
-                        .collect()
-                })
-                .unwrap_or_default();
-            let total = hits.len() as u64;
-            Ok(SearchResult { total, hits, aggregations: None })
-        }
+    async fn search(&self, index: &str, query: SearchQuery) -> Result<SearchResult, SearchError> {
+        let needle = query.get("query").and_then(|v| v.as_str()).unwrap_or("");
+        // Optional pagination, honored as `from`/`size` in the query JSON
+        // (the gRPC layer passes these through from SearchRequest).
+        let from = query.get("from").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
+        let size = query.get("size").and_then(|v| v.as_u64()).unwrap_or(u64::MAX) as usize;
+        let map = self.data.lock().unwrap_or_else(|e| e.into_inner());
+        let mut hits: Vec<SearchHit> = map
+            .get(index)
+            .map(|store| {
+                store
+                    .iter()
+                    .filter(|(id, doc)| {
+                        needle.is_empty() || id.contains(needle) || doc.to_string().contains(needle)
+                    })
+                    .enumerate()
+                    .map(|(i, (id, doc))| SearchHit {
+                        id: id.clone(),
+                        score: 1.0 / (i as f64 + 1.0),
+                        source: doc.clone(),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        let total = hits.len() as u64;
+        hits.drain(..from.min(hits.len()));
+        hits.truncate(size);
+        Ok(SearchResult { total, hits, aggregations: None })
+    }
 
-        async fn scroll(&self, _handle: ScrollHandle) -> Result<SearchResult, SearchError> {
-            Ok(SearchResult { total: 0, hits: Vec::new(), aggregations: None })
-        }
+    async fn scroll(&self, _handle: ScrollHandle) -> Result<SearchResult, SearchError> {
+        Ok(SearchResult { total: 0, hits: Vec::new(), aggregations: None })
+    }
 
-        async fn aggregate(
-            &self,
-            _index: &str,
-            _aggs: Aggregations,
-        ) -> Result<AggResult, SearchError> {
-            Ok(serde_json::Value::Object(serde_json::Map::new()))
-        }
+    async fn aggregate(&self, _index: &str, _aggs: Aggregations) -> Result<AggResult, SearchError> {
+        Ok(serde_json::Value::Object(serde_json::Map::new()))
+    }
 }
 
 #[cfg(test)]
@@ -347,7 +334,10 @@ mod tests {
     async fn test_search_matches_document_content() {
         let engine = MemoryEngine::new();
         engine.create_index("posts", None).await.unwrap();
-        engine.index("posts", "1".into(), serde_json::json!({"title": "hello world"})).await.unwrap();
+        engine
+            .index("posts", "1".into(), serde_json::json!({"title": "hello world"}))
+            .await
+            .unwrap();
         engine.index("posts", "2".into(), serde_json::json!({"title": "goodbye"})).await.unwrap();
         let result = engine.search("posts", serde_json::json!({"query": "hello"})).await.unwrap();
         assert_eq!(result.total, 1);
@@ -380,6 +370,35 @@ mod tests {
         engine.index("idx", "1".into(), serde_json::json!({"v": 2})).await.unwrap();
         let doc = engine.get("idx", &"1".into()).await.unwrap().unwrap();
         assert_eq!(doc["v"], 2);
+    }
+
+    #[tokio::test]
+    async fn test_search_honors_from_size_pagination() {
+        let engine = MemoryEngine::new();
+        engine.create_index("items", None).await.unwrap();
+        for i in 1..=5 {
+            engine.index("items", i.to_string(), serde_json::json!({"v": i})).await.unwrap();
+        }
+        // HashMap iteration order is unspecified, so compare against the
+        // engine's own full result rather than assuming insertion order.
+        let full = engine.search("items", serde_json::json!({"query": ""})).await.unwrap();
+        let page = engine
+            .search("items", serde_json::json!({"query": "", "from": 1, "size": 2}))
+            .await
+            .unwrap();
+        // total reflects all matches; hits are the requested page only.
+        assert_eq!(page.total, 5);
+        assert_eq!(page.hits.len(), 2);
+        let full_ids: Vec<&str> = full.hits.iter().map(|h| h.id.as_str()).collect();
+        let page_ids: Vec<&str> = page.hits.iter().map(|h| h.id.as_str()).collect();
+        assert_eq!(page_ids, full_ids[1..3]);
+        // A page past the end yields empty hits while preserving total.
+        let tail = engine
+            .search("items", serde_json::json!({"query": "", "from": 10, "size": 2}))
+            .await
+            .unwrap();
+        assert_eq!(tail.total, 5);
+        assert!(tail.hits.is_empty());
     }
 
     #[tokio::test]

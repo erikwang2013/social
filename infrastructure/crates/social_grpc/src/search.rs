@@ -1,11 +1,11 @@
 tonic::include_proto!("social");
 
 use bee_search::{DocumentId, SearchEngine, SearchQuery};
-use social::search::v1::{
-    search_service_server::SearchService,
-    DeleteRequest, Hit, IndexRequest, IndexResponse, SearchRequest, SearchResponse,
-};
 pub use social::search::v1::search_service_server::SearchServiceServer;
+use social::search::v1::{
+    DeleteRequest, Hit, IndexRequest, IndexResponse, SearchRequest, SearchResponse,
+    search_service_server::SearchService,
+};
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 
@@ -35,7 +35,10 @@ impl SearchService for SearchSvc {
         Ok(Response::new(IndexResponse { ok: true }))
     }
 
-    async fn search(&self, req: Request<SearchRequest>) -> Result<Response<SearchResponse>, Status> {
+    async fn search(
+        &self,
+        req: Request<SearchRequest>,
+    ) -> Result<Response<SearchResponse>, Status> {
         let r = req.into_inner();
         let query = SearchQuery::from(serde_json::json!({
             "query": r.query,
@@ -47,14 +50,15 @@ impl SearchService for SearchSvc {
             .search(&r.index, query)
             .await
             .map_err(|e| Status::internal(e.to_string()))?;
-        let list = res
-            .hits
-            .into_iter()
-            .map(|h| Hit {
-                id: h.id.parse().unwrap_or(0),
+        let mut list = Vec::with_capacity(res.hits.len());
+        for h in res.hits {
+            list.push(Hit {
+                id: h.id.parse().map_err(|_| {
+                    Status::invalid_argument(format!("non-numeric document id: {}", h.id))
+                })?,
                 json: h.source.to_string(),
-            })
-            .collect();
+            });
+        }
         Ok(Response::new(SearchResponse { hits: list, total: res.total as i64 }))
     }
 }
@@ -165,6 +169,23 @@ mod tests {
             .into_inner();
         assert_eq!(res.total, 1);
         assert_eq!(res.hits[0].json, "\"not-json-at-all\"");
+    }
+
+    #[tokio::test]
+    async fn non_numeric_hit_id_becomes_invalid_argument() {
+        // A document indexed with a non-numeric id must surface as an error,
+        // not silently become id 0.
+        let svc = svc();
+        svc.engine.index("posts", "abc".into(), serde_json::json!({"t": "x"})).await.unwrap();
+        let res = svc
+            .search(Request::new(SearchRequest {
+                index: "posts".into(),
+                query: "x".into(),
+                from: 0,
+                size: 10,
+            }))
+            .await;
+        assert_eq!(res.unwrap_err().code(), tonic::Code::InvalidArgument);
     }
 
     #[tokio::test]

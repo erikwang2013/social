@@ -58,13 +58,7 @@ impl SearchEngine for Elasticsearch {
         index: &str,
         docs: &[(DocumentId, Document)],
     ) -> Result<BulkResult, SearchError> {
-        // NDJSON: one action line + one document line per item.
-        let mut body = String::new();
-        for (id, doc) in docs {
-            body.push_str(&format!("{{\"index\":{{\"_index\":\"{index}\",\"_id\":\"{id}\"}}}}\n"));
-            body.push_str(&doc.to_string());
-            body.push('\n');
-        }
+        let body = bulk_ndjson(index, docs);
         let res = self
             .client
             .post(format!("{}/_bulk", self.base_url))
@@ -153,6 +147,21 @@ impl SearchEngine for Elasticsearch {
         let payload: serde_json::Value = res.json().await.map_err(query_err)?;
         Ok(payload.get("aggregations").cloned().unwrap_or_default())
     }
+}
+
+/// Build the NDJSON bulk body: one JSON action line + one document line per
+/// item. The action line is serialized through `serde_json` so ids or index
+/// names containing quotes/backslashes cannot break the JSON framing.
+fn bulk_ndjson(index: &str, docs: &[(DocumentId, Document)]) -> String {
+    let mut body = String::new();
+    for (id, doc) in docs {
+        let action = serde_json::json!({ "index": { "_index": index, "_id": id } });
+        body.push_str(&action.to_string());
+        body.push('\n');
+        body.push_str(&doc.to_string());
+        body.push('\n');
+    }
+    body
 }
 
 fn parse_hits(payload: &serde_json::Value) -> SearchResult {
@@ -280,6 +289,16 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(res.indexed, 2);
+    }
+
+    #[test]
+    fn bulk_ndjson_escapes_ids_and_stays_parseable() {
+        let body = bulk_ndjson("posts", &[("quo\"te".into(), serde_json::json!({"a": 1}))]);
+        let lines: Vec<&str> = body.lines().collect();
+        assert_eq!(lines.len(), 2);
+        let action: serde_json::Value = serde_json::from_str(lines[0]).unwrap();
+        assert_eq!(action["index"]["_index"], "posts");
+        assert_eq!(action["index"]["_id"], "quo\"te");
     }
 
     #[tokio::test]

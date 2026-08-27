@@ -64,6 +64,13 @@ test.describe('service 用户端 E2E', () => {
       expect(dup.body.code).toBe(409);
     });
 
+    test('未登录访问受保护端点返回 401', async ({ request }) => {
+      const me = await api(request, 'get', '/api/v1/me');
+      expect(me.body.code).toBe(401);
+      const posts = await api(request, 'get', '/api/v1/posts?page=1');
+      expect(posts.body.code).toBe(401);
+    });
+
     test('错误密码登录 401', async ({ request }) => {
       const r = await api(request, 'post', '/api/v1/auth/login', {
         data: { email: A.email, password: 'Wrong_Pass_1' },
@@ -153,6 +160,29 @@ test.describe('service 用户端 E2E', () => {
       const following = await api(request, 'get', `/api/v1/users/${B.userId}/following`, { token: A.token });
       const fids = following.body.data.list.map((u) => u.id);
       expect(fids).toContain(A.userId);
+    });
+
+    test('B 取消关注 A 后关系为未关注', async ({ request }) => {
+      const unfollow = await api(request, 'post', `/api/v1/users/${A.userId}/unfollow`, { token: B.token });
+      expect(unfollow.body.code).toBe(0);
+      const rel = await api(request, 'get', `/api/v1/users/${A.userId}/relation`, { token: B.token });
+      expect(rel.body.data.is_following).toBe(false);
+    });
+
+    test('新评论通知可单条标记已读', async ({ request }) => {
+      await api(request, 'post', `/api/v1/posts/${postId}/comments`, {
+        token: B.token,
+        data: { content: '单条已读测试' },
+      });
+      const notif = await api(request, 'get', '/api/v1/notifications', { token: A.token });
+      expect(notif.body.code).toBe(0);
+      const unread = notif.body.data.list.find((n) => !n.read);
+      expect(unread).toBeTruthy();
+
+      const read = await api(request, 'post', `/api/v1/notifications/${unread.id}/read`, { token: A.token });
+      expect(read.body.code).toBe(0);
+      const cnt = await api(request, 'get', '/api/v1/notifications/unread-count', { token: A.token });
+      expect(Number(cnt.body.data.unread_count)).toBe(0);
     });
 
     test('搜索用户', async ({ request }) => {

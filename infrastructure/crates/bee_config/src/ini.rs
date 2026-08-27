@@ -78,7 +78,10 @@ mod tests {
         let content = "[a]\nk1 = v1\n[b]\nk2 = v2\n";
         let parsed = IniParser::parse(content);
         assert_eq!(parsed["a"]["k1"], "v1");
-        assert!(!parsed["a"].contains_key("k2"), "keys after a section switch stay in the new section");
+        assert!(
+            !parsed["a"].contains_key("k2"),
+            "keys after a section switch stay in the new section"
+        );
         assert_eq!(parsed["b"]["k2"], "v2");
     }
 

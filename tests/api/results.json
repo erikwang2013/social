@@ -1,8 +1,8 @@
 {
-    "timestamp": "2026-08-27 03:42:46",
+    "timestamp": "2026-08-27 08:19:24",
     "total": 116,
-    "pass": 113,
-    "fail": 3,
+    "pass": 116,
+    "fail": 0,
     "results": [
         {
             "name": "S01 健康检查 \/health",
@@ -456,8 +456,8 @@
         },
         {
             "name": "A20 非法 hashid 用户详情 404",
-            "pass": false,
-            "detail": "{\"code\":500,\"msg\":\"\\u65e0\\u6548\\u7684\\u52a0\\u5bc6ID\",\"traces\":\"InvalidArgumentException: \\u65e0\\u6548\\u7684\\u52a0\\u5bc6ID in \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/common\\\/HashidsService.php:28\\nStack trace:\\n#0 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/admin\\\/controller\\\/BaseController.php(52): app\\\\common\\\\HashidsService::decode()\\n#1 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/admin\\\/controller\\\/UserController.php(148): app\\\\admin\\\\controller\\\\BaseController->decodeId()\\n#2 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(428): app\\\\admin\\\\controller\\\\UserController->show()\\n#3 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(444): Webman\\\\App::Webman\\\\{closure}()\\n#4 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/OperationLog.php(22): Webman\\\\App::Webman\\\\{closure}()\\n#5 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\OperationLog->process()\\n#6 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/AdminPermission.php(46): Webman\\\\App::Webman\\\\{closure}()\\n#7 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\AdminPermission->process()\\n#8 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/AdminAuth.php(57): Webman\\\\App::Webman\\\\{closure}()\\n#9 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\AdminAuth->process()\\n#10 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/webman\\\/validation\\\/src\\\/Middleware.php(26): Webman\\\\App::Webman\\\\{closure}()\\n#11 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): Webman\\\\Validation\\\\Middleware->process()\\n#12 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/RateLimit.php(60): Webman\\\\App::Webman\\\\{closure}()\\n#13 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\RateLimit->process()\\n#14 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/SecurityFilter.php(78): Webman\\\\App::Webman\\\\{closure}()\\n#15 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\SecurityFilter->process()\\n#16 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/Locale.php(52): Webman\\\\App::Webman\\\\{closure}()\\n#17 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\Locale->process()\\n#18 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/app\\\/middleware\\\/Cors.php(27): Webman\\\\App::Webman\\\\{closure}()\\n#19 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(468): app\\\\middleware\\\\Cors->process()\\n#20 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(931): Webman\\\\App::Webman\\\\{closure}()\\n#21 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/App.php(167): Webman\\\\App::findRoute()\\n#22 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Connection\\\/TcpConnection.php(805): Webman\\\\App->onMessage()\\n#23 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Events\\\/Select.php(406): Workerman\\\\Connection\\\\TcpConnection->baseRead()\\n#24 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1758): Workerman\\\\Events\\\\Select->run()\\n#25 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1554): Workerman\\\\Worker::forkOneWorkerForLinux()\\n#26 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(1534): Workerman\\\\Worker::forkWorkersForLinux()\\n#27 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/workerman\\\/src\\\/Worker.php(603): Workerman\\\\Worker::forkWorkers()\\n#28 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/vendor\\\/workerman\\\/webman-framework\\\/src\\\/support\\\/App.php(147): Workerman\\\\Worker::runAll()\\n#29 \\\/home\\\/wwwroot\\\/social\\\/admin\\\/start.php(5): support\\\\App::run()\\n#30 {main}\"}"
+            "pass": true,
+            "detail": ""
         },
         {
             "name": "A21 创建用户",
@@ -551,13 +551,13 @@
         },
         {
             "name": "A39 导出 Excel",
-            "pass": false,
-            "detail": "status=200 HTTP\/1.1 200 OK\r\nContent-Type: application\/json\r\nAccess-Control-Allow-Origin: *\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\nX-XSS-Protection: 1; mode=block\r\nReferrer-Policy: strict-origin-when-cross-origin\r\nPermissions-Policy: camera=(), microphone=(), geolocation=()\r\nContent-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:;\r\nX-Permitted-Cross-Domain-Policies: none\r\nConnection: keep-alive\r\nContent-Length: 3629\r\n\r\n"
+            "pass": true,
+            "detail": ""
         },
         {
             "name": "A40 导出 PDF",
-            "pass": false,
-            "detail": "status=200 HTTP\/1.1 200 OK\r\nContent-Type: application\/json\r\nAccess-Control-Allow-Origin: *\r\nX-Content-Type-Options: nosniff\r\nX-Frame-Options: DENY\r\nX-XSS-Protection: 1; mode=block\r\nReferrer-Policy: strict-origin-when-cross-origin\r\nPermissions-Policy: camera=(), microphone=(), geolocation=()\r\nContent-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:;\r\nX-Permitted-Cross-Domain-Policies: none\r\nConnection: keep-alive\r\nContent-Length: 3623\r\n\r\n"
+            "pass": true,
+            "detail": ""
         },
         {
             "name": "A41 Excel 导入用户",

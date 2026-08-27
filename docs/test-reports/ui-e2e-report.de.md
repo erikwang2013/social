@@ -3,7 +3,7 @@
 
 - Datum: 2026-08-27
 - Umgebung: lokaler Rechner (Linux), echter Browser (Playwright 1.62 / Chromium) + echte Dienstprozesse
-- Testfälle gesamt: **35**, bestanden **35**, fehlgeschlagen **0**, als blockiert markiert **1**
+- Testfälle gesamt: **41**, bestanden **41**, fehlgeschlagen **0**, als blockiert markiert **1**
 - Artefakte: `tests/e2e/artifacts/html-report/` (Playwright-HTML-Bericht), Fehler-Screenshots/Traces (diesmal keine)
 
 ## Testumfang und Seitenliste
@@ -17,8 +17,9 @@ die Web-Frontends werden von Flutter/HarmonyOS-Clients getragen (`apps/` enthäl
 | admin | `/health` Healthcheck, `/metrics` Prometheus-Metriken, `/.well-known/security.txt`, `/api/docs` OpenAPI, `/install` Installationsassistent | 5 |
 | admin | `/api/captcha/generate` + `/api/captcha/verify` (Slider-CAPTCHA per echter Pixelberechnung), `/api/auth/login` (Erfolg/falsches Passwort/fehlendes CAPTCHA) | 3 |
 | admin | Geschützte Seiten nach Login: `/admin/dashboard`, `/admin/user`, `/admin/role`, `/admin/permission`, `/admin/config`, `/admin/log`, `/admin/profile`, `/admin/social-user`, Logout `/admin/profile/logout` → Token ungültig | 11 |
-| service | `/` (iframe-Container), `/health`, `/apidoc` (Weiterleitung auf apidoc/index.html) | 3 |
-| service | Registrierung/Login/Logout, Profil (GET/PUT `/api/v1/me`), Beitrag/Timeline/Detail, Like/Unlike, Kommentar, Folgen/Beziehung/Follower/Following-Liste, Benachrichtigungen (Liste/ungelesene Anzahl/alle als gelesen markieren) | 8 |
+| admin | Batch-Operationen `/admin/user/batch/status` (Batch-Aktivierung + leere ids 422), Export `/admin/export/excel` (xlsx-Dateikopfprüfung), Passwort ändern `/admin/profile/password` (fehlendes altes Passwort 422) | 3 |
+| service | `/` (iframe-Container), `/health`, `/apidoc` (Weiterleitung auf apidoc/index.html), Zugriff auf geschützte Endpunkte ohne Login 401 | 4 |
+| service | Registrierung/Login/Logout, Profil (GET/PUT `/api/v1/me`), Beitrag/Timeline/Detail, Like/Unlike, Kommentar, Folgen/Entfolgen/Beziehung/Follower/Following-Liste, Benachrichtigungen (Liste/ungelesene Anzahl/eine als gelesen markieren/alle als gelesen markieren) | 10 |
 | service | Benutzer suchen, Beiträge suchen (ES nicht gestartet → 503, als blocked markiert und bestanden) | 2 |
 | service | IM-Konversationen (erstellen/Liste/Nachrichten), Sprachräume (erstellen/Liste/Detail/schließen) | 3 |
 
@@ -37,14 +38,23 @@ cd tests/e2e && npx playwright test          # alle
 
 1. **Beitragssuche 503**: `/api/v1/search/posts` hängt von Elasticsearch (Scout) ab, in dieser Umgebung nicht gestartet → liefert 503.
    Der Fall gilt mit Markierung `blocked` als bestanden; nach ES-Start müssen Treffer verifiziert werden.
-2. **GD-Speicher der admin-CAPTCHA**: `GdDriver` dekodiert große Bilder (Hintergrund 5472x3648) bei `memory_limit 128M`,
+2. **service-Startseite `/` benötigt explizite Route**: webman-framework v2.2.4 löst `/` standardmäßig nicht mehr auf
+   `IndexController@index` auf (verursachte einst 404 auf dem Wurzelpfad, der Startseiten-Fall schlug fehl). Bereits durch explizite Registrierung von
+   `Route::get('/', ...)` in `service/config/route.php` behoben; wirkt nach Neustart von service.
+3. **admin-CAPTCHA Imagick-Kompatibilität**: der lokale Imagick-Build besitzt die Konstante `Imagick::RESOURCETYPE_PIXELS` nicht,
+   der `auto`-Treiber würde daher fälschlich ImagickDriver wählen und generate 500 verursachen (`admin/config/poster.php` fällt jetzt je nach Vorhandensein
+   der Konstante auf gd zurück; erfordert Neustart von admin).
+4. **GD-Speicher der admin-CAPTCHA**: `GdDriver` dekodiert große Bilder (Hintergrund 5472x3648) bei `memory_limit 128M`,
    bei aufeinanderfolgenden generate-Aufrufen besteht OOM-Risiko (admin ist in langen Suites einmal abgestürzt). Umgehung: admin vor CAPTCHA-Fällen neu starten
    und in Batches ausführen (admin-pages / admin-auth / service getrennt). Umgebungseinschränkung, kein Business-Code-Defekt.
-3. **Zufälliger CAPTCHA-Typ**: generate wählt eine von drei Varianten; click/rotate liefern keine lösbaren Daten, nur slider ist automatisch lösbar (max. 12 Wiederholungen).
-4. **Leeres root-Passwort der Datenbank**: die lokale Testumgebung stellt MySQL mit root/leerem Passwort bereit, die `.env`-Defaults beider Apps sind konsistent.
-5. **Apps/ mobil**: android/harmonyos/ios haben keine ausführbare Web-UI und sind nicht Teil des Browser-E2E.
+5. **Zufälliger CAPTCHA-Typ**: generate wählt eine von drei Varianten; click/rotate liefern keine lösbaren Daten, nur slider ist automatisch lösbar (max. 12 Wiederholungen).
+6. **Leeres root-Passwort der Datenbank**: die lokale Testumgebung stellt MySQL mit root/leerem Passwort bereit, die `.env`-Defaults beider Apps sind konsistent.
+7. **Apps/ mobil**: android/harmonyos/ios haben keine ausführbare Web-UI und sind nicht Teil des Browser-E2E.
 
 ## Fazit
 
-admin-Login (inkl. Slider-CAPTCHA) und 19 Admin-Endpunkte sowie alle 16 vollständigen service-User-Fälle bestehen;
-einziger Blocker ist der nicht bereitgestellte Suchdienst (ES); alle übrigen Pfade (Registrierung/Login/Beitrag/Interaktion/Benachrichtigung/IM/Sprache) sind verifiziert nutzbar.
+admin-Login (inkl. Slider-CAPTCHA) und 22 Admin-Endpunkte sowie alle 19 vollständigen service-User-Fälle bestehen
+(diese Runde ergänzte 6 Fälle: admin Batch-Aktivierung/Excel-Export/Passwort-Änderungsvalidierung, service 401 ohne Login/Entfolgen/eine Benachrichtigung als gelesen markieren).
+2 echte Defekte wurden behoben: service-Wurzelpfad 404 (explizite Route ergänzt), admin-CAPTCHA generate 500
+(Imagick-Konstante fehlt → Fallback auf GD, in Config enthalten, wirkt nach Neustart).
+Einziger Blocker ist der nicht bereitgestellte Suchdienst (ES); alle übrigen Pfade (Registrierung/Login/Beitrag/Interaktion/Benachrichtigung/IM/Sprache) sind verifiziert nutzbar.

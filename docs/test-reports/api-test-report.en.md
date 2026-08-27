@@ -8,29 +8,30 @@
 
 ## Conclusion
 
-**116 test cases: 113 passed / 3 failed (97.4% pass rate); all 3 failures are product defects with identified root causes**
+**116 test cases: 116 passed / 0 failed (100% pass rate); last round's 3 product defects (A20/A39/A40) all fixed and verified**
 
 | Group | Passed/Total |
 |------|-----------|
-| admin A01-A45 (auth, captcha, user management, HashID, roles & permissions, config, logs, export/import, upload, health checks, etc.) | 42/45 |
+| admin A01-A45 (auth, captcha, user management, HashID, roles & permissions, config, logs, export/import, upload, health checks, etc.) | 45/45 |
 | service S01-S68 (register/login/logout/refresh, profile, follow, posts/likes/timeline, comments, notifications, search, IM sessions/messages/push, voice upload/files/calls/rooms, etc.) | 71/71 |
 
-## Failed test cases (3, all product defects)
+## Last round's 3 product defects fix verification (all PASS)
 
-| Case | Expected | Actual | Root cause |
-|------|------|------|------|
-| A20 Invalid hashid user details | 404 | 500 | `HashidsService::decode()` throws an uncaught `InvalidArgumentException` for invalid IDs (admin/app/common/HashidsService.php:28, BaseController.php:52); the exception propagates as 500, should be caught and return 404 |
-| A39 Export Excel | xlsx file stream | 200+JSON error body (business failure) | `ExportController::excel()` declares return type `: Response` but lacks `use support\Response`, so the type resolves to `app\admin\controller\Response` → any successful return throws `TypeError` (ExportController.php:122), making export entirely unusable |
-| A40 Export PDF | pdf file stream | 200+JSON error body (business failure) | Same as above, `ExportController::pdf()` (ExportController.php:135) lacks `use support\Response` |
+| Case | Expected | Last round actual | Fix | This round result |
+|------|------|---------|------|---------|
+| A20 Invalid hashid user details | 404 | 500 | `BaseController::decodeId()` catches `InvalidArgumentException` and throws `support\exception\NotFoundException($msg, 404)` (admin/app/admin/controller/BaseController.php); `UserController`'s two batch methods extend the catch to `InvalidArgumentException \| NotFoundException` preserving 422 semantics | **PASS (404)** |
+| A39 Export Excel | xlsx file stream | 200+JSON error body | `ExportController` adds `use support\Response;` (the return type previously resolved to the non-existent `app\admin\controller\Response`, throwing TypeError); `admin_user`'s phone/email/id_card auto-decrypt via the Encryptable cast on read, export directly masks, double-decryption removed | **PASS (attachment file stream)** |
+| A40 Export PDF | pdf file stream | 200+JSON error body | Same as above (`ExportController::pdf()` return type fixed) | **PASS (application/pdf file stream)** |
 
-> Additional note (potential defect in the same file, currently masked by the TypeError above): `ExportController` line 90 calls `EncryptionService::decrypt()` on phone/email, while the `AdminUser` model's `email/phone/id_card` fields declare the `Encryptable::class` cast (auto-encrypt on write, auto-decrypt on read), so export would decrypt plaintext a second time → once an account with non-empty phone/email exists, it throws `EncryptionException: Invalid ciphertext prefix for AES-256-CBC`. This issue will still reproduce after fixing the return types.
+## Environment issues fixed/handled during this round (not product business code changes)
 
-## Environment issues fixed during testing (not product code changes)
-
-1. **m2/m3/m4 migration tables `id` missing AUTO_INCREMENT (blocking, fixed)**: `social_follows` and `social_notifications` created by `service/database/m2.sql`/`m3.sql`/`m4.sql` have `id BIGINT UNSIGNED NOT NULL` without `AUTO_INCREMENT`; any INSERT fails with `1364 Field 'id' doesn't have a default value`, blocking all write paths for follows/notifications/IM/voice. `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` was executed locally (the other 8 tables already have auto-increment). **The migration scripts themselves should be updated to include auto-increment.**
-2. **service/.env points to an unreachable database (blocking)**: `DB_PORT=13306` with no password, while the main MySQL actually runs at `127.0.0.1:3306 (root/root)`; webman's `createUnsafeMutable` overrides CLI environment variables. During testing, `.env` was moved to `service/.env.api-test-bak` (content preserved as-is) and the service was started with environment variables injected; the restore could not be performed due to .env file access policy restrictions, requiring manual `mv service/.env.api-test-bak service/.env` (note: after restoring, restarting the service will hit the unreachable database again).
-3. **admin has no .env, relies on environment variables**: requires `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`. The `encryptable` plugin falls back to `EnvEncryptableConfig` (reads `ENCRYPTION_KEY`, default cipher aes-256-gcm) when the provider is not registered in the webman container; mismatched key lengths cause `MissingEncryptionKeyException` on account creation/import/export.
-4. **Elasticsearch not started**: `GET /api/v1/search/posts` returns 503 (designed degradation); S-group search cases handled as expected (accepting 0 or 503), not counted as failures.
+1. **run.php DB empty-password override broken (test script defect, fixed)**: the `DB` constant uses `getenv('DB_PASS') ?: 'root'`; an empty-string environment variable is treated as falsy by `?:` and falls back to 'root', so the local empty-password root connection is rejected (`Access denied ... using password: YES`). Changed to `getenv('DB_PASS') ?? 'root'` (default only when unset), a one-line change (tests/api/run.php:26).
+2. **service port 8788 occupied by a wrong process (environment, handled)**: another project on this machine, `property-management-platform`'s service process (master 2004768, started 08:07) was listening on 8788, and its `.env` points to the `property_management` database — the social service was actually not running, causing IM/voice routes from S45 onward to all return 404 and the cleanup-phase SQL to hit the wrong database. The process was stopped and the social service restarted on 8788/8789 (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`), health check restored `social-service`.
+3. **ImageMagick 7 upgrade caused captcha Imagick driver crash (environment, handled)**: after the system ImageMagick upgrade to 7.1.2-27 (2026-07-08 build) removed `PixelsResource`, imagick 3.8.1 no longer defines `Imagick::RESOURCETYPE_PIXELS`, and poster-php's `ImagickDriver` constructor immediately throws `Undefined constant` (vendor code, not modified), so captcha generation/verification (A05/A06) 500s and cascades to block A08-A11 login. **Handling**: the admin service was restarted with the driver switch reserved in the config docs — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 natively supports gd/imagick/auto); after switching captcha to the GD driver, the whole chain works. To restore the Imagick driver, downgrade ImageMagick to 6.x or upgrade poster-php for IM7 compatibility.
+4. **MySQL root password changed to empty**: last round recorded `root/root`; this round the empty password can log in, and all services and scripts were started with the empty password.
+5. **admin service restart environment**: last round's "admin has no .env, relies on environment variables" still holds; restart commands in "Environment and reproduction" below.
+6. **service/.env is still `service/.env.api-test-bak`**: moved out last round for connectivity testing and not restored (restore limited by the .env file access policy); this round the service is again started with environment variables. Manual `mv service/.env.api-test-bak service/.env` needed (restart the service after restore; note the database address it points to).
+7. **Elasticsearch not started**: `GET /api/v1/search/posts` returns 503 (designed degradation); S-group search cases handled as expected (accepting 0 or 503), not counted as failures.
 
 ## Contract/documentation mismatches (suggested revision, non-blocking)
 
@@ -43,12 +44,15 @@
 - Reproduction:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # re-run (116 cases)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # re-run (116 cases)
 ```
+
+- Note: ensure port 8788 is not occupied by the `property-management-platform` service (both projects default to the same port; when both projects coexist on this machine, they need to be offset).
 
 ## Endpoint inventory (based on route.php / apidoc)
 

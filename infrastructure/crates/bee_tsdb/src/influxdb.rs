@@ -157,8 +157,12 @@ fn line_protocol(point: &Point) -> Result<String, TsdbError> {
         line.push_str(&format!(",{}={}", escape_tag(k), escape_tag(v)));
     }
     line.push(' ');
+    // Sort fields like tags so the line protocol output is deterministic
+    // regardless of HashMap iteration order.
+    let mut fields: Vec<(&String, &serde_json::Value)> = point.fields.iter().collect();
+    fields.sort_by_key(|(k, _)| *k);
     let mut first = true;
-    for (k, v) in &point.fields {
+    for (k, v) in fields {
         if !first {
             line.push(',');
         }
@@ -287,6 +291,21 @@ mod tests {
         .await;
         let db = InfluxDB::new_with_credentials(base, "bee", "myorg");
         db.write_point(make_point(1, &[("host", "srv 1")])).await.unwrap();
+    }
+
+    #[test]
+    fn line_protocol_is_deterministic_across_field_insertion_order() {
+        let mut a = make_point(1, &[("host", "srv1")]);
+        a.fields.insert("b".into(), serde_json::json!(2.0));
+        a.fields.insert("a".into(), serde_json::json!(1.0));
+        let mut b = make_point(1, &[("host", "srv1")]);
+        b.fields.insert("a".into(), serde_json::json!(1.0));
+        b.fields.insert("b".into(), serde_json::json!(2.0));
+        let la = line_protocol(&a).unwrap();
+        let lb = line_protocol(&b).unwrap();
+        assert_eq!(la, lb);
+        // Fields are emitted in sorted key order: a, then b.
+        assert!(la.contains("a=1.0,b=2.0"), "unexpected line: {la}");
     }
 
     #[tokio::test]

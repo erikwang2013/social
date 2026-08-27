@@ -23,7 +23,7 @@ const SVC = 'http://127.0.0.1:8788';
 const ADM = 'http://127.0.0.1:8791';
 const ADMIN_USER = 'e2e_smoke';
 const ADMIN_PASS = 'ApiTest!2026';
-const DB = ['host' => '127.0.0.1', 'port' => 3306, 'user' => 'root', 'pass' => 'root'];
+define('DB', ['host' => getenv('DB_HOST') ?: '127.0.0.1', 'port' => (int) (getenv('DB_PORT') ?: 3306), 'user' => getenv('DB_USER') ?: 'root', 'pass' => getenv('DB_PASS') ?? 'root']);
 
 $GLOBALS['results'] = [];
 $GLOBALS['count'] = ['pass' => 0, 'fail' => 0];

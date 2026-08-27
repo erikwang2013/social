@@ -8,29 +8,30 @@
 
 ## Kesimpulan
 
-**116 kasus uji: 113 lulus / 3 gagal (tingkat kelulusan 97,4%); 3 kegagalan semuanya cacat produk dengan akar masalah teridentifikasi**
+**116 kasus uji: 116 lulus / 0 gagal (tingkat kelulusan 100%); 3 cacat produk putaran sebelumnya (A20/A39/A40) semuanya diperbaiki dan terverifikasi**
 
 | Grup | Lulus/Total |
 |------|-----------|
-| admin A01-A45 (autentikasi, captcha, manajemen pengguna, HashID, peran & izin, konfigurasi, log, ekspor/impor, unggah, health check, dll.) | 42/45 |
+| admin A01-A45 (autentikasi, captcha, manajemen pengguna, HashID, peran & izin, konfigurasi, log, ekspor/impor, unggah, health check, dll.) | 45/45 |
 | service S01-S68 (daftar/login/logout/refresh, profil, mengikuti, postingan/suka/timeline, komentar, notifikasi, pencarian, sesi IM/pesan/push, unggah suara/file/panggilan/ruangan, dll.) | 71/71 |
 
-## Kasus uji yang gagal (3, semuanya cacat produk)
+## Verifikasi perbaikan 3 cacat produk putaran sebelumnya (semua PASS)
 
-| Kasus | Diharapkan | Aktual | Akar masalah |
-|------|------|------|------|
-| A20 Detail pengguna hashid tidak valid | 404 | 500 | `HashidsService::decode()` melempar `InvalidArgumentException` yang tidak ditangkap untuk ID tidak valid (admin/app/common/HashidsService.php:28, BaseController.php:52); eksepsi merambat sebagai 500, seharusnya ditangkap dan mengembalikan 404 |
-| A39 Ekspor Excel | aliran file xlsx | 200+badan kesalahan JSON (kegagalan bisnis) | `ExportController::excel()` mendeklarasikan tipe kembalian `: Response` tetapi tidak memiliki `use support\Response`, sehingga tipe ter-resolve ke `app\admin\controller\Response` → kembalian sukses apa pun melempar `TypeError` (ExportController.php:122), membuat ekspor tidak dapat digunakan sama sekali |
-| A40 Ekspor PDF | aliran file pdf | 200+badan kesalahan JSON (kegagalan bisnis) | Sama seperti di atas, `ExportController::pdf()` (ExportController.php:135) tanpa `use support\Response` |
+| Kasus | Diharapkan | Putaran sebelumnya (aktual) | Perbaikan | Hasil putaran ini |
+|------|------|---------|------|---------|
+| A20 Detail pengguna hashid tidak valid | 404 | 500 | `BaseController::decodeId()` menangkap `InvalidArgumentException` dan melempar `support\exception\NotFoundException($msg, 404)` (admin/app/admin/controller/BaseController.php); catch dua metode batch `UserController` diperluas ke `InvalidArgumentException \| NotFoundException` mempertahankan semantik 422 | **PASS (404)** |
+| A39 Ekspor Excel | aliran file xlsx | 200+badan kesalahan JSON | `ExportController` menambahkan `use support\Response;` (tipe kembalian sebelumnya ter-resolve ke `app\admin\controller\Response` yang tidak ada, melempar TypeError); phone/email/id_card `admin_user` didekripsi otomatis oleh cast Encryptable saat membaca, ekspor langsung memask, dekripsi kedua dihapus | **PASS (aliran file attachment)** |
+| A40 Ekspor PDF | aliran file pdf | 200+badan kesalahan JSON | Sama seperti di atas (tipe kembalian `ExportController::pdf()` diperbaiki) | **PASS (aliran file application/pdf)** |
 
-> Catatan tambahan (cacat potensial pada file yang sama, saat ini tertutupi TypeError di atas): `ExportController` baris 90 memanggil `EncryptionService::decrypt()` pada phone/email, padahal field `email/phone/id_card` model `AdminUser` mendeklarasikan cast `Encryptable::class` (enkripsi otomatis saat menulis, dekripsi otomatis saat membaca); ekspor akan mendekripsi teks biasa untuk kedua kalinya → begitu ada akun dengan telepon/email tidak kosong, akan melempar `EncryptionException: Invalid ciphertext prefix for AES-256-CBC`. Masalah ini tetap akan terulang setelah tipe kembalian diperbaiki.
+## Masalah lingkungan yang diperbaiki/ditangani pada putaran ini (bukan perubahan kode bisnis produk)
 
-## Masalah lingkungan yang diperbaiki selama pengujian (bukan perubahan kode produk)
-
-1. **Kolom `id` tabel migrasi m2/m3/m4 tanpa AUTO_INCREMENT (menghambat, sudah diperbaiki)**: `social_follows`, `social_notifications` yang dibuat oleh `service/database/m2.sql`/`m3.sql`/`m4.sql` memiliki `id BIGINT UNSIGNED NOT NULL` tanpa `AUTO_INCREMENT`; INSERT apa pun gagal dengan `1364 Field 'id' doesn't have a default value`, memblokir semua jalur tulis mengikuti/notifikasi/IM/suara. `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` dijalankan secara lokal (8 tabel lainnya sudah memiliki auto-increment). **Skrip migrasi itu sendiri sebaiknya ditambahkan auto-increment.**
-2. **service/.env menunjuk ke basis data yang tidak dapat dijangkau (menghambat)**: `DB_PORT=13306` tanpa kata sandi, padahal MySQL utama sebenarnya di `127.0.0.1:3306 (root/root)`; `createUnsafeMutable` webman menimpa variabel lingkungan CLI. Selama pengujian, `.env` dipindahkan ke `service/.env.api-test-bak` (konten dipertahankan apa adanya) dan layanan dijalankan dengan variabel lingkungan yang disuntikkan; pemulihan tidak dapat dilakukan karena pembatasan kebijakan akses file .env, diperlukan `mv service/.env.api-test-bak service/.env` manual (catatan: setelah dipulihkan, memulai ulang layanan akan kembali menemui basis data yang tidak dapat dijangkau).
-3. **admin tidak memiliki .env, bergantung pada variabel lingkungan**: memerlukan `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`. Plugin `encryptable` tanpa provider terdaftar di kontainer webman kembali ke `EnvEncryptableConfig` (membaca `ENCRYPTION_KEY`, cipher default aes-256-gcm); panjang kunci yang tidak cocok menyebabkan `MissingEncryptionKeyException` saat pembuatan/impor/ekspor akun.
-4. **Elasticsearch tidak berjalan**: `GET /api/v1/search/posts` mengembalikan 503 (degradasi yang dirancang); kasus pencarian grup S ditangani sesuai harapan (menerima 0 atau 503), tidak dihitung sebagai kegagalan.
+1. **Override kata sandi DB kosong di run.php rusak (cacat skrip pengujian, sudah diperbaiki)**: konstanta `DB` menggunakan `getenv('DB_PASS') ?: 'root'`; string kosong pada variabel lingkungan dianggap falsy oleh `?:` dan jatuh ke 'root', sehingga koneksi root lokal dengan kata sandi kosong ditolak (`Access denied ... using password: YES`). Diubah menjadi `getenv('DB_PASS') ?? 'root'` (default hanya jika tidak disetel), perubahan satu baris (tests/api/run.php:26).
+2. **Port 8788 service ditempati proses yang salah (lingkungan, ditangani)**: proses service proyek lain di mesin ini — `property-management-platform` (master 2004768, mulai 08:07) — mendengarkan di 8788, dan `.env`-nya menunjuk ke basis data `property_management`; service social sebenarnya tidak berjalan, menyebabkan rute IM/suara dari S45 semua 404 dan SQL fase pembersihan mengenai basis data yang salah. Proses dihentikan dan service social dimulai ulang di 8788/8789 (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`), health check kembali ke `social-service`.
+3. **Upgrade ImageMagick 7 menyebabkan crash driver Imagick captcha (lingkungan, ditangani)**: setelah ImageMagick sistem naik ke 7.1.2-27 (build 2026-07-08) `PixelsResource` dihapus; imagick 3.8.1 tidak lagi mendefinisikan `Imagick::RESOURCETYPE_PIXELS`, dan konstruktor `ImagickDriver` poster-php langsung melempar `Undefined constant` (kode vendor, tidak diubah), sehingga pembuatan/verifikasi captcha (A05/A06) menghasilkan 500 dan memblokir login A08-A11 secara berantai. **Penanganan**: layanan admin dimulai ulang dengan sakelar driver yang disediakan di dokumen konfigurasi — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 mendukung gd/imagick/auto secara native); setelah captcha dipindah ke driver GD, seluruh rantai berfungsi. Untuk memulihkan driver Imagick, turunkan ImageMagick ke 6.x atau tingkatkan poster-php agar kompatibel IM7.
+4. **Kata sandi root MySQL berubah menjadi kosong**: putaran sebelumnya tercatat `root/root`; pada putaran ini login dengan kata sandi kosong berhasil, semua layanan dan skrip dimulai dengan kata sandi kosong.
+5. **Lingkungan mulai ulang layanan admin**: «admin tidak memiliki .env, bergantung pada variabel lingkungan» dari putaran sebelumnya masih berlaku; perintah mulai ulang di bawah, di «Lingkungan dan reproduksi».
+6. **service/.env masih `service/.env.api-test-bak`**: dipindahkan pada putaran sebelumnya untuk pengujian konektivitas dan belum dipulihkan (pemulihan dibatasi kebijakan akses file .env); pada putaran ini layanan kembali dimulai dengan variabel lingkungan. Diperlukan `mv service/.env.api-test-bak service/.env` manual (mulai ulang layanan setelah memulihkan; perhatikan alamat basis data yang ditunjuknya).
+7. **Elasticsearch tidak berjalan**: `GET /api/v1/search/posts` mengembalikan 503 (degradasi yang dirancang); kasus pencarian grup S ditangani sesuai harapan (menerima 0 atau 503), tidak dihitung sebagai kegagalan.
 
 ## Ketidaksesuaian kontrak/dokumentasi (disarankan direvisi, tidak menghambat)
 

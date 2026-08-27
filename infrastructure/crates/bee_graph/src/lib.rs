@@ -426,7 +426,12 @@ mod tests {
         db
     }
 
-    fn traverse(start: &str, labels: Vec<&str>, max_depth: u32, direction: TraversalDirection) -> Traversal {
+    fn traverse(
+        start: &str,
+        labels: Vec<&str>,
+        max_depth: u32,
+        direction: TraversalDirection,
+    ) -> Traversal {
         Traversal {
             start: start.into(),
             edge_labels: labels.into_iter().map(String::from).collect(),
@@ -467,8 +472,10 @@ mod tests {
     #[tokio::test]
     async fn test_traverse_filters_by_edge_label() {
         let db = chain_graph().await;
-        let paths =
-            db.traverse(traverse("a", vec!["LIKES"], 1, TraversalDirection::Outgoing)).await.unwrap();
+        let paths = db
+            .traverse(traverse("a", vec!["LIKES"], 1, TraversalDirection::Outgoing))
+            .await
+            .unwrap();
         assert_eq!(paths.len(), 1);
         assert_eq!(paths[0].edges[0].label, "LIKES");
         assert_eq!(paths[0].vertices[1].id, "c");
@@ -477,14 +484,18 @@ mod tests {
     #[tokio::test]
     async fn test_traverse_max_depth_zero_returns_no_paths() {
         let db = chain_graph().await;
-        let paths = db.traverse(traverse("a", vec![], 0, TraversalDirection::Outgoing)).await.unwrap();
+        let paths =
+            db.traverse(traverse("a", vec![], 0, TraversalDirection::Outgoing)).await.unwrap();
         assert!(paths.is_empty());
     }
 
     #[tokio::test]
     async fn test_traverse_from_missing_vertex_errors() {
         let db = chain_graph().await;
-        let err = db.traverse(traverse("ghost", vec![], 1, TraversalDirection::Outgoing)).await.unwrap_err();
+        let err = db
+            .traverse(traverse("ghost", vec![], 1, TraversalDirection::Outgoing))
+            .await
+            .unwrap_err();
         assert!(matches!(err, GraphError::VertexNotFound(_)));
     }
 
@@ -522,8 +533,7 @@ mod tests {
         // a-related edges must be gone: traverse from b with depth 2.
         let paths =
             db.traverse(traverse("b", vec![], 2, TraversalDirection::Outgoing)).await.unwrap();
-        let only: Vec<String> =
-            paths.iter().map(|p| p.edges[0].from.clone()).collect();
+        let only: Vec<String> = paths.iter().map(|p| p.edges[0].from.clone()).collect();
         assert!(only.iter().all(|f| f == "b"), "no edge may reference deleted vertex a: {only:?}");
     }
 

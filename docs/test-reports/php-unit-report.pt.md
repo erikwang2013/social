@@ -10,31 +10,54 @@
 | Projeto | Casos de teste | Asserções | Resultado |
 |------|------|------|------|
 | service | 136 | 348 | ✅ Tudo aprovado (OK) |
-| admin | 60 | 136 | ⚠️ 49 aprovados / 4 erros / 7 reprovados |
+| admin | 67 | 180 | ✅ Tudo aprovado (OK) |
 
-## service (tudo verde)
+## Notas de ambiente
 
-- Novos arquivos de teste (neste lote): AuthMiddlewareTest, UserBriefTest, SearchSyncTest, ActionHandlerTest, JwtHelperTest, VoiceControllerTest, MonitorTest, ModelRelationTest, etc.; mesclados com os 24 arquivos existentes, 136 casos no total, todos aprovados
-- Módulos cobertos: autenticação/middleware/JWT, usuários, posts, comentários, seguir, notificações, sincronização de busca, IM, salas, chamadas (CallCenter/CallState), voz, relações de modelos, tratamento de ações (WS)
+- MySQL 127.0.0.1:3306 (root, sem senha); bancos `social` (social_*) e `open_admin` (erik_*) criados e com dados (papel super_admin, 39 permissões)
+- Redis 127.0.0.1:6379 em execução (armazenamento de captcha `poster:captcha:*`); Elasticsearch não iniciado (health check degrada para unavailable, não conta como falha)
+- service na 8788, admin na 8791
+- Nem service nem admin têm `.env` (o repositório removeu os env commitados por engano, commit e5379fc); os apps rodam com os fallbacks `getenv('X') ?: valor padrão` em `config/*.php`
+- **A extensão Imagick está carregada mas falta a constante `RESOURCETYPE_PIXELS`** (este build só tem o novo conjunto de constantes RESOURCETYPE_*); o construtor do ImagickDriver do poster-php referencia essa constante e quebra
 
-### Correção: travamento aleatório da suíte de testes (importante)
+## service (136/136 tudo verde)
 
-- Sintoma: em execuções completas o processo congela aleatoriamente; executar um único arquivo/subconjunto passa
-- Causa raiz: `new Worker()` em `ActionHandlerTest::setUp` registra a instância no **registro estático** `Worker::$workers`; depois, qualquer `CallCenter::start` vê "existe um Worker" e chama `Timer::add` → `pcntl_alarm(1)` instala um temporizador SIGALRM, e o processo trava ao sair
-- Correção: setUp captura um snapshot do registro, tearDown o restaura (`ReflectionProperty` devolve `workers`/`pidMap`)
-- Local: `service/tests/ActionHandlerTest.php`
+- Consistente com a linha de base do lote anterior; cobre: autenticação/middleware/JWT, usuários, posts, comentários, seguir, notificações, sincronização de busca, IM, salas, chamadas (CallCenter/CallState), voz, relações de modelos, tratamento de ações (WS)
+- Sem mudanças de código, sem falhas neste lote
 
-## admin (49/60; as falhas são todas testes pré-existentes e são problemas de ambiente/configuração)
+## admin (lote anterior 49/60 → este lote 67/67 tudo verde)
 
-| Caso de teste | Motivo da falha | Categoria |
-|------|----------|------|
-| EnvConfigTest (4 reprovados + 1 erro) | `admin/.env` não existe; asserções getenv/dotenv falham | Ambiente de teste sem .env |
-| CaptchaTest (3 erros + 1 reprovado + 1 risky) | Captcha depende de serviço/Redis em execução; ambiente de teste unitário retorna null | Dependência de ambiente |
-| BackendEnhancementTest (2 reprovados) | Assert que `app/middleware/Cors` existe e admin_user contém searchable — a configuração atual não corresponde às asserções | Asserções de configuração desatualizadas |
+### Correção: defeito real de código (1 local)
 
-Nota: admin/tests são todos arquivos históricos pré-existentes; nenhum teste unitário novo de admin foi adicionado neste lote (o foco foi service).
+| Local | Causa raiz | Correção |
+|------|------|------|
+| `config/poster.php` | `image.driver` padrão `auto`; DriverFactory escolhe ImagickDriver ao detectar a extensão Imagick, mas o Imagick desta máquina não tem a constante `RESOURCETYPE_PIXELS` → geração de captcha/pôster direto em 500 (o serviço online também é afetado) | Guarda de constante adicionada na detecção do driver: `getenv('POSTER_IMAGE_DRIVER') ?: (defined('Imagick::RESOURCETYPE_PIXELS') ? 'auto' : 'gd')`; recuo automático para GD quando a constante falta |
+
+### Correção: asserções desatualizadas (atualizadas após conferir o código atual)
+
+| Arquivo de teste | Caso | Causa raiz | Correção |
+|----------|------|------|------|
+| EnvConfigTest | env_file_exists / env_example_file_exists / getenv_reads_env_variables / config_env_keys_exist_in_dotenv (4 reprovados + 1 erro) | Assert de existência de `.env`/`.env.example` e de valores getenv; mas o repositório removeu os arquivos env e eles não podem ser reconstruídos | Reescrito como contrato "rodar sem .env": cada chave `getenv()` deve ter um padrão `?:`, a configuração padrão aponta para serviços locais (127.0.0.1:3306/open_admin), tipos da configuração crítica corretos |
+| BackendEnhancementTest | test_admin_user_source_contains_searchable | AdminUser não usa mais o trait Searchable (agora `Erikwang2013\Encryptable\Encryptable` para criptografia/descriptografia transparente de campos; `toSearchableArray()` mantido) | Assert alterado para o trait Encryptable; o assert toSearchableArray já passava, mantido |
+| BackendEnhancementTest | test_middleware_config_contains_cors_and_rate_limit | `config/middleware.php` agora usa o formato de chave de grupo global `'@'`; o array de nível superior não contém mais as classes de middleware diretamente | Assert alterado para verificar que `$middlewares['@']` contém Cors e RateLimit |
+| CaptchaTest | todos os 7 casos (originalmente 6 erros + 1 reprovado) | Dupla obsolescência: (a) constante Imagick ausente (já corrigida pelo poster.php); (b) asserções baseadas no contrato antigo do poster-php — `extra.targets` (com x/y) mudou para `extra.texts` (apenas text+order), as coordenadas vivem só na camada de armazenamento; o formato de clique mudou de `['x'=>, 'y'=>]` para pares numéricos `[x, y]` | Reescrito conforme o contrato atual: estrutura/quantidades de dificuldade (2/3/4)/validação de campos; cliques corretos leem coordenadas do Redis (`poster:captcha:{key}` → `data.targets`) e validam; clique errado falha; após max_attempts (3) a chave é consumida/excluída; unicidade da chave |
+
+### Novos testes (1 arquivo, 12 casos)
+
+`tests/AdminControllerTest.php` (com cabeçalho de copyright), cobrindo:
+
+- **BaseController::decodeId** (o comportamento 404 recém-corrigido): idas e vindas encode/decode consistentes; hashid inválido lança `support\exception\NotFoundException` com code=404; encodeIds só reescreve campos de ID
+- **RoleController**: update do papel super_admin retorna 403 (dados reais de DB)
+- **PermissionController::buildTree**: aninhamento da árvore de permissões (2 níveis) + todos os ids de nós com hashid
+- **ConfigController**: falta group/key/value → validação 422; hashid inválido → 404
+- **ExportController**: o export `admin_user` lista os campos sensíveis phone/email/id_card (demais tabelas vazias); o HTML do PDF escapa título/valores de célula com htmlspecialchars (proteção XSS) e inclui a declaração de copyright
+
+### Notas conhecidas
+
+- O Request webman construído nos testes é passado como mensagem HTTP bruta (buffer) — o parâmetro do construtor do Request workerman é um buffer; passar apenas method/uri não permite parsear o corpo POST; ver comentários no AdminControllerTest
+- O caso de clique correto do captcha lê os alvos armazenados do Redis; quando o Redis está indisponível, o caso é markTestSkipped e não afeta o resultado da suíte
 
 ## Não coberto / a adicionar
 
-- Módulos do admin (model/middleware/view) sem testes unitários
-- Caminhos do service que dependem de serviços externos (ES/gRPC) tiveram apenas validação unitária via stub; cobertura de integração recomendada por meio de testes de API
+- A criptografia/descriptografia Encryptable dos models do admin, o middleware OperationLog/AdminPermission e os caminhos de cache RBAC ainda não têm testes unitários; recomenda-se cobrir via testes de API ou lote posterior
+- Caminhos do service que dependem de serviços externos (ES/gRPC) continuam apenas com validação unitária via stub; o nível de integração é coberto por testes de API

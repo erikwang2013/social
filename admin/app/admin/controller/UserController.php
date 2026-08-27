@@ -254,7 +254,7 @@ class UserController extends BaseController
         foreach ($ids as $id) {
             try {
                 $decodedIds[] = $this->decodeId($id);
-            } catch (\InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException | \support\exception\NotFoundException $e) {
                 $invalidIds[] = $id;
             }
         }
@@ -294,7 +294,7 @@ class UserController extends BaseController
         foreach ($ids as $id) {
             try {
                 $decodedIds[] = $this->decodeId($id);
-            } catch (\InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException | \support\exception\NotFoundException $e) {
                 $invalidIds[] = $id;
             }
         }

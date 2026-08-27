@@ -8,29 +8,30 @@
 
 ## निष्कर्ष
 
-**116 परीक्षण मामले: 113 पास / 3 फेल (97.4% पास दर); 3 फेल सभी पहचाने गए मूल कारण वाले उत्पाद दोष हैं**
+**116 परीक्षण मामले: 116 पास / 0 फेल (100% पास दर); पिछले दौर के 3 उत्पाद दोष (A20/A39/A40) सभी ठीक और सत्यापित**
 
 | समूह | पास/कुल |
 |------|-----------|
-| admin A01-A45 (प्रमाणीकरण, कैप्चा, उपयोगकर्ता प्रबंधन, HashID, भूमिका अनुमतियाँ, कॉन्फ़िगरेशन, लॉग, निर्यात/आयात, अपलोड, हेल्थ चेक आदि) | 42/45 |
+| admin A01-A45 (प्रमाणीकरण, कैप्चा, उपयोगकर्ता प्रबंधन, HashID, भूमिका अनुमतियाँ, कॉन्फ़िगरेशन, लॉग, निर्यात/आयात, अपलोड, हेल्थ चेक आदि) | 45/45 |
 | service S01-S68 (रजिस्टर/लॉगिन/लॉगआउट/रिफ्रेश, प्रोफ़ाइल, फ़ॉलो, पोस्ट/लाइक/टाइमलाइन, कमेंट, नोटिफिकेशन, सर्च, IM सत्र/संदेश/पुश, वॉइस अपलोड/फ़ाइल/कॉल/रूम आदि) | 71/71 |
 
-## फेल परीक्षण मामले (3, सभी उत्पाद दोष)
+## पिछले दौर के 3 उत्पाद दोषों के सुधार का सत्यापन (सभी PASS)
 
-| मामला | अपेक्षित | वास्तविक | मूल कारण |
-|------|------|------|------|
-| A20 अमान्य hashid उपयोगकर्ता विवरण | 404 | 500 | `HashidsService::decode()` अमान्य ID के लिए अनकैच्ड `InvalidArgumentException` फेंकता है (admin/app/common/HashidsService.php:28, BaseController.php:52); अपवाद 500 के रूप में पारित होता है, इसे पकड़कर 404 लौटाना चाहिए |
-| A39 Excel निर्यात | xlsx फ़ाइल स्ट्रीम | 200+JSON त्रुटि बॉडी (व्यावसायिक विफलता) | `ExportController::excel()` रिटर्न टाइप `: Response` घोषित करता है परंतु `use support\Response` नहीं है, टाइप `app\admin\controller\Response` के रूप में हल होता है → कोई भी सफल रिटर्न `TypeError` फेंकता है (ExportController.php:122), निर्यात सुविधा पूरी तरह अनुपयोगी |
-| A40 PDF निर्यात | pdf फ़ाइल स्ट्रीम | 200+JSON त्रुटि बॉडी (व्यावसायिक विफलता) | उपरोक्त के समान, `ExportController::pdf()` (ExportController.php:135) में `use support\Response` नहीं है |
+| मामला | अपेक्षित | पिछला दौर (वास्तविक) | सुधार | इस दौर का परिणाम |
+|------|------|---------|------|---------|
+| A20 अमान्य hashid उपयोगकर्ता विवरण | 404 | 500 | `BaseController::decodeId()` `InvalidArgumentException` पकड़कर `support\exception\NotFoundException($msg, 404)` फेंकता है (admin/app/admin/controller/BaseController.php); `UserController` के दो बैच विधियों का catch `InvalidArgumentException \| NotFoundException` तक बढ़ाया गया, 422 अर्थ बरकरार | **PASS (404)** |
+| A39 Excel निर्यात | xlsx फ़ाइल स्ट्रीम | 200+JSON त्रुटि बॉडी | `ExportController` में `use support\Response;` जोड़ा गया (रिटर्न टाइप पहले अस्तित्वहीन `app\admin\controller\Response` में हल होकर TypeError फेंकता था); `admin_user` के phone/email/id_card Encryptable cast से पढ़ते समय स्वतः डिक्रिप्ट होते हैं, निर्यात सीधे मास्क करता है, दूसरी डिक्रिप्शन हटाई गई | **PASS (attachment फ़ाइल स्ट्रीम)** |
+| A40 PDF निर्यात | pdf फ़ाइल स्ट्रीम | 200+JSON त्रुटि बॉडी | उपरोक्त के समान (`ExportController::pdf()` रिटर्न टाइप ठीक किया गया) | **PASS (application/pdf फ़ाइल स्ट्रीम)** |
 
-> अतिरिक्त टिप्पणी (उसी फ़ाइल में संभावित दोष, वर्तमान में उपरोक्त TypeError से ढका हुआ): `ExportController` पंक्ति 90 phone/email पर `EncryptionService::decrypt()` कॉल करता है, जबकि `AdminUser` मॉडल के `email/phone/id_card` फ़ील्ड `Encryptable::class` कास्ट घोषित करते हैं (लिखते समय स्वतः एन्क्रिप्ट, पढ़ते समय स्वतः डिक्रिप्ट); निर्यात प्लेनटेक्स्ट को दूसरी बार डिक्रिप्ट करेगा → जैसे ही गैर-रिक्त फ़ोन/ईमेल वाला कोई खाता मौजूद होगा, `EncryptionException: Invalid ciphertext prefix for AES-256-CBC` फेंकेगा। रिटर्न टाइप ठीक करने के बाद भी यह समस्या दोहराई जाएगी।
+## इस दौर में ठीक/संभाली गई पर्यावरणीय समस्याएँ (उत्पाद व्यावसायिक कोड परिवर्तन नहीं)
 
-## परीक्षण के दौरान ठीक की गई पर्यावरणीय समस्याएँ (उत्पाद कोड परिवर्तन नहीं)
-
-1. **m2/m3/m4 माइग्रेशन तालिकाओं के `id` में AUTO_INCREMENT नहीं (अवरोधक, ठीक किया गया)**: `service/database/m2.sql`/`m3.sql`/`m4.sql` द्वारा बनाई गई `social_follows`, `social_notifications` का `id BIGINT UNSIGNED NOT NULL` बिना `AUTO_INCREMENT` है; हर INSERT में `1364 Field 'id' doesn't have a default value` त्रुटि होती है, जो फ़ॉलो/नोटिफिकेशन/IM/वॉइस की सभी लेखन पथों को अवरुद्ध करती है। स्थानीय रूप से `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` निष्पादित किया गया (शेष 8 तालिकाओं में पहले से ऑटो-इंक्रीमेंट है)। **माइग्रेशन स्क्रिप्ट में स्वयं ऑटो-इंक्रीमेंट जोड़ने की अनुशंसा है।**
-2. **service/.env अगम्य डेटाबेस की ओर इंगित करता है (अवरोधक)**: `DB_PORT=13306` और कोई पासवर्ड नहीं, जबकि मुख्य MySQL वास्तव में `127.0.0.1:3306 (root/root)` पर है; webman का `createUnsafeMutable` CLI पर्यावरण चरों को ओवरराइड करता है। परीक्षण के दौरान `.env` को `service/.env.api-test-bak` में स्थानांतरित किया गया (सामग्री ज्यों की त्यों रखी गई) और सेवा पर्यावरण चर इंजेक्ट करके शुरू की गई; .env फ़ाइल एक्सेस नीति प्रतिबंधों के कारण पुनर्स्थापना नहीं की जा सकी, मैन्युअल `mv service/.env.api-test-bak service/.env` आवश्यक है (ध्यान दें: पुनर्स्थापना के बाद सेवा पुनः आरंभ करने पर अगम्य डेटाबेस से फिर टकराएगी)।
-3. **admin के पास .env नहीं, पर्यावरण चरों पर निर्भर है**: `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)` की आवश्यकता है। webman कंटेनर में provider पंजीकृत न होने पर `encryptable` प्लगइन `EnvEncryptableConfig` पर फॉलबैक करता है (`ENCRYPTION_KEY` पढ़ता है, डिफ़ॉल्ट cipher aes-256-gcm); कुंजी लंबाई मेल न खाने पर खाता निर्माण/आयात/निर्यात में `MissingEncryptionKeyException` आती है।
-4. **Elasticsearch प्रारंभ नहीं**: `GET /api/v1/search/posts` 503 लौटाता है (डिज़ाइन किया गया डिग्रेडेशन); S समूह के सर्च मामले अपेक्षित रूप से संभाले गए (0 या 503 स्वीकार), फेल नहीं गिने गए।
+1. **run.php में DB खाली पासवर्ड ओवरराइड विफल (टेस्ट स्क्रिप्ट दोष, ठीक किया गया)**: `DB` स्थिरांक `getenv('DB_PASS') ?: 'root'` उपयोग करता है; पर्यावरण चर का खाली स्ट्रिंग `?:` द्वारा झूठा मानकर 'root' पर फॉलबैक होता है, जिससे स्थानीय root खाली पासवर्ड कनेक्शन अस्वीकृत होता है (`Access denied ... using password: YES`)। `getenv('DB_PASS') ?? 'root'` (केवल अनसेट होने पर डिफ़ॉल्ट) में बदला गया, एक-पंक्ति परिवर्तन (tests/api/run.php:26)।
+2. **service 8788 पोर्ट गलत प्रक्रिया द्वारा अधिकृत (पर्यावरण, संभाला गया)**: इस मशीन के दूसरे प्रोजेक्ट `property-management-platform` का service प्रक्रिया (master 2004768, 08:07 शुरू) 8788 पर सुन रहा था, और उसका `.env` `property_management` डेटाबेस की ओर इंगित करता है — social service वास्तव में नहीं चल रहा था, जिससे S45 से आगे IM/वॉइस रूट सभी 404 लौटाते थे और सफ़ाई चरण का SQL गलत डेटाबेस पर लगता था। प्रक्रिया रोककर 8788/8789 पर social service पुनः प्रारंभ किया गया (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`), हेल्थ चेक `social-service` पर लौट आया।
+3. **ImageMagick 7 अपग्रेड से कैप्चा Imagick ड्राइवर क्रैश (पर्यावरण, संभाला गया)**: सिस्टम ImageMagick 7.1.2-27 (2026-07-08 बिल्ड) में अपग्रेड होने पर `PixelsResource` हटा दिया गया; imagick 3.8.1 अब `Imagick::RESOURCETYPE_PIXELS` परिभाषित नहीं करता, और poster-php का `ImagickDriver` कंस्ट्रक्टर तुरंत `Undefined constant` फेंकता है (vendor कोड, संशोधित नहीं), जिससे कैप्चा निर्माण/सत्यापन (A05/A06) 500 देता है और A08-A11 लॉगिन तक कैस्केड ब्लॉक होता है। **उपचार**: admin सेवा को कॉन्फ़िगरेशन दस्तावेज़ में आरक्षित ड्राइवर स्विच के साथ पुनः प्रारंभ किया गया — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 gd/imagick/auto का मूल समर्थन करता है); कैप्चा को GD ड्राइवर पर ले जाने के बाद पूरी श्रृंखला सामान्य। Imagick ड्राइवर बहाल करने हेतु ImageMagick को 6.x में डाउनग्रेड करें या poster-php को IM7-अनुकूल उन्नत करें।
+4. **MySQL root पासवर्ड खाली में बदला गया**: पिछले दौर में `root/root` दर्ज था; इस दौर में खाली पासवर्ड से लॉगिन होता है, सभी सेवाएँ और स्क्रिप्ट खाली पासवर्ड से शुरू की गईं।
+5. **admin सेवा पुनः आरंभ पर्यावरण**: पिछले दौर का «admin के पास .env नहीं, पर्यावरण चरों पर निर्भर» अभी भी लागू; पुनः आरंभ आदेश नीचे «पर्यावरण और पुनरुत्पादन» में।
+6. **service/.env अभी भी `service/.env.api-test-bak` है**: पिछले दौर में कनेक्टिविटी परीक्षण के लिए हटाया गया और पुनर्स्थापित नहीं किया गया (पुनर्स्थापना .env फ़ाइल एक्सेस नीति से प्रतिबंधित); इस दौर में सेवा फिर पर्यावरण चरों से शुरू की गई। मैन्युअल `mv service/.env.api-test-bak service/.env` आवश्यक (पुनर्स्थापना के बाद सेवा पुनः आरंभ करें; इंगित डेटाबेस पते पर ध्यान दें)।
+7. **Elasticsearch प्रारंभ नहीं**: `GET /api/v1/search/posts` 503 लौटाता है (डिज़ाइन किया गया डिग्रेडेशन); S समूह के सर्च मामले अपेक्षित रूप से संभाले गए (0 या 503 स्वीकार), फेल नहीं गिने गए।
 
 ## कॉन्ट्रैक्ट/दस्तावेज़ीकरण असमानताएँ (संशोधन का सुझाव, गैर-अवरोधक)
 
@@ -43,12 +44,15 @@
 - पुनरुत्पादन:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # पुनः चलाएँ (116 मामले)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # पुनः चलाएँ (116 मामले)
 ```
+
+- ध्यान दें: 8788 पोर्ट `property-management-platform` service द्वारा अधिकृत न हो, यह सुनिश्चित करें (दोनों प्रोजेक्ट का डिफ़ॉल्ट पोर्ट समान है; इस मशीन पर दोनों प्रोजेक्ट मौजूद होने पर अलग करना होगा)।
 
 ## एंडपॉइंट सूची (route.php / apidoc के अनुसार)
 

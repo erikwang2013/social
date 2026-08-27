@@ -80,7 +80,8 @@ mod tests {
         let _: Result<()> = Ok(());
 
         // Runtime check that the Result alias type-checks through a call.
-        let session: Session = Session::new(Arc::new(crate::bee_cache::MemoryCache::new()), Duration::from_secs(60));
+        let session: Session =
+            Session::new(Arc::new(crate::bee_cache::MemoryCache::new()), Duration::from_secs(60));
         assert!(session.is_empty());
     }
 

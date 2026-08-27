@@ -19,6 +19,9 @@ use app\controller\VoiceController;
 
 Route::get('/health', [\app\controller\HealthController::class, 'index']);
 
+// 首页（iframe 容器）：webman-framework v2.2.4 默认路由不再解析 / → 显式注册，否则根路径 404
+Route::get('/', [\app\controller\IndexController::class, 'index']);
+
 // apidoc 静态 UI 无目录索引，重定向到 index.html（路由由 hg/apidoc 插件 route.php 自注册）
 Route::get('/apidoc', fn() => redirect('/apidoc/index.html'));
 Route::get('/apidoc/', fn() => redirect('/apidoc/index.html'));

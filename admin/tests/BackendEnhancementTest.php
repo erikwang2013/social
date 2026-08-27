@@ -133,11 +133,13 @@ class BackendEnhancementTest extends TestCase
         $this->assertStringContainsString('use SoftDeletes;', $source);
     }
 
-    public function test_admin_user_source_contains_searchable(): void
+    public function test_admin_user_source_contains_encryptable(): void
     {
+        // AdminUser 已不使用 Searchable trait（ES 同步由 webman-scout 索引配置承载），
+        // 当前使用 Encryptable trait 对 email/phone/id_card 字段透明加解密
         $source = file_get_contents(__DIR__ . '/../app/model/AdminUser.php');
-        $this->assertStringContainsString('Searchable', $source);
-        $this->assertStringContainsString('use Searchable;', $source);
+        $this->assertStringContainsString('Encryptable', $source);
+        $this->assertStringContainsString('use Erikwang2013\Encryptable\Encryptable;', $source);
     }
 
     public function test_admin_user_source_contains_to_searchable_array(): void
@@ -201,10 +203,12 @@ class BackendEnhancementTest extends TestCase
 
     public function test_middleware_config_contains_cors_and_rate_limit(): void
     {
+        // 中间件配置现按 '@' 全局组键组织
         $middlewares = require __DIR__ . '/../config/middleware.php';
         $this->assertIsArray($middlewares);
-        $this->assertContains(\app\middleware\Cors::class, $middlewares, '全局中间件应包含 Cors');
-        $this->assertContains(\app\middleware\RateLimit::class, $middlewares, '全局中间件应包含 RateLimit');
+        $this->assertArrayHasKey('@', $middlewares, '全局中间件组键应为 @');
+        $this->assertContains(\app\middleware\Cors::class, $middlewares['@'], '全局中间件应包含 Cors');
+        $this->assertContains(\app\middleware\RateLimit::class, $middlewares['@'], '全局中间件应包含 RateLimit');
     }
 
     // ============================================================

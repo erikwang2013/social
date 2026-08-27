@@ -10,31 +10,54 @@
 | Proyek | Kasus uji | Asersi | Hasil |
 |------|------|------|------|
 | service | 136 | 348 | ✅ Semua lulus (OK) |
-| admin | 60 | 136 | ⚠️ 49 lulus / 4 error / 7 gagal |
+| admin | 67 | 180 | ✅ Semua lulus (OK) |
 
-## service (semua hijau)
+## Catatan lingkungan
 
-- File pengujian baru (batch ini): AuthMiddlewareTest, UserBriefTest, SearchSyncTest, ActionHandlerTest, JwtHelperTest, VoiceControllerTest, MonitorTest, ModelRelationTest, dll.; setelah digabung dengan 24 file pengujian yang ada, total 136 kasus, semuanya lulus
-- Modul yang dicakup: autentikasi/middleware/JWT, pengguna, postingan, komentar, mengikuti, notifikasi, sinkronisasi pencarian, IM, ruangan, panggilan (CallCenter/CallState), suara, relasi model, penanganan aksi (WS)
+- MySQL 127.0.0.1:3306 (root, tanpa kata sandi); database `social` (social_*) dan `open_admin` (erik_*) sudah dibuat dan diisi data (peran super_admin, 39 izin)
+- Redis 127.0.0.1:6379 berjalan (penyimpanan captcha `poster:captcha:*`); Elasticsearch tidak dijalankan (health check menurun menjadi unavailable, tidak dianggap gagal)
+- service berjalan di 8788, admin di 8791
+- Baik service maupun admin tidak memiliki `.env` (repositori telah menghapus env yang tidak sengaja di-commit, commit e5379fc); aplikasi berjalan dengan fallback `getenv('X') ?: nilai default` di `config/*.php`
+- **Ekstensi Imagick dimuat tetapi konstanta `RESOURCETYPE_PIXELS` hilang** (build mesin ini hanya memiliki set konstanta RESOURCETYPE_* yang baru); konstruktor ImagickDriver milik poster-php mereferensikan konstanta itu dan langsung crash
 
-### Perbaikan: hang acak pada rangkaian pengujian (penting)
+## service (136/136 semua hijau)
 
-- Gejala: pada proses penuh, proses tiba-tiba membeku secara acak; menjalankan satu file/subset saja lulus
-- Akar masalah: `new Worker()` di `ActionHandlerTest::setUp` mendaftarkan instance ke **registri statis** `Worker::$workers`; setelah itu, `CallCenter::start` mana pun melihat "ada Worker" lalu memanggil `Timer::add` → `pcntl_alarm(1)` memasang timer SIGALRM, dan proses hang saat keluar
-- Perbaikan: setUp mengambil snapshot registri, tearDown memulihkannya (`ReflectionProperty` menulis kembali `workers`/`pidMap`)
-- Lokasi: `service/tests/ActionHandlerTest.php`
+- Konsisten dengan baseline batch sebelumnya; mencakup: autentikasi/middleware/JWT, pengguna, postingan, komentar, mengikuti, notifikasi, sinkronisasi pencarian, IM, ruangan, panggilan (CallCenter/CallState), suara, relasi model, penanganan aksi (WS)
+- Tidak ada perubahan kode, tidak ada kegagalan pada batch ini
 
-## admin (49/60; kegagalan semuanya pengujian yang sudah ada sebelumnya dan merupakan masalah lingkungan/konfigurasi)
+## admin (batch sebelumnya 49/60 → batch ini 67/67 semua hijau)
 
-| Kasus uji | Alasan kegagalan | Kategori |
-|------|----------|------|
-| EnvConfigTest (4 gagal + 1 error) | `admin/.env` tidak ada; asersi getenv/dotenv gagal | Lingkungan pengujian tanpa .env |
-| CaptchaTest (3 error + 1 gagal + 1 risky) | Captcha bergantung pada layanan/Redis yang berjalan; lingkungan unit test mengembalikan null | Ketergantungan lingkungan |
-| BackendEnhancementTest (2 gagal) | Mengasersi keberadaan `app/middleware/Cors` dan admin_user berisi searchable — konfigurasi saat ini tidak cocok dengan asersi | Asersi konfigurasi usang |
+### Perbaikan: cacat kode nyata (1 tempat)
 
-Catatan: admin/tests semuanya file lama yang sudah ada sebelumnya; tidak ada file unit test admin baru yang ditambahkan pada batch ini (fokus pada service).
+| Lokasi | Akar masalah | Perbaikan |
+|------|------|------|
+| `config/poster.php` | `image.driver` default `auto`; DriverFactory memilih ImagickDriver saat ekstensi Imagick terdeteksi, tetapi Imagick mesin ini tidak memiliki konstanta `RESOURCETYPE_PIXELS` → pembuatan captcha/poster langsung 500 (layanan online juga terpengaruh) | Guard konstanta ditambahkan pada deteksi driver: `getenv('POSTER_IMAGE_DRIVER') ?: (defined('Imagick::RESOURCETYPE_PIXELS') ? 'auto' : 'gd')`; otomatis fallback ke GD saat konstanta tidak ada |
+
+### Perbaikan: asersi usang (diperbarui setelah mencocokkan kode saat ini)
+
+| File pengujian | Kasus | Akar masalah | Koreksi |
+|----------|------|------|------|
+| EnvConfigTest | env_file_exists / env_example_file_exists / getenv_reads_env_variables / config_env_keys_exist_in_dotenv (4 gagal + 1 error) | Mengasersi keberadaan `.env`/`.env.example` dan nilai getenv; tetapi repositori telah menghapus file env dan tidak dapat dibangun ulang | Ditulis ulang sebagai kontrak "berjalan tanpa .env": setiap kunci `getenv()` wajib memiliki fallback `?:`, konfigurasi default menunjuk ke layanan lokal (127.0.0.1:3306/open_admin), tipe konfigurasi penting benar |
+| BackendEnhancementTest | test_admin_user_source_contains_searchable | AdminUser tidak lagi memakai trait Searchable (kini menggunakan `Erikwang2013\Encryptable\Encryptable` untuk enkripsi/dekripsi bidang transparan; `toSearchableArray()` dipertahankan) | Diubah menjadi mengasersi trait Encryptable; asersi toSearchableArray memang sudah lulus, dipertahankan |
+| BackendEnhancementTest | test_middleware_config_contains_cors_and_rate_limit | `config/middleware.php` kini memakai format kunci grup global `'@'`; array tingkat atas tidak lagi berisi kelas middleware secara langsung | Asersi diubah untuk memeriksa `$middlewares['@']` berisi Cors dan RateLimit |
+| CaptchaTest | semua 7 kasus (semula 6 error + 1 gagal) | Dua kali usang: (a) konstanta Imagick hilang (sudah diperbaiki oleh poster.php); (b) asersi berdasarkan kontrak poster-php lama — `extra.targets` (dengan x/y) berubah menjadi `extra.texts` (hanya text+order), koordinat hanya tersimpan di lapisan penyimpanan; format klik berubah dari `['x'=>, 'y'=>]` menjadi pasangan angka `[x, y]` | Ditulis ulang sesuai kontrak saat ini: struktur/jumlah tingkat kesulitan (2/3/4)/validasi bidang; klik yang benar membaca koordinat dari Redis (`poster:captcha:{key}` → `data.targets`) untuk verifikasi, klik salah gagal, setelah melebihi max_attempts (3) key dikonsumsi/dihapus, keunikan key |
+
+### Pengujian baru (1 file, 12 kasus)
+
+`tests/AdminControllerTest.php` (dengan header hak cipta), mencakup:
+
+- **BaseController::decodeId** (perilaku 404 yang baru saja diperbaiki): putaran encode/decode konsisten; hashid tidak valid melempar `support\exception\NotFoundException` dengan code=404; encodeIds hanya menulis ulang bidang ID
+- **RoleController**: update peran super_admin mengembalikan 403 (data DB nyata)
+- **PermissionController::buildTree**: pohon izin bersarang (2 tingkat) + semua id node di-hashid-kan
+- **ConfigController**: group/key/value kurang → validasi 422; hashid tidak valid → 404
+- **ExportController**: ekspor `admin_user` mencantumkan bidang sensitif phone/email/id_card (tabel lain kosong); HTML PDF melakukan escape judul/nilai sel dengan htmlspecialchars (perlindungan XSS) dan menyertakan pernyataan hak cipta
+
+### Catatan yang diketahui
+
+- Request webman yang dikonstruksi dalam pengujian diteruskan sebagai pesan HTTP mentah (buffer) — parameter konstruktor Request workerman adalah buffer; hanya mengirim method/uri tidak dapat mem-parsing body POST; lihat komentar di AdminControllerTest
+- Kasus klik benar captcha membaca target tersimpan dari Redis; bila Redis tidak tersedia, kasus tersebut markTestSkipped dan tidak memengaruhi hasil rangkaian
 
 ## Belum tercakup / untuk ditambahkan
 
-- Modul admin (model/middleware/view) belum memiliki unit test
-- Jalur service yang bergantung pada layanan eksternal (ES/gRPC) hanya mendapatkan validasi tingkat unit via stub; cakupan tingkat integrasi disarankan melalui pengujian API
+- Enkripsi/dekripsi Encryptable pada model admin, middleware OperationLog/AdminPermission dan jalur cache RBAC masih kekurangan unit test; disarankan dicakup oleh pengujian API atau batch berikutnya
+- Jalur service yang bergantung pada layanan eksternal (ES/gRPC) tetap hanya validasi tingkat unit via stub; tingkat integrasi dicakup oleh pengujian API

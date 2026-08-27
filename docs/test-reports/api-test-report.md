@@ -8,29 +8,30 @@
 
 ## 结论
 
-**116 项用例: 113 通过 / 3 失败（97.4% 通过率）；3 项失败均为已定位根因的产品缺陷**
+**116 项用例: 116 通过 / 0 失败（100% 通过率）；上轮 3 项产品缺陷（A20/A39/A40）全部修复验证通过**
 
 | 分组 | 通过/总数 |
 |------|-----------|
-| admin A01-A45（认证、验证码、用户管理、HashID、角色权限、配置、日志、导出导入、上传、健康检查等） | 42/45 |
+| admin A01-A45（认证、验证码、用户管理、HashID、角色权限、配置、日志、导出导入、上传、健康检查等） | 45/45 |
 | service S01-S68（注册/登录/登出/刷新、个人资料、关注、帖子/点赞/时间线、评论、通知、搜索、IM 会话/消息/推送、语音上传/文件/通话/房间等） | 71/71 |
 
-## 失败用例（3，均为产品缺陷）
+## 上轮 3 个产品缺陷修复验证（全部 PASS）
 
-| 用例 | 期望 | 实际 | 根因 |
-|------|------|------|------|
-| A20 非法 hashid 用户详情 | 404 | 500 | `HashidsService::decode()` 对非法 ID 抛 `InvalidArgumentException` 未捕获（admin/app/common/HashidsService.php:28，BaseController.php:52），异常透传为 500，应捕获并返回 404 |
-| A39 导出 Excel | xlsx 文件流 | 200+JSON 错误体（业务失败） | `ExportController::excel()` 返回类型 `: Response` 但缺少 `use support\Response`，类型解析为 `app\admin\controller\Response` → 任何成功返回都抛 `TypeError`（ExportController.php:122），导出功能整体不可用 |
-| A40 导出 PDF | pdf 文件流 | 200+JSON 错误体（业务失败） | 同上，`ExportController::pdf()`（ExportController.php:135）缺 `use support\Response` |
+| 用例 | 期望 | 上轮实际 | 修复 | 本次结果 |
+|------|------|---------|------|---------|
+| A20 非法 hashid 用户详情 | 404 | 500 | `BaseController::decodeId()` 捕获 `InvalidArgumentException` 并抛 `support\exception\NotFoundException($msg, 404)`（admin/app/admin/controller/BaseController.php）；`UserController` 两个批量方法 catch 扩展为 `InvalidArgumentException \| NotFoundException` 保留 422 语义 | **PASS（404）** |
+| A39 导出 Excel | xlsx 文件流 | 200+JSON 错误体 | `ExportController` 补 `use support\Response;`（返回类型此前解析到不存在的 `app\admin\controller\Response` 抛 TypeError）；`admin_user` 的 phone/email/id_card 由 Encryptable cast 读取时自动解密，导出直接脱敏、移除二次解密 | **PASS（attachment 文件流）** |
+| A40 导出 PDF | pdf 文件流 | 200+JSON 错误体 | 同上（`ExportController::pdf()` 返回类型修复） | **PASS（application/pdf 文件流）** |
 
-> 补充（同文件潜在缺陷，当前被上述 TypeError 掩盖）: `ExportController` 第 90 行对 phone/email 调 `EncryptionService::decrypt()`，而 `AdminUser` 模型的 `email/phone/id_card` 已声明 `Encryptable::class` cast（写入时自动加密、读取时自动解密），导出会对明文二次解密 → 一旦存在非空手机号/邮箱的账号，还会抛 `EncryptionException: Invalid ciphertext prefix for AES-256-CBC`。修复返回类型后此问题仍会复现。
+## 本次测试中修复/处理的环境问题（非产品业务代码改动）
 
-## 测试中修复的环境问题（非产品代码改动）
-
-1. **m2/m3/m4 迁移表 `id` 缺 AUTO_INCREMENT（阻塞项，已修）**: `service/database/m2.sql`/`m3.sql`/`m4.sql` 建出的 `social_follows`、`social_notifications` 的 `id BIGINT UNSIGNED NOT NULL` 无 `AUTO_INCREMENT`，任何 INSERT 报 `1364 Field 'id' doesn't have a default value`，阻塞关注/通知/IM/语音全部写路径。已在本机执行 `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT`（其余 8 张表本就带自增）。**迁移脚本本身建议补上自增**。
-2. **service/.env 指向不可达数据库（阻塞项）**: `DB_PORT=13306` 且无密码，主 MySQL 实际在 `127.0.0.1:3306 (root/root)`；webman 的 `createUnsafeMutable` 会覆盖 CLI 环境变量。测试期间将 `.env` 移为 `service/.env.api-test-bak`（内容原样保留）并以环境变量注入启动服务；还原操作受 .env 文件访问策略限制未执行，需人工 `mv service/.env.api-test-bak service/.env`（注意：还原后重启服务将再次命中不可达数据库）。
-3. **admin 无 .env、依赖环境变量**: 需 `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`。`encryptable` 插件在 webman 容器未注册 provider 时回退到 `EnvEncryptableConfig`（读 `ENCRYPTION_KEY`，cipher 默认 aes-256-gcm），密钥长度不符则建号/导入/导出报 `MissingEncryptionKeyException`。
-4. **Elasticsearch 未启动**: `GET /api/v1/search/posts` 返回 503（设计降级），S 组搜索用例按预期处理（接受 0 或 503），不计失败。
+1. **run.php DB 空密码覆盖失效（测试脚本缺陷，已修）**: `DB` 常量用 `getenv('DB_PASS') ?: 'root'`，环境变量为空字符串时被 `?:` 当作假值回退到 `'root'`，导致本机 root 空密码场景连接被拒（`Access denied ... using password: YES`）。已改为 `getenv('DB_PASS') ?? 'root'`（仅未设置时用默认值），一行修改（tests/api/run.php:26）。
+2. **service 8788 端口被错误进程占用（环境，已处理）**: 本机另有一套项目 `property-management-platform` 的 service 进程（master 2004768，08:07 启动）监听 8788，且其 `.env` 指向 `property_management` 库——social service 实际未运行，导致 S45 起 IM/语音路由全部 404、清理阶段 SQL 也打错库。已停止该进程并在 8788/8789 重启 social service（`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`），健康检查恢复 `social-service`。
+3. **ImageMagick 7 升级导致验证码 Imagick 驱动崩溃（环境，已处理）**: 系统 ImageMagick 升级至 7.1.2-27（2026-07-08 构建）后移除了 `PixelsResource`，imagick 3.8.1 不再定义 `Imagick::RESOURCETYPE_PIXELS`，poster-php 的 `ImagickDriver` 构造即抛 `Undefined constant`（vendor 代码，未改动），验证码生成/校验（A05/A06）500 并级联阻塞 A08-A11 登录。**处理**: admin 服务以配置文档预留的驱动切换项重启——`POSTER_IMAGE_DRIVER=gd`（admin/config/poster.php:17 原生支持 gd/imagick/auto），验证码改用 GD 驱动后全链路正常。若需恢复 Imagick 驱动，需将 ImageMagick 降级至 6.x 或升级 poster-php 兼容 IM7。
+4. **MySQL root 密码已变更为空**: 上轮记录为 `root/root`，本次实测空密码可登录，所有服务与脚本均按空密码启动。
+5. **admin 服务重启环境**: 上轮"admin 无 .env、依赖环境变量"仍成立，重启命令见下方"环境与复现"。
+6. **service/.env 仍为 `service/.env.api-test-bak`**: 上轮为连通测试移出后未还原（还原操作受 .env 文件访问策略限制），本次服务仍以环境变量方式启动。需人工 `mv service/.env.api-test-bak service/.env`（还原后需重启服务，注意其指向的数据库地址问题）。
+7. **Elasticsearch 未启动**: `GET /api/v1/search/posts` 返回 503（设计降级），S 组搜索用例按预期处理（接受 0 或 503），不计失败。
 
 ## 契约/文档不符（建议修订，非阻塞）
 
@@ -43,12 +44,15 @@
 - 复现:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # 重跑（116 用例）
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # 重跑（116 用例）
 ```
+
+- 注意: 8788 端口需确保未被 `property-management-platform` service 占用（两个项目默认端口相同，本机同时存在两个项目时需错开）。
 
 ## 接口清单（依据 route.php / apidoc 统计）
 

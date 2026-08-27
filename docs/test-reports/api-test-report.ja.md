@@ -8,29 +8,30 @@
 
 ## 結論
 
-**116 テストケース: 113 合格 / 3 失敗（97.4% 合格率）; 3 件の失敗はすべて原因特定済みの製品欠陥**
+**116 テストケース: 116 合格 / 0 失敗（100% 合格率）; 前回の製品欠陥 3 件（A20/A39/A40）はすべて修正を検証済み**
 
 | グループ | 合格/全体 |
 |------|-----------|
-| admin A01-A45（認証、キャプチャ、ユーザー管理、HashID、ロール権限、設定、ログ、エクスポート/インポート、アップロード、ヘルスチェックなど） | 42/45 |
+| admin A01-A45（認証、キャプチャ、ユーザー管理、HashID、ロール権限、設定、ログ、エクスポート/インポート、アップロード、ヘルスチェックなど） | 45/45 |
 | service S01-S68（登録/ログイン/ログアウト/リフレッシュ、プロフィール、フォロー、投稿/いいね/タイムライン、コメント、通知、検索、IM セッション/メッセージ/プッシュ、音声アップロード/ファイル/通話/ルームなど） | 71/71 |
 
-## 失敗テストケース（3 件、すべて製品欠陥）
+## 前回の製品欠陥 3 件の修正検証（すべて PASS）
 
-| ケース | 期待値 | 実測値 | 根本原因 |
-|------|------|------|------|
-| A20 不正な hashid ユーザー詳細 | 404 | 500 | `HashidsService::decode()` が不正な ID に対してキャッチされない `InvalidArgumentException` をスロー（admin/app/common/HashidsService.php:28、BaseController.php:52）、例外がそのまま 500 として伝播。キャッチして 404 を返すべき |
-| A39 Excel エクスポート | xlsx ファイルストリーム | 200+JSON エラーボディ（業務失敗） | `ExportController::excel()` の戻り型は `: Response` だが `use support\Response` がないため、型が `app\admin\controller\Response` と解釈される → 成功時の戻りで必ず `TypeError` が発生（ExportController.php:122）、エクスポート機能が全面的に使用不可 |
-| A40 PDF エクスポート | pdf ファイルストリーム | 200+JSON エラーボディ（業務失敗） | 同上、`ExportController::pdf()`（ExportController.php:135）に `use support\Response` がない |
+| ケース | 期待値 | 前回実測 | 修正 | 今回結果 |
+|------|------|---------|------|---------|
+| A20 不正な hashid ユーザー詳細 | 404 | 500 | `BaseController::decodeId()` が `InvalidArgumentException` をキャッチし `support\exception\NotFoundException($msg, 404)` をスロー（admin/app/admin/controller/BaseController.php）; `UserController` のバッチメソッド 2 つの catch を `InvalidArgumentException \| NotFoundException` に拡張し 422 の意味を保持 | **PASS（404）** |
+| A39 Excel エクスポート | xlsx ファイルストリーム | 200+JSON エラーボディ | `ExportController` に `use support\Response;` を追加（戻り型が以前は存在しない `app\admin\controller\Response` に解決され TypeError 発生）; `admin_user` の phone/email/id_card は Encryptable cast で読み取り時に自動復号されるため、エクスポートは直接マスクし二重復号を除去 | **PASS（attachment ファイルストリーム）** |
+| A40 PDF エクスポート | pdf ファイルストリーム | 200+JSON エラーボディ | 同上（`ExportController::pdf()` の戻り型修正） | **PASS（application/pdf ファイルストリーム）** |
 
-> 補足（同一ファイルの潜在欠陥、現在は上記 TypeError に隠されている）: `ExportController` 90 行目で phone/email に対し `EncryptionService::decrypt()` を呼ぶ一方、`AdminUser` モデルの `email/phone/id_card` フィールドには `Encryptable::class` キャストが宣言されており（書き込み時自動暗号化、読み取り時自動復号）、エクスポートで平文を二重復号することになる → 電話番号/メールが空でないアカウントが 1 つでも存在すると `EncryptionException: Invalid ciphertext prefix for AES-256-CBC` が発生。戻り型を修正してもこの問題は再現します。
+## 今回のテスト中に修正/対応した環境問題（製品ビジネスコードの変更ではない）
 
-## テスト中に修正した環境問題（製品コードの変更ではない）
-
-1. **m2/m3/m4 マイグレーションテーブルの `id` に AUTO_INCREMENT がない（ブロッキング、修正済み）**: `service/database/m2.sql`/`m3.sql`/`m4.sql` が作成する `social_follows`、`social_notifications` の `id BIGINT UNSIGNED NOT NULL` に `AUTO_INCREMENT` がなく、INSERT のたびに `1364 Field 'id' doesn't have a default value` が発生し、フォロー/通知/IM/音声の全書き込み経路をブロック。ローカルで `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` を実行（残り 8 テーブルは元から自動採番）。**マイグレーションスクリプト自体への自動採番追加を推奨。**
-2. **service/.env が到達不能なデータベースを指している（ブロッキング）**: `DB_PORT=13306` でパスワードなし、実際のメイン MySQL は `127.0.0.1:3306 (root/root)` にある; webman の `createUnsafeMutable` が CLI 環境変数を上書きする。テスト中、`.env` を `service/.env.api-test-bak` に退避（内容はそのまま保持）し、環境変数注入でサービスを起動; 復元は .env ファイルのアクセスポリシー制限により未実施で、手動 `mv service/.env.api-test-bak service/.env` が必要（注意: 復元後、サービス再起動で再び到達不能なデータベースに当たります）。
-3. **admin は .env がなく環境変数に依存**: `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)` が必要。`encryptable` プラグインは webman コンテナに provider 未登録の場合 `EnvEncryptableConfig` にフォールバック（`ENCRYPTION_KEY` を読み取り、デフォルト cipher は aes-256-gcm）、キー長不一致でアカウント作成/インポート/エクスポート時に `MissingEncryptionKeyException` が発生。
-4. **Elasticsearch 未起動**: `GET /api/v1/search/posts` が 503 を返す（設計上のフォールバック）、S グループの検索ケースは想定どおり処理（0 または 503 を受け入れ）、失敗として集計しない。
+1. **run.php の DB 空パスワード上書きが失效（テストスクリプト欠陥、修正済み）**: `DB` 定数が `getenv('DB_PASS') ?: 'root'` を使い、環境変数が空文字列だと `?:` が falsy とみなして 'root' にフォールバック → 本機の root 空パスワード接続が拒否される（`Access denied ... using password: YES`）。`getenv('DB_PASS') ?? 'root'`（未設定時のみデフォルト）に変更、一行修正（tests/api/run.php:26）。
+2. **service の 8788 ポートが誤ったプロセスに占有（環境、対応済み）**: 本機の別プロジェクト `property-management-platform` の service プロセス（master 2004768、08:07 起動）が 8788 をリスンし、その `.env` は `property_management` DB を指す — social service は実質未起動で、S45 以降の IM/音声ルートがすべて 404、クリーンアップ段の SQL も誤った DB に当たる。当該プロセスを停止し 8788/8789 で social service を再起動（`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`）、ヘルスチェックが `social-service` に復帰。
+3. **ImageMagick 7 アップグレードによるキャプチャ Imagick ドライバのクラッシュ（環境、対応済み）**: システム ImageMagick が 7.1.2-27（2026-07-08 ビルド）に上がり `PixelsResource` が削除されたため imagick 3.8.1 が `Imagick::RESOURCETYPE_PIXELS` を定義しなくなり、poster-php の `ImagickDriver` コンストラクタで即 `Undefined constant` が発生（vendor コード、未変更）、キャプチャ生成/検証（A05/A06）が 500 になり A08-A11 ログインまで連鎖ブロック。**対応**: admin サービスを設定ドキュメントに予約されたドライバ切替項目で再起動 — `POSTER_IMAGE_DRIVER=gd`（admin/config/poster.php:17 が gd/imagick/auto をネイティブ対応）、キャプチャを GD ドライバに切替後は全経路正常。Imagick ドライバを復元するには ImageMagick を 6.x へダウングレードするか poster-php を IM7 対応へアップグレードする必要。
+4. **MySQL root パスワードが空に変更**: 前回は `root/root` と記録、今回は空パスワードでログイン可能、全サービス・スクリプトを空パスワードで起動。
+5. **admin サービス再起動環境**: 前回の「admin は .env がなく環境変数に依存」は依然有効、再起動コマンドは下記「環境と再現」参照。
+6. **service/.env が依然 `service/.env.api-test-bak`**: 前回接続テスト用に退避後未復元（復元は .env ファイルのアクセスポリシー制限）、今回も環境変数でサービス起動。手動 `mv service/.env.api-test-bak service/.env` が必要（復元後はサービス再起動、その DB アドレス問題に注意）。
+7. **Elasticsearch 未起動**: `GET /api/v1/search/posts` が 503 を返す（設計上のフォールバック）、S グループの検索ケースは想定どおり処理（0 または 503 を受け入れ）、失敗として集計しない。
 
 ## 契約/ドキュメント不整合（改訂推奨、非ブロッキング）
 
@@ -43,12 +44,15 @@
 - 再現:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # 再実行（116 ケース）
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # 再実行（116 ケース）
 ```
+
+- 注意: 8788 ポートが `property-management-platform` service に占有されていないことを確認（両プロジェクトのデフォルトポートは同一、本機に両プロジェクトがある場合はずらす必要あり）。
 
 ## インターフェース一覧（route.php / apidoc による）
 

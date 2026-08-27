@@ -14,7 +14,9 @@ return [
     // ── 图像处理驱动 ──
     'image' => [
         // 驱动类型: auto=自动检测 | gd | imagick
-        'driver' => getenv('POSTER_IMAGE_DRIVER') ?: 'auto',
+        // 注: 部分 Imagick 构建缺 RESOURCETYPE_PIXELS 常量（ImagickDriver 构造即引用），
+        // 检测不到该常量时自动回退 gd，避免验证码生成 500
+        'driver' => getenv('POSTER_IMAGE_DRIVER') ?: (defined('Imagick::RESOURCETYPE_PIXELS') ? 'auto' : 'gd'),
         // JPEG 输出质量 0-100
         'quality' => (int)(getenv('POSTER_IMAGE_QUALITY') ?: 90),
         // 默认字体路径，null=使用包自带字体

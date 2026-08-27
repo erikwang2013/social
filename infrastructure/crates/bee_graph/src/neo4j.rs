@@ -105,6 +105,13 @@ impl GraphDB for Neo4j {
         let payload = self.run(&stmt, p).await?;
         let matched = payload["results"][0]["stats"]["nodes-matched"].as_u64().unwrap_or(0);
         if matched < 2 {
+            // Report the endpoint that is actually missing, not always `from`.
+            if self.get_vertex(&edge.from).await?.is_none() {
+                return Err(GraphError::VertexNotFound(edge.from.clone()));
+            }
+            if self.get_vertex(&edge.to).await?.is_none() {
+                return Err(GraphError::VertexNotFound(edge.to.clone()));
+            }
             return Err(GraphError::VertexNotFound(edge.from.clone()));
         }
         Ok(edge)
@@ -271,6 +278,73 @@ mod tests {
         .await;
         let db = Neo4j::new(base);
         assert!(db.get_vertex(&"nope".into()).await.unwrap().is_none());
+    }
+
+    #[tokio::test]
+    async fn add_edge_reports_the_missing_endpoint() {
+        let base = mock(vec![(
+            "/db/neo4j/tx/commit",
+            post(|req: Request<Body>| async move {
+                let body = axum::body::to_bytes(req.into_body(), 4096).await.unwrap();
+                let v: serde_json::Value = serde_json::from_slice(&body).unwrap();
+                let stmt = v["statements"][0]["statement"].as_str().unwrap_or("");
+                if stmt.contains("CREATE (a)-[r") {
+                    // Only one endpoint matched.
+                    return (
+                        StatusCode::OK,
+                        axum::Json(serde_json::json!({
+                            "results": [{
+                                "columns": [],
+                                "data": [],
+                                "stats": {"nodes-matched": 1, "nodes-created": 0}
+                            }],
+                            "errors": []
+                        })),
+                    );
+                }
+                // get_vertex lookups: `to` is missing, `from` exists.
+                let id = v["statements"][0]["parameters"]["id"].as_str().unwrap_or("");
+                if id == "from1" {
+                    return (
+                        StatusCode::OK,
+                        axum::Json(serde_json::json!({
+                            "results": [{
+                                "columns": ["n"],
+                                "data": [{"row": [{
+                                    "identity": 1,
+                                    "labels": ["Person"],
+                                    "properties": {"id": "from1"}
+                                }], "meta": [null]}]
+                            }],
+                            "errors": []
+                        })),
+                    );
+                }
+                (
+                    StatusCode::OK,
+                    axum::Json(serde_json::json!({
+                        "results": [{"columns": ["n"], "data": []}],
+                        "errors": []
+                    })),
+                )
+            }),
+        )])
+        .await;
+        let db = Neo4j::new(base);
+        let err = db
+            .add_edge(Edge {
+                id: "e1".into(),
+                from: "from1".into(),
+                to: "to1".into(),
+                label: "KNOWS".into(),
+                properties: Properties::new(),
+            })
+            .await
+            .unwrap_err();
+        assert!(
+            matches!(&err, GraphError::VertexNotFound(id) if id.as_str() == "to1"),
+            "missing `to` endpoint must be reported, got {err:?}"
+        );
     }
 
     #[tokio::test]

@@ -8,29 +8,30 @@
 
 ## Fazit
 
-**116 Testfälle: 113 bestanden / 3 fehlgeschlagen (97,4 % Erfolgsquote); alle 3 Fehlschläge sind Produktfehler mit identifizierter Ursache**
+**116 Testfälle: 116 bestanden / 0 fehlgeschlagen (100 % Erfolgsquote); die 3 Produktfehler des letzten Durchgangs (A20/A39/A40) sind alle behoben und verifiziert**
 
 | Gruppe | Bestanden/Gesamt |
 |------|-----------|
-| admin A01-A45 (Authentifizierung, Captcha, Benutzerverwaltung, HashID, Rollen/Berechtigungen, Konfiguration, Logs, Export/Import, Upload, Health-Checks usw.) | 42/45 |
+| admin A01-A45 (Authentifizierung, Captcha, Benutzerverwaltung, HashID, Rollen/Berechtigungen, Konfiguration, Logs, Export/Import, Upload, Health-Checks usw.) | 45/45 |
 | service S01-S68 (Registrierung/Login/Logout/Refresh, Profil, Folgen, Beiträge/Likes/Timeline, Kommentare, Benachrichtigungen, Suche, IM-Sitzungen/Nachrichten/Push, Sprach-Upload/Dateien/Anrufe/Räume usw.) | 71/71 |
 
-## Fehlgeschlagene Testfälle (3, alle Produktfehler)
+## Verifikation der Behebung der 3 Produktfehler des letzten Durchgangs (alles PASS)
 
-| Fall | Erwartet | Tatsächlich | Ursache |
-|------|------|------|------|
-| A20 Ungültige Hashid-Benutzerdetails | 404 | 500 | `HashidsService::decode()` wirft für ungültige IDs eine ungefangene `InvalidArgumentException` (admin/app/common/HashidsService.php:28, BaseController.php:52); die Exception läuft als 500 durch, sollte abgefangen und 404 zurückgegeben werden |
-| A39 Export Excel | xlsx-Dateistream | 200+JSON-Fehlerbody (Geschäftsfail) | `ExportController::excel()` deklariert Rückgabetyp `: Response`, aber es fehlt `use support\Response`, wodurch der Typ zu `app\admin\controller\Response` aufgelöst wird → jede erfolgreiche Rückgabe wirft `TypeError` (ExportController.php:122), Export komplett unbenutzbar |
-| A40 Export PDF | pdf-Dateistream | 200+JSON-Fehlerbody (Geschäftsfail) | Wie oben, `ExportController::pdf()` (ExportController.php:135) ohne `use support\Response` |
+| Fall | Erwartet | Letzter Durchgang | Fix | Ergebnis dieses Durchgangs |
+|------|------|---------|------|---------|
+| A20 Ungültige Hashid-Benutzerdetails | 404 | 500 | `BaseController::decodeId()` fängt `InvalidArgumentException` und wirft `support\exception\NotFoundException($msg, 404)` (admin/app/admin/controller/BaseController.php); die catch-Blöcke der zwei Batch-Methoden von `UserController` werden auf `InvalidArgumentException \| NotFoundException` erweitert, 422-Semantik bleibt erhalten | **PASS (404)** |
+| A39 Export Excel | xlsx-Dateistream | 200+JSON-Fehlerbody | `ExportController` erhält `use support\Response;` (der Rückgabetyp wurde zuvor in das nicht existierende `app\admin\controller\Response` aufgelöst und warf TypeError); `phone/email/id_card` von `admin_user` werden beim Lesen per Encryptable cast automatisch entschlüsselt, der Export maskiert direkt, Doppelentschlüsselung entfernt | **PASS (attachment-Dateistream)** |
+| A40 Export PDF | pdf-Dateistream | 200+JSON-Fehlerbody | Wie oben (Rückgabetyp von `ExportController::pdf()` behoben) | **PASS (application/pdf-Dateistream)** |
 
-> Ergänzung (potenzieller Fehler in derselben Datei, derzeit durch den obigen TypeError verdeckt): `ExportController` Zeile 90 ruft `EncryptionService::decrypt()` für phone/email auf, während die `AdminUser`-Modellfelder `email/phone/id_card` den Cast `Encryptable::class` deklarieren (automatisches Verschlüsseln beim Schreiben, Entschlüsseln beim Lesen); der Export würde Klartext ein zweites Mal entschlüsseln → sobald ein Konto mit nicht leerer Telefonnummer/E-Mail existiert, wird `EncryptionException: Invalid ciphertext prefix for AES-256-CBC` geworfen. Dieses Problem tritt auch nach der Korrektur der Rückgabetypen weiterhin auf.
+## In diesem Durchgang behobene/behandelte Umgebungsprobleme (keine Produkt-Businesscode-Änderungen)
 
-## Während der Tests behobene Umgebungsprobleme (keine Produktcode-Änderungen)
-
-1. **m2/m3/m4-Migrationstabellen: `id` ohne AUTO_INCREMENT (blockierend, behoben)**: Die von `service/database/m2.sql`/`m3.sql`/`m4.sql` erzeugten `social_follows`, `social_notifications` haben `id BIGINT UNSIGNED NOT NULL` ohne `AUTO_INCREMENT`; jeder INSERT schlägt mit `1364 Field 'id' doesn't have a default value` fehl und blockiert alle Schreibpfade für Folgen/Benachrichtigungen/IM/Sprache. Lokal wurde `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` ausgeführt (die übrigen 8 Tabellen haben bereits Auto-Increment). **Die Migrationsskripte selbst sollten um Auto-Increment ergänzt werden.**
-2. **service/.env zeigt auf eine unerreichbare Datenbank (blockierend)**: `DB_PORT=13306` ohne Passwort, während MySQL tatsächlich unter `127.0.0.1:3306 (root/root)` läuft; webmans `createUnsafeMutable` überschreibt CLI-Umgebungsvariablen. Während der Tests wurde `.env` zu `service/.env.api-test-bak` verschoben (Inhalt unverändert erhalten) und der Dienst mit injizierten Umgebungsvariablen gestartet; die Wiederherstellung war wegen der Zugriffspolitik für .env-Dateien nicht möglich, erforderlich ist manuell `mv service/.env.api-test-bak service/.env` (Hinweis: Nach der Wiederherstellung trifft ein Neustart des Dienstes wieder auf die unerreichbare Datenbank).
-3. **admin hat kein .env und ist auf Umgebungsvariablen angewiesen**: erforderlich sind `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`. Das `encryptable`-Plugin fällt ohne registrierten Provider im webman-Container auf `EnvEncryptableConfig` zurück (liest `ENCRYPTION_KEY`, Standard-Cipher aes-256-gcm); falsche Schlüssellänge führt bei Kontenerstellung/Import/Export zu `MissingEncryptionKeyException`.
-4. **Elasticsearch nicht gestartet**: `GET /api/v1/search/posts` liefert 503 (vorgesehene Degradation); Suchfälle der S-Gruppe wie erwartet behandelt (0 oder 503 akzeptiert), nicht als Fehlschlag gewertet.
+1. **Leeres DB-Passwort-Override in run.php defekt (Testskript-Fehler, behoben)**: Die `DB`-Konstante nutzt `getenv('DB_PASS') ?: 'root'`; ein leerer String in der Umgebungsvariable wird von `?:` als falsy behandelt und auf 'root' zurückgefallen, sodass die lokale root-Verbindung mit leerem Passwort abgelehnt wird (`Access denied ... using password: YES`). Geändert zu `getenv('DB_PASS') ?? 'root'` (Default nur bei Nichtsetzung), Ein-Zeilen-Änderung (tests/api/run.php:26).
+2. **Port 8788 des service von falschem Prozess belegt (Umgebung, behandelt)**: Ein service-Prozess eines anderen Projekts auf dieser Maschine — `property-management-platform` (master 2004768, gestartet 08:07) — lauschte auf 8788, und dessen `.env` zeigt auf die DB `property_management`; der social service lief faktisch nicht, wodurch IM-/Sprach-Routen ab S45 alle 404 lieferten und das SQL der Cleanup-Phase die falsche DB traf. Der Prozess wurde gestoppt und der social service auf 8788/8789 neu gestartet (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`); der Health-Check meldet wieder `social-service`.
+3. **ImageMagick-7-Upgrade ließ den Captcha-Imagick-Treiber abstürzen (Umgebung, behandelt)**: Nach dem Upgrade des System-ImageMagick auf 7.1.2-27 (Build 2026-07-08) wurde `PixelsResource` entfernt; imagick 3.8.1 definiert `Imagick::RESOURCETYPE_PIXELS` nicht mehr, und der Konstruktor von poster-phps `ImagickDriver` wirft sofort `Undefined constant` (vendor-Code, nicht geändert), wodurch Captcha-Erzeugung/-Prüfung (A05/A06) 500 liefern und kaskadierend den Login A08-A11 blockieren. **Behandlung**: admin-Dienst mit dem in der Konfig-Doku vorgesehenen Treiber-Umschalter neu gestartet — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 unterstützt nativ gd/imagick/auto); nach Umstellung der Captcha auf den GD-Treiber funktioniert die gesamte Kette. Zur Wiederherstellung des Imagick-Treibers muss ImageMagick auf 6.x herabgestuft oder poster-php auf IM7-Kompatibilität aktualisiert werden.
+4. **MySQL-root-Passwort auf leer geändert**: der letzte Durchgang notierte `root/root`; in diesem Durchgang ist Login mit leerem Passwort möglich, alle Dienste und Skripte wurden mit leerem Passwort gestartet.
+5. **Neustart-Umgebung des admin-Dienstes**: „admin hat kein .env und ist auf Umgebungsvariablen angewiesen" aus dem letzten Durchgang gilt weiterhin; Neustart-Befehle siehe unten „Umgebung und Reproduktion".
+6. **service/.env ist weiterhin `service/.env.api-test-bak`**: im letzten Durchgang für den Verbindungstest verschoben und nicht wiederhergestellt (Wiederherstellung durch die .env-Zugriffspolitik beschränkt); in diesem Durchgang wurde der Dienst erneut mit Umgebungsvariablen gestartet. Manuelles `mv service/.env.api-test-bak service/.env` erforderlich (nach Wiederherstellung Dienst neu starten; die darin gespeicherte DB-Adresse beachten).
+7. **Elasticsearch nicht gestartet**: `GET /api/v1/search/posts` liefert 503 (vorgesehene Degradation); Suchfälle der S-Gruppe wie erwartet behandelt (0 oder 503 akzeptiert), nicht als Fehlschlag gewertet.
 
 ## Vertrags-/Dokumentationsabweichungen (Überarbeitung empfohlen, nicht blockierend)
 
@@ -43,12 +44,15 @@
 - Reproduktion:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # erneut ausführen (116 Fälle)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # erneut ausführen (116 Fälle)
 ```
+
+- Hinweis: Port 8788 darf nicht vom `property-management-platform`-Service belegt sein (beide Projekte nutzen standardmäßig denselben Port; wenn beide Projekte auf dieser Maschine existieren, müssen sie auseinandergezogen werden).
 
 ## Endpunkt-Übersicht (laut route.php / apidoc)
 

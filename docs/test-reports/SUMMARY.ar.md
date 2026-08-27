@@ -1,7 +1,7 @@
 # التقرير الملخص الشامل لجميع الاختبارات
 **语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md) · [한국어](SUMMARY.ko.md) · [Русский](SUMMARY.ru.md) · [Deutsch](SUMMARY.de.md) · [Français](SUMMARY.fr.md) · [Español](SUMMARY.es.md) · [Português](SUMMARY.pt.md) · [हिन्दी](SUMMARY.hi.md) · [العربية](SUMMARY.ar.md) · [বাংলা](SUMMARY.bn.md) · [Bahasa Indonesia](SUMMARY.id.md) · [日本語](SUMMARY.ja.md)
 
-- التاريخ: 2026-08-27
+- التاريخ: 2026-08-27 (الجولة الثانية من الانحدار الشامل)
 - فريق الاختبار: اختبارات وحدة PHP / اختبارات وحدة Rust / أتمتة API / واجهة المستخدم من طرف إلى طرف (انظر ملاحظة دور GO في نهاية الوثيقة)
 - التقارير الفرعية الأربعة بالإضافة إلى هذا الملخص مخزنة محليًا في `docs/test-reports/`
 
@@ -9,24 +9,32 @@
 
 | الدور | التقرير | حالات الاختبار | ناجحة | فاشلة | الخلاصة |
 |------|------|------|------|------|------|
-| اختبارات وحدة PHP | `php-unit-report.md` | 196 | 185 | 11 (حالات admin المسبقة، تعتمد على البيئة) | service 136/136 أخضر بالكامل؛ admin 49/60 |
-| اختبارات وحدة Rust | `rust-unit-report.md` | 180 | 180 | 0 | 15 crates أخضر بالكامل، واكتُشفت 7 عيوب حقيقية |
-| أتمتة API | `api-test-report.md` | 116 | 113 | 3 | 3 عيوب منتج حقيقية، الأسباب الجذرية محددة |
-| واجهة المستخدم من طرف إلى طرف | `ui-e2e-report.md` | 35 | 35 | 0 | أخضر بالكامل، 1 معيق (ES غير مشغّل) |
-| **الإجمالي** | | **527** | **513** | **14** | نسبة النجاح 97% |
+| اختبارات وحدة PHP | `php-unit-report.md` | 203 | 203 | 0 | service 136/136 + admin 67/67 أخضر بالكامل |
+| اختبارات وحدة Rust | `rust-unit-report.md` | 183 | 183 | 0 | 16 crates أخضر بالكامل، وتصحيح 5 عيوب حقيقية |
+| أتمتة API | `api-test-report.md` | 116 | 116 | 0 | تصحيح عيوب المنتج الثلاثة من الجولة السابقة مُتحقق منه |
+| واجهة المستخدم من طرف إلى طرف | `ui-e2e-report.md` | 41 | 41 | 0 | أخضر بالكامل، 1 معيق (ES غير مشغّل) |
+| **الإجمالي** | | **543** | **543** | **0** | نسبة النجاح 100% (1 معيق) |
 
-## قائمة العيوب الحقيقية (يُوصى بالإصلاح)
+## العيوب الحقيقية التي أُصلحت في هذه الجولة (كلها مُصلحة ومتحقق منها بالانحدار)
 
-1. **A20 hashid غير صالح** → 500 يجب أن تكون 404: `admin/app/common/HashidsService.php:28` لا يلتقط `InvalidArgumentException`
-2. **A39/A40 تصدير Excel/PDF** → فشل مضمون: `ExportController` يفتقد `use support\Response` مما يكسر تحليل نوع الإرجاع؛ والملف نفسه يفك تشفير الهاتف/البريد المُحوّلين مسبقًا مرة ثانية ويُبلغ عن `Invalid ciphertext prefix`
-3. **7 عيوب اكتشفها Rust**: التفاصيل في `rust-unit-report.md` (تحليل البروتوكولات، معالجة الحدود، إلخ، مع إرفاق إصلاح لكل منها)
-4. **حالات فشل اختبارات وحدة admin الـ 11 هي مشاكل بيئة/إعدادات**: غياب `admin/.env`، اعتماد التحقق على خدمة/Redis قيد التشغيل، تأكيدات قديمة على وسيط Cors وحقل searchable في admin_user — ليست عيوب كود
+1. **A20 hashid غير صالح 500→404** (متبقٍ من الجولة السابقة): `BaseController::decodeId()` يلتقط `InvalidArgumentException` ويرمي `support\exception\NotFoundException(404)` (body code)؛ تُبقي طرق الدفعات دلالات 422
+2. **A39/A40 تصدير Excel/PDF — فشل مضمون** (متبقٍ من الجولة السابقة): أُضيف `use support\Response;` إلى `ExportController` (كان نوع الإرجاع يُحل إلى فئة غير موجودة)؛ وإزالة فك التشفير الثاني للحقول المُفككة بالفعل عبر cast من نوع Encryptable
+3. **انهيار مشغّل Imagick للتحقق** (اكتشاف جديد، الإنتاج متأثر أيضًا): ImageMagick 7 المحلي يفتقد ثابت `RESOURCETYPE_PIXELS`؛ أُضيف حارس للثابت في كشف المشغّل بـ `config/poster.php`، مع تراجع تلقائي إلى GD عند غيابه
+4. **الصفحة الرئيسية `/` في service 404** (اكتشاف جديد): webman-framework v2.2.4 لم يعد يحل المسار الجذري افتراضيًا؛ سُجّل `Route::get('/')` صراحةً في `service/config/route.php`
+5. **5 عيوب Rust** (اكتشافات جديدة، التفاصيل في rust-unit-report.md): bee_search MemoryEngine يتجاهل ترقيم الصفحات، social_grpc يحوّل المعرّفات غير الرقمية إلى 0 بصمت، حقول line protocol الخاصة بـ InfluxDB في bee_tsdb غير مرتبة، معرّفات غير مُهرّبة في bulk NDJSON الخاص بـ ES في bee_search، ونقطة نهاية الخطأ في bee_graph Neo4j add_edge تكون دائمًا `from`
+6. **سكربتات الاختبار نفسها**: في `tests/api/run.php` كانت كلمة مرور قاعدة البيانات الفارغة ترتد إلى 'root' عبر `?:` → عُدّلت إلى `?? 'root'`؛ أُعيدت كتابة حِزم التأكيدات الثلاث القديمة لـ admin وفق الكود الحالي (Searchable مهجور، مفاتيح وسيط Cors، عقد captcha في poster-php)
 
 ## إصلاحات البيئة والملاحظات (الناتجة عن هذه الدفعة من الاختبارات)
 
-- **قاعدة البيانات**: عمود `id` في `social_follows`/`social_notifications` بجداول الترحيل m2/m3/m4 بدون AUTO_INCREMENT، تم إصلاحه عبر ALTER (وإلا تفشل مسارات كتابة المتابعة/الإشعارات/IM/الصوت برمز 1364)
-- **`service/.env`**: نُسخ احتياطيًا كـ `.env.api-test-bak` (كان يشير أصلًا إلى المنفذ 13306 غير القابل للوصول). الاستعادة التلقائية غير ممكنة بسبب قيود سياسة الوصول إلى .env؛ يلزم `mv service/.env.api-test-bak service/.env` يدويًا
+- **8788 مشغول بعملية مشروع آخر**: خدمة `property-management-platform` على هذا الجهاز شغّلت المنفذ 8788 خطأً؛ أُوقفت وأُعيد تشغيل خدمة social بمتغير بيئة لكلمة مرور فارغة
+- **`service/.env` ما زال `service/.env.api-test-bak`**: الاستعادة مقيدة بسياسة الوصول إلى ملف .env؛ يلزم `mv service/.env.api-test-bak service/.env` يدويًا (أعد تشغيل الخدمة بعد الاستعادة)
+- **توافق ImageMagick 7**: لاستعادة مشغّل Imagick، اخفض ImageMagick إلى 6.x أو حدّث poster-php ليتوافق مع IM7؛ مشغّل GD الحالي يعمل بشكل طبيعي عبر السلسلة كاملة
 - **ES غير مشغّل**: حالات البحث (API + E2E) وُسمت ناجحة بصفتها 503/blocked؛ يلزم إعادة التحقق بعد تشغيل Elasticsearch
+
+## تباينات العقد/الوثائق (يُقترح التنقيح، غير مانعة)
+
+- توثيق apidoc للتحقق يكتب `clicks=[{x,y}]` كمصفوفة كائنات، بينما يتطلب تنفيذ poster-php مصفوفة أزواج إحداثيات `[[x,y]]`
+- رفع الصوت يُرجع `voice_url` بصيغة `/voice/{md5}.m4a` (بدون بادئة `/api/v1`)؛ على العميل إضافتها بنفسه
 
 ## ملاحظة مهندس اختبارات GO
 
@@ -39,8 +47,8 @@
 cd service && vendor/bin/phpunit
 cd admin && vendor/bin/phpunit
 cd infrastructure && cargo test --workspace
-# أتمتة API (يتطلب تشغيل admin :8791 وservice :8788 أولًا مع حقن ENCRYPTABLE_KEY/ENCRYPTION_KEY)
-php tests/api/run.php
+# أتمتة API (يتطلب تشغيل admin :8791 وservice :8788 أولًا مع حقن ENCRYPTABLE_KEY/ENCRYPTION_KEY؛ root محلي بكلمة مرور فارغة يتطلب DB_PASS='')
+DB_PASS='' php tests/api/run.php
 # واجهة المستخدم E2E
 cd tests/e2e && npx playwright test
 ```

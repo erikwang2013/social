@@ -335,8 +335,7 @@ mod tests {
         db.write_point(make_point("cpu", 1)).await.unwrap();
         db.write_point(make_point("cpu", 31)).await.unwrap();
         // [day 1, day 31] must include both endpoints.
-        let results =
-            db.query_range("cpu", ts(2026, 1, 1), ts(2026, 1, 31), None).await.unwrap();
+        let results = db.query_range("cpu", ts(2026, 1, 1), ts(2026, 1, 31), None).await.unwrap();
         assert_eq!(results.len(), 2);
     }
 

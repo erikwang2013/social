@@ -8,29 +8,30 @@
 
 ## الخلاصة
 
-**116 حالة اختبار: 113 ناجحة / 3 فاشلة (نسبة نجاح 97.4%)؛ حالات الفشل الثلاث كلها عيوب منتج تم تحديد أسبابها الجذرية**
+**116 حالة اختبار: 116 ناجحة / 0 فاشلة (نسبة نجاح 100%)؛ عيوب المنتج الثلاثة في الجولة السابقة (A20/A39/A40) جميعها أُصلحت وتحققت**
 
 | المجموعة | ناجح/الإجمالي |
 |------|-----------|
-| admin A01-A45 (المصادقة، التحقق، إدارة المستخدمين، HashID، الأدوار والصلاحيات، الإعدادات، السجلات، التصدير/الاستيراد، الرفع، فحوصات الصحة، إلخ) | 42/45 |
+| admin A01-A45 (المصادقة، التحقق، إدارة المستخدمين، HashID، الأدوار والصلاحيات، الإعدادات، السجلات، التصدير/الاستيراد، الرفع، فحوصات الصحة، إلخ) | 45/45 |
 | service S01-S68 (التسجيل/الدخول/الخروج/التحديث، الملف الشخصي، المتابعة، المنشورات/الإعجابات/الجدول الزمني، التعليقات، الإشعارات، البحث، جلسات IM/الرسائل/الإشعارات الفورية، رفع الصوت/الملفات/المكالمات/الغرف، إلخ) | 71/71 |
 
-## حالات الاختبار الفاشلة (3، جميعها عيوب منتج)
+## التحقق من إصلاح عيوب المنتج الثلاثة في الجولة السابقة (كلها PASS)
 
-| الحالة | المتوقع | الفعلي | السبب الجذري |
-|------|------|------|------|
-| A20 تفاصيل مستخدم hashid غير صالح | 404 | 500 | `HashidsService::decode()` يرمي `InvalidArgumentException` غير ملتقطة للمعرفات غير الصالحة (admin/app/common/HashidsService.php:28، BaseController.php:52)؛ الاستثناء ينتشر كرمز 500، ويجب التقاطه وإرجاع 404 |
-| A39 تصدير Excel | دفق ملف xlsx | 200+نص خطأ JSON (فشل تجاري) | `ExportController::excel()` يعلن نوع الإرجاع `: Response` لكنه يفتقد `use support\Response`، فيُحل النوع إلى `app\admin\controller\Response` ← أي إرجاع ناجح يرمي `TypeError` (ExportController.php:122)، مما يجعل التصدير غير قابل للاستخدام نهائيًا |
-| A40 تصدير PDF | دفق ملف pdf | 200+نص خطأ JSON (فشل تجاري) | كما سبق، `ExportController::pdf()` (ExportController.php:135) يفتقد `use support\Response` |
+| الحالة | المتوقع | الجولة السابقة (الفعلي) | الإصلاح | نتيجة هذه الجولة |
+|------|------|---------|------|---------|
+| A20 تفاصيل مستخدم hashid غير صالح | 404 | 500 | `BaseController::decodeId()` يلتقط `InvalidArgumentException` ويرمي `support\exception\NotFoundException($msg, 404)` (admin/app/admin/controller/BaseController.php)؛ تم توسيع catch الطريقتين الدفعيتين في `UserController` إلى `InvalidArgumentException \| NotFoundException` مع الحفاظ على دلالة 422 | **PASS (404)** |
+| A39 تصدير Excel | دفق ملف xlsx | 200+نص خطأ JSON | `ExportController` يضيف `use support\Response;` (نوع الإرجاع سابقًا كان يُحل إلى `app\admin\controller\Response` غير الموجود، مسببًا TypeError)؛ حقول `phone/email/id_card` في `admin_user` تُفك تشفيرها تلقائيًا عبر تحويل Encryptable عند القراءة، فيقوم التصدير بالإخفاء مباشرة، وأُزيل فك التشفير الثاني | **PASS (دفق ملف attachment)** |
+| A40 تصدير PDF | دفق ملف pdf | 200+نص خطأ JSON | كما سبق (تم إصلاح نوع إرجاع `ExportController::pdf()`) | **PASS (دفق ملف application/pdf)** |
 
-> ملاحظة إضافية (عيب محتمل في نفس الملف، يحجبه حاليًا TypeError أعلاه): السطر 90 في `ExportController` يستدعي `EncryptionService::decrypt()` على phone/email، بينما حقول `email/phone/id_card` في نموذج `AdminUser` تعلن تحويل `Encryptable::class` (تشفير تلقائي عند الكتابة وفك تلقائي عند القراءة)، فسيقوم التصدير بفك تشفير النص الصريح مرة ثانية ← بمجرد وجود حساب برقم هاتف/بريد غير فارغ، سيتم رمي `EncryptionException: Invalid ciphertext prefix for AES-256-CBC`. هذه المشكلة ستستمر في الظهور حتى بعد إصلاح أنواع الإرجاع.
+## مشاكل البيئة التي أُصلحت/عُولجت في هذه الجولة (وليست تغييرات في كود منتج الأعمال)
 
-## مشاكل البيئة التي أُصلحت أثناء الاختبار (وليست تغييرات في كود المنتج)
-
-1. **عمود `id` في جداول الترحيل m2/m3/m4 بدون AUTO_INCREMENT (معيق، تم إصلاحه)**: جداول `social_follows` و`social_notifications` التي ينشئها `service/database/m2.sql`/`m3.sql`/`m4.sql` تحتوي على `id BIGINT UNSIGNED NOT NULL` بدون `AUTO_INCREMENT`؛ أي INSERT يفشل برسالة `1364 Field 'id' doesn't have a default value`، مما يعيق جميع مسارات الكتابة للمتابعة/الإشعارات/IM/الصوت. تم تنفيذ `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` محليًا (الجداول الثمانية الأخرى بها زيادة تلقائية أصلًا). **يُوصى بإضافة الزيادة التلقائية إلى نصوص الترحيل نفسها.**
-2. **service/.env يشير إلى قاعدة بيانات لا يمكن الوصول إليها (معيق)**: `DB_PORT=13306` بدون كلمة مرور، بينما MySQL الرئيسي فعليًا على `127.0.0.1:3306 (root/root)`؛ `createUnsafeMutable` في webman يتجاوز متغيرات بيئة CLI. أثناء الاختبار، نُقل `.env` إلى `service/.env.api-test-bak` (مع الحفاظ على المحتوى كما هو) وتم تشغيل الخدمة بحقن متغيرات البيئة؛ لم تتم الاستعادة بسبب قيود سياسة الوصول لملف .env، ويتطلب الأمر تنفيذ `mv service/.env.api-test-bak service/.env` يدويًا (ملاحظة: بعد الاستعادة، ستصطدم إعادة تشغيل الخدمة بقاعدة البيانات غير القابلة للوصول مجددًا).
-3. **admin لا يحتوي على .env ويعتمد على متغيرات البيئة**: يتطلب `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`. يعود إضافة `encryptable` إلى `EnvEncryptableConfig` (يقرأ `ENCRYPTION_KEY`، والتشفير الافتراضي aes-256-gcm) عند عدم تسجيل provider في حاوية webman؛ عدم تطابق طول المفتاح يسبب `MissingEncryptionKeyException` عند إنشاء/استيراد/تصدير الحسابات.
-4. **Elasticsearch غير مشغّل**: `GET /api/v1/search/posts` يعيد 503 (تدهور مُصمم مسبقًا)؛ حالات البحث في المجموعة S عُولجت كما هو متوقع (قبول 0 أو 503)، ولا تُحتسب كفشل.
+1. **تجاوز كلمة مرور قاعدة البيانات الفارغة في run.php معطوب (عيب في سكربت الاختبار، تم إصلاحه)**: الثابت `DB` يستخدم `getenv('DB_PASS') ?: 'root'`؛ السلسلة الفارغة في متغير البيئة تُعتبر falsy بواسطة `?:` وتتراجع إلى 'root'، لذا يُرفض اتصال root المحلي بكلمة مرور فارغة (`Access denied ... using password: YES`). تم التغيير إلى `getenv('DB_PASS') ?? 'root'` (الافتراضي فقط عند عدم التعيين)، تغيير من سطر واحد (tests/api/run.php:26).
+2. **المنفذ 8788 لخدمة service مشغول بعملية خاطئة (بيئة، تمت المعالجة)**: عملية service من مشروع آخر على هذه الآلة — `property-management-platform` (master 2004768، بدأت 08:07) — تستمع على 8788، و`.env` الخاص بها يشير إلى قاعدة بيانات `property_management`؛ خدمة social لم تكن تعمل فعليًا، مما جعل مسارات IM/الصوت من S45 فصاعدًا تعيد 404، وSQL الخاص بمرحلة التنظيف يضرب قاعدة البيانات الخاطئة. أُوقفت العملية وأُعيد تشغيل خدمة social على 8788/8789 (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`)؛ عاد فحص الصحة إلى `social-service`.
+3. **ترقية ImageMagick 7 سببت تعطل برنامج تشغيل Imagick للتحقق (بيئة، تمت المعالجة)**: بعد ترقية ImageMagick للنظام إلى 7.1.2-27 (بناء 2026-07-08) أُزيل `PixelsResource`؛ imagick 3.8.1 لم يعد يعرّف `Imagick::RESOURCETYPE_PIXELS`، وبنّاء `ImagickDriver` في poster-php يرمي فورًا `Undefined constant` (كود vendor، لم يُعدّل)، لذا توليد/التحقق من captcha (A05/A06) يعيد 500 ويحجب الدخول A08-A11 بشكل متسلسل. **المعالجة**: أُعيد تشغيل خدمة admin مع مفتاح تبديل برنامج التشغيل المتاح في وثيقة الإعدادات — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 يدعم gd/imagick/auto أصليًا)؛ بعد نقل captcha إلى برنامج تشغيل GD، تعمل السلسلة بأكملها. لاستعادة برنامج تشغيل Imagick، خفّض ImageMagick إلى 6.x أو رقّع poster-php ليتوافق مع IM7.
+4. **تغيرت كلمة مرور root في MySQL إلى فارغة**: الجولة السابقة سجلت `root/root`؛ في هذه الجولة يعمل الدخول بكلمة مرور فارغة، وجميع الخدمات والسكربتات بدأت بكلمة مرور فارغة.
+5. **بيئة إعادة تشغيل خدمة admin**: ما ورد في الجولة السابقة «admin لا يحتوي على .env ويعتمد على متغيرات البيئة» ما زال ساريًا؛ أوامر إعادة التشغيل أدناه في «البيئة وإعادة الإنتاج».
+6. **service/.env ما زال `service/.env.api-test-bak`**: نُقل في الجولة السابقة لاختبار الاتصال ولم يُستعد (الاستعادة مقيدة بسياسة الوصول لملف .env)؛ في هذه الجولة بدأت الخدمة مجددًا بمتغيرات البيئة. يلزم تنفيذ `mv service/.env.api-test-bak service/.env` يدويًا (أعد تشغيل الخدمة بعد الاستعادة؛ انتبه إلى عنوان قاعدة البيانات الذي يشير إليه).
+7. **Elasticsearch غير مشغّل**: `GET /api/v1/search/posts` يعيد 503 (تدهور مُصمم مسبقًا)؛ حالات البحث في المجموعة S عُولجت كما هو متوقع (قبول 0 أو 503)، ولا تُحتسب كفشل.
 
 ## تباينات العقد/التوثيق (يُقترح تنقيحها، غير معيقة)
 
@@ -43,12 +44,15 @@
 - إعادة الإنتاج:
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # إعادة التشغيل (116 حالة)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # إعادة التشغيل (116 حالة)
 ```
+
+- ملاحظة: تأكد من أن المنفذ 8788 لا تشغله خدمة `property-management-platform` (كلا المشروعين يستخدمان نفس المنفذ افتراضيًا؛ عند وجود المشروعين معًا على هذه الآلة يجب فصلهما).
 
 ## قائمة الواجهات (وفق route.php / apidoc)
 

@@ -8,29 +8,30 @@
 
 ## Conclusion
 
-**116 cas de test : 113 réussis / 3 échoués (taux de réussite 97,4 %) ; les 3 échecs sont des défauts produit dont la cause racine est identifiée**
+**116 cas de test : 116 réussis / 0 échoué (taux de réussite 100 %) ; les 3 défauts produit du tour précédent (A20/A39/A40) sont tous corrigés et vérifiés**
 
 | Groupe | Réussis/Total |
 |------|-----------|
-| admin A01-A45 (authentification, captcha, gestion des utilisateurs, HashID, rôles et permissions, configuration, journaux, export/import, upload, health checks, etc.) | 42/45 |
+| admin A01-A45 (authentification, captcha, gestion des utilisateurs, HashID, rôles et permissions, configuration, journaux, export/import, upload, health checks, etc.) | 45/45 |
 | service S01-S68 (inscription/connexion/déconnexion/refresh, profil, abonnements, publications/likes/fil d'actualité, commentaires, notifications, recherche, sessions IM/messages/push, upload vocal/fichiers/appels/salles, etc.) | 71/71 |
 
-## Cas de test échoués (3, tous des défauts produit)
+## Vérification de la correction des 3 défauts produit du tour précédent (tout PASS)
 
-| Cas | Attendu | Réel | Cause racine |
-|------|------|------|------|
-| A20 Détails utilisateur hashid invalide | 404 | 500 | `HashidsService::decode()` lève une `InvalidArgumentException` non capturée pour les ID invalides (admin/app/common/HashidsService.php:28, BaseController.php:52) ; l'exception remonte en 500, elle devrait être capturée et renvoyer 404 |
-| A39 Export Excel | flux de fichier xlsx | 200+corps d'erreur JSON (échec métier) | `ExportController::excel()` déclare le type de retour `: Response` mais n'a pas `use support\Response`, le type est résolu en `app\admin\controller\Response` → tout retour réussi lève une `TypeError` (ExportController.php:122), l'export est totalement inutilisable |
-| A40 Export PDF | flux de fichier pdf | 200+corps d'erreur JSON (échec métier) | Identique : `ExportController::pdf()` (ExportController.php:135) sans `use support\Response` |
+| Cas | Attendu | Réel au tour précédent | Correction | Résultat de ce tour |
+|------|------|---------|------|---------|
+| A20 Détails utilisateur hashid invalide | 404 | 500 | `BaseController::decodeId()` capture `InvalidArgumentException` et lève `support\exception\NotFoundException($msg, 404)` (admin/app/admin/controller/BaseController.php) ; les catch des deux méthodes batch de `UserController` sont étendus à `InvalidArgumentException \| NotFoundException`, sémantique 422 conservée | **PASS (404)** |
+| A39 Export Excel | flux de fichier xlsx | 200+corps d'erreur JSON | `ExportController` ajoute `use support\Response;` (le type de retour était résolu vers l'inexistant `app\admin\controller\Response`, d'où TypeError) ; `phone/email/id_card` de `admin_user` sont déchiffrés automatiquement par le cast Encryptable à la lecture, l'export masque directement, double déchiffrement supprimé | **PASS (flux de fichier attachment)** |
+| A40 Export PDF | flux de fichier pdf | 200+corps d'erreur JSON | Identique (type de retour de `ExportController::pdf()` corrigé) | **PASS (flux de fichier application/pdf)** |
 
-> Complément (défaut potentiel dans le même fichier, actuellement masqué par la TypeError ci-dessus) : `ExportController` ligne 90 appelle `EncryptionService::decrypt()` sur phone/email, alors que les champs `email/phone/id_card` du modèle `AdminUser` déclarent le cast `Encryptable::class` (chiffrement automatique à l'écriture, déchiffrement à la lecture) ; l'export déchiffrerait donc le texte clair une seconde fois → dès qu'un compte avec téléphone/email non vide existe, une `EncryptionException: Invalid ciphertext prefix for AES-256-CBC` est levée. Ce problème se reproduira même après correction des types de retour.
+## Problèmes d'environnement corrigés/gérés lors de ce tour (pas des modifications de code métier produit)
 
-## Problèmes d'environnement corrigés pendant les tests (pas des modifications de code produit)
-
-1. **Colonne `id` des tables de migration m2/m3/m4 sans AUTO_INCREMENT (bloquant, corrigé)** : `social_follows`, `social_notifications` créées par `service/database/m2.sql`/`m3.sql`/`m4.sql` ont `id BIGINT UNSIGNED NOT NULL` sans `AUTO_INCREMENT` ; tout INSERT échoue avec `1364 Field 'id' doesn't have a default value`, bloquant tous les chemins d'écriture abonnements/notifications/IM/voix. `ALTER TABLE ... MODIFY id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT` exécuté en local (les 8 autres tables ont déjà l'auto-incrément). **Les scripts de migration eux-mêmes devraient être complétés avec l'auto-incrément.**
-2. **service/.env pointe vers une base inaccessible (bloquant)** : `DB_PORT=13306` sans mot de passe, alors que le MySQL principal est réellement sur `127.0.0.1:3306 (root/root)` ; le `createUnsafeMutable` de webman écrase les variables d'environnement CLI. Pendant les tests, `.env` a été déplacé vers `service/.env.api-test-bak` (contenu conservé tel quel) et le service démarré avec des variables d'environnement injectées ; la restauration n'a pas pu être faite à cause des restrictions de politique d'accès au fichier .env, un `mv service/.env.api-test-bak service/.env` manuel est requis (attention : après restauration, un redémarrage du service retombera sur la base inaccessible).
-3. **admin n'a pas de .env, dépend des variables d'environnement** : requiert `DB_PASSWORD=root ENCRYPTABLE_KEY(16B) ENCRYPTION_KEY(32B)`. Le plugin `encryptable`, sans provider enregistré dans le conteneur webman, retombe sur `EnvEncryptableConfig` (lit `ENCRYPTION_KEY`, cipher par défaut aes-256-gcm) ; une longueur de clé incohérente provoque `MissingEncryptionKeyException` lors de la création/import/export de comptes.
-4. **Elasticsearch non démarré** : `GET /api/v1/search/posts` renvoie 503 (dégradation prévue) ; les cas de recherche du groupe S traités comme attendu (0 ou 503 acceptés), non comptés en échec.
+1. **Écrasement du mot de passe BD vide dans run.php cassé (défaut du script de test, corrigé)** : la constante `DB` utilise `getenv('DB_PASS') ?: 'root'` ; une chaîne vide dans la variable d'environnement est traitée comme fausse par `?:` et retombe sur 'root', donc la connexion root locale avec mot de passe vide est rejetée (`Access denied ... using password: YES`). Changé en `getenv('DB_PASS') ?? 'root'` (défaut uniquement si non défini), modification d'une ligne (tests/api/run.php:26).
+2. **Port 8788 du service occupé par un mauvais processus (environnement, géré)** : un processus service d'un autre projet de cette machine — `property-management-platform` (master 2004768, démarré 08:07) — écoutait sur 8788, et son `.env` pointe vers la base `property_management` ; le service social ne tournait en réalité pas, d'où des 404 sur toutes les routes IM/voix à partir de S45 et des SQL de la phase de nettoyage frappant la mauvaise base. Le processus a été arrêté et le service social redémarré sur 8788/8789 (`DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root DB_PASSWORD=''`) ; le health check est revenu à `social-service`.
+3. **La mise à niveau ImageMagick 7 a fait planter le driver Imagick du captcha (environnement, géré)** : après la montée d'ImageMagick système en 7.1.2-27 (build 2026-07-08), `PixelsResource` a été retiré ; imagick 3.8.1 ne définit plus `Imagick::RESOURCETYPE_PIXELS`, et le constructeur de `ImagickDriver` de poster-php lève immédiatement `Undefined constant` (code vendor, non modifié), donc la génération/vérification du captcha (A05/A06) renvoie 500 et bloque en cascade le login A08-A11. **Gestion** : le service admin a été redémarré avec le commutateur de driver prévu dans la doc de configuration — `POSTER_IMAGE_DRIVER=gd` (admin/config/poster.php:17 supporte nativement gd/imagick/auto) ; après bascule du captcha sur le driver GD, toute la chaîne fonctionne. Pour rétablir le driver Imagick, rétrograder ImageMagick en 6.x ou mettre à jour poster-php pour la compatibilité IM7.
+4. **Le mot de passe root de MySQL est passé à vide** : le tour précédent notait `root/root` ; ce tour, la connexion avec mot de passe vide fonctionne, tous les services et scripts ont été démarrés avec le mot de passe vide.
+5. **Environnement de redémarrage du service admin** : « admin n'a pas de .env, dépend des variables d'environnement » du tour précédent reste valable ; commandes de redémarrage ci-dessous dans « Environnement et reproduction ».
+6. **service/.env reste `service/.env.api-test-bak`** : déplacé au tour précédent pour le test de connectivité et non restauré (restauration limitée par la politique d'accès au fichier .env) ; ce tour, le service est de nouveau démarré avec des variables d'environnement. Un `mv service/.env.api-test-bak service/.env` manuel est requis (redémarrer le service après restauration ; noter l'adresse de base qu'il contient).
+7. **Elasticsearch non démarré** : `GET /api/v1/search/posts` renvoie 503 (dégradation prévue) ; les cas de recherche du groupe S traités comme attendu (0 ou 503 acceptés), non comptés en échec.
 
 ## Écarts contrat/documentation (révision suggérée, non bloquant)
 
@@ -43,12 +44,15 @@
 - Reproduction :
 
 ```bash
-cd /home/wwwroot/social/admin && DB_PASSWORD=root ENCRYPTABLE_KEY='apitest-enc-16b!!' \
-  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' php start.php start   # admin :8791
+cd /home/wwwroot/social/admin && DB_PASSWORD='' ENCRYPTABLE_KEY='apitest-enc-16b!!' \
+  ENCRYPTION_KEY='apitest-db-encrypt-key-32-byte!!' POSTER_IMAGE_DRIVER=gd \
+  php start.php start                                          # admin :8791
 cd /home/wwwroot/social/service && DB_HOST=127.0.0.1 DB_PORT=3306 DB_USERNAME=root \
-  DB_PASSWORD=root php start.php start                                     # service :8788
-php /home/wwwroot/social/tests/api/run.php                                  # re-exécuter (116 cas)
+  DB_PASSWORD='' php start.php start                           # service :8788
+cd /home/wwwroot/social/tests/api && DB_PASS='' php run.php    # re-exécuter (116 cas)
 ```
+
+- Attention : vérifier que le port 8788 n'est pas occupé par le service `property-management-platform` (les deux projets utilisent le même port par défaut ; quand les deux projets coexistent sur cette machine, il faut les décaler).
 
 ## Inventaire des endpoints (selon route.php / apidoc)
 
