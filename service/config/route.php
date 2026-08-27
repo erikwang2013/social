@@ -58,6 +58,7 @@ Route::group('/api/v1', function () {
         Route::get('/wallet/balance', [app\controller\WalletController::class, 'balance']);
         Route::get('/wallet/transactions', [app\controller\WalletController::class, 'transactions']);
         Route::post('/iap/recharge', [app\controller\RechargeController::class, 'recharge']);
+        Route::post('/payment/order', [app\controller\PaymentController::class, 'order']);
         Route::get('/im/conversations', [app\controller\ImController::class, 'conversations']);
         Route::post('/im/conversations', [app\controller\ImController::class, 'create']);
         Route::get('/im/conversations/{id}/messages', [app\controller\ImController::class, 'messages']);
@@ -78,6 +79,9 @@ Route::group('/api/v1', function () {
         Route::post('/live/rooms/{id}/gift', [app\controller\GiftController::class, 'send']);
         Route::get('/gifts', [app\controller\GiftController::class, 'catalog']);
     })->middleware(AuthMiddleware::class);
+
+    // 支付回调：渠道服务器直达，无需认证（信任靠验签）
+    Route::post('/payment/callback/{platform}', [app\controller\PaymentController::class, 'callback']);
 });
 
 

@@ -9,6 +9,8 @@ define('TESTS_BOOTSTRAPPED', true);
 
 // 测试默认走 sqlite（config/database.php 的 test 连接），须在 Config::load 之前设置
 putenv('DB_CONNECTION=test');
+// M6b 支付定价测试夹具（config/payment.php 在 Config::load 时求值，须在此之前设置）
+putenv('PAY_PRICING_JSON={"CNY:100":10,"CNY:150":15}');
 
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', __DIR__ . '/..');
@@ -232,6 +234,24 @@ Capsule::schema()->create('products', function ($t) {
     $t->tinyInteger('status')->default(1);
     $t->timestamps();
     $t->unique(['platform', 'sku']);
+});
+
+// M6b 支付订单（与 database/install.sql 对齐）
+Capsule::schema()->create('payments', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id');
+    $t->string('platform', 16);
+    $t->string('trade_no', 64)->nullable();
+    $t->string('client_ref', 64)->nullable();
+    $t->unsignedBigInteger('amount_cents');
+    $t->string('currency', 3)->default('CNY');
+    $t->unsignedBigInteger('coins')->default(0);
+    $t->string('status', 16)->default('pending');
+    $t->text('payload')->nullable();
+    $t->timestamps();
+    $t->unique(['platform', 'trade_no']);
+    $t->unique('client_ref');
+    $t->index(['user_id', 'created_at']);
 });
 
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求

@@ -462,3 +462,22 @@ CREATE TABLE IF NOT EXISTS social_products (
   updated_at TIMESTAMP NULL,
   UNIQUE KEY uniq_platform_sku (platform, sku)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IAP 商品（SKU↔币值）';
+
+-- ############### 支付渠道 (M6b) ###############
+CREATE TABLE IF NOT EXISTS social_payments (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  platform VARCHAR(16) NOT NULL COMMENT 'wechat/alipay/stripe',
+  trade_no VARCHAR(64) NULL COMMENT '渠道交易号（回调写入，建单为空；MySQL 唯一索引允许多个 NULL）',
+  client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（UUID，防重复建单）',
+  amount_cents BIGINT UNSIGNED NOT NULL COMMENT '实付金额（分）',
+  currency VARCHAR(3) NOT NULL DEFAULT 'CNY',
+  coins BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '到账虚拟币数（服务端定价映射）',
+  status VARCHAR(16) NOT NULL DEFAULT 'pending' COMMENT 'pending/succeeded/failed（后两者终态）',
+  payload TEXT NULL COMMENT '渠道原始回调 JSON（审计用）',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  UNIQUE KEY uniq_platform_trade_no (platform, trade_no),
+  UNIQUE KEY uniq_client_ref (client_ref),
+  KEY idx_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='支付订单';
