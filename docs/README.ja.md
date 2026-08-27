@@ -10,7 +10,7 @@
 - **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。ライブ / ボイスルーム / 1v1 通話の状態機械は Rust に移行（infrastructure/bee-rust）、PHP コントローラは gRPC で直接接続；APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
 - **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席）のメディア中継
 - **状態の階層化**：MySQLはビジネスの事実、Redisはセッション / IM / 通話 / ルームのリアルタイム状態を担当
-- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）
+- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）
 
 ## 機能概要
 
@@ -48,7 +48,8 @@ service の内部構造：
 ```
 service/
 ├── app/
-│   ├── controller/   # RESTコントローラ（auth/post/follow/im/voice/...）
+│   ├── controller/   # RESTコントローラ（auth/post/follow/im/voice/wallet/gift/...）
+│   ├── common/        # WalletService（残高/台帳/冪等）· GiftService（ギフト/分配）
 │   ├── ws/           # WsServer · Envelopeフレームプロトコル · Deliverer配信 · ConnectionRegistry
 │   ├── call/         # CallCenter：1v1通話ステートマシン（M6 で Rust に移行、PHP 側は WS シグナリング用に維持）
 │   ├── room/         # RoomCenter：ボイスチャットルーム（M6 で Rust に移行、PHP 側は WS シグナリング用に維持）
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Http / WsServer カスタムプロセス
 │   └── storage/      # 音声ファイル保存（m4a；M6 以降は Rust VoiceStorage が担う）
 ├── config/           # route.php（/api/v1 ルートグループ）· process.php（:8788/:8789）
-└── tests/            # phpunit単体テスト + im_e2e.php / voice_e2e.php / live_e2e.php ブラックボックスE2E
+└── tests/            # phpunit単体テスト + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php ブラックボックスE2E
 ```
 
 ## 使い方

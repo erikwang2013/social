@@ -61,6 +61,9 @@
     <rect class="box" x="480" y="328" width="220" height="56"/>
     <text class="t" x="590" y="350">直播 / 语聊房 / 1v1 通话</text>
     <text class="ts" x="590" y="368">Rust 状态机（bee_live）· gRPC :50051</text>
+    <rect class="box" x="720" y="328" width="200" height="56"/>
+    <text class="t" x="820" y="350">虚拟经济（PHP）</text>
+    <text class="ts" x="820" y="368">钱包 · 礼物打赏 · 主播分成 · IAP 充值</text>
   </g>
 
   <!-- 媒体层 -->
@@ -99,6 +102,7 @@
   <path class="edge" d="M 590 384 L 590 474"/>
   <path class="edge" d="M 140 384 L 140 578"/>
   <path class="edge" d="M 360 384 L 360 578"/>
+  <path class="edge" d="M 820 384 L 820 578"/>
   <path class="edgeg" d="M 340 512 L 340 578"/>
   <text class="el" x="352" y="552">RTP 媒体直连（UDP）</text>
 </svg>

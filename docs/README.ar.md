@@ -10,7 +10,7 @@
 - **خدمات الأعمال**: webman v2 (PHP 8.3) يقدم قناتي REST وWebSocket معًا؛ مآلات الحالة للبث المباشر/الغرف الصوتية/مكالمات 1v1 هُجرت إلى Rust (infrastructure/bee-rust)؛ وحدات التحكم PHP تتصل مباشرة عبر gRPC؛ إصدارات API عبر `X-Api-Version` (الافتراضي v1، متوافق مع المسارات القديمة `/api/vX`)
 - **طبقة وسائط مبنية داخليًا**: mediasoup SFU + coturn TURN لنقل الوسائط في مكالمات الصوت 1v1 وغرف الدردشة الصوتية (8 مقاعد)
 - **تقسيم الحالة**: MySQL كمصدر حقيقة للأعمال، وRedis لحالة الجلسة / المراسلة / المكالمة / الغرفة لحظيًا
-- **المعالم**: اكتمل M0–M5 (الرسائل الصوتية، مكالمات 1v1، غرف الدردشة الصوتية، البث المباشر)؛ يقدّم M6 ترحيل آلات حالة البث/الصوت إلى Rust (يستدعي PHP Rust مباشرة عبر gRPC؛ قاطع الدائرة / التدهور / الحد من المعدل)
+- **المعالم**: اكتمل M0–M5 (الرسائل الصوتية، مكالمات 1v1، غرف الدردشة الصوتية، البث المباشر)؛ M6a يقدّم الاقتصاد الافتراضي: المحفظة (الرصيد/السجل، MySQL مصدر الحقيقة الوحيد)، هدايا الإكرامية مع حصة البث، والشحن عبر IAP (App Store / Google Play / Huawei)
 
 ## نظرة عامة على الميزات
 
@@ -48,7 +48,8 @@
 ```
 service/
 ├── app/
-│   ├── controller/   # وحدات تحكم REST (auth/post/follow/im/voice/...)
+│   ├── controller/   # وحدات تحكم REST (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (الرصيد/السجل/القيود) · GiftService (الهدايا/الحصة)
 │   ├── ws/           # WsServer · بروتوكول إطارات Envelope · دفع Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: آلة حالات مكالمات 1v1 (تم ترحيله إلى Rust في M6؛ جانب PHP محفوظ لإشارات WS)
 │   ├── room/         # RoomCenter: غرف الدردشة الصوتية (تم ترحيله إلى Rust في M6؛ جانب PHP محفوظ لإشارات WS)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # عمليات Http / WsServer المخصصة
 │   └── storage/      # تخزين ملفات الصوت (m4a؛ تتولاه Rust VoiceStorage منذ M6)
 ├── config/           # route.php (مجموعة مسارات /api/v1) · process.php (:8788/:8789)
-└── tests/            # اختبارات phpunit + اختبارات E2E للصندوق الأسود im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # اختبارات phpunit + اختبارات E2E للصندوق الأسود im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## تعليمات الاستخدام

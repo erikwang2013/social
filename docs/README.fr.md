@@ -10,7 +10,7 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 - **Services métier** : webman v2 (PHP 8.3) sert à la fois REST et WebSocket ; les machines à états live/salon vocal/appel 1v1 sont migrées vers Rust (infrastructure/bee-rust) ; les contrôleurs PHP se connectent directement en gRPC ; l'API est versionnée via `X-Api-Version` (v1 par défaut, compatible avec les anciens chemins `/api/vX`)
 - **Couche média maison** : mediasoup SFU + coturn TURN pour le relais média des appels vocaux 1v1 et des salons vocaux (8 sièges)
 - **Stratification des états** : MySQL comme source de vérité métier, Redis pour l'état temps réel des sessions / IM / appels / salons
-- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming) ; M6 livre la migration Rust des machines à états live/voix (PHP appelle Rust directement via gRPC ; disjoncteur / dégradation / limite de débit)
+- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming)  ; M6a livre l'économie virtuelle : portefeuille (solde/journal, MySQL comme source de vérité unique), pourboires-cadeaux avec part du streamer et rechargement IAP mobile (App Store / Google Play / Huawei)
 
 ## Aperçu des fonctionnalités
 
@@ -48,7 +48,8 @@ Structure interne de service :
 ```
 service/
 ├── app/
-│   ├── controller/   # Contrôleurs REST (auth/post/follow/im/voice/...)
+│   ├── controller/   # Contrôleurs REST (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (solde/journal/idempotent) · GiftService (cadeaux/part)
 │   ├── ws/           # WsServer · protocole de trames Envelope · push Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter : machine à états d'appel 1v1 (migré vers Rust en M6 ; côté PHP conservé pour la signalisation WS)
 │   ├── room/         # RoomCenter : salons vocaux (migré vers Rust en M6 ; côté PHP conservé pour la signalisation WS)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Processus personnalisés Http / WsServer
 │   └── storage/      # Stockage des fichiers vocaux (m4a ; pris en charge par Rust VoiceStorage depuis M6)
 ├── config/           # route.php (groupe de routes /api/v1) · process.php (:8788/:8789)
-└── tests/            # Tests unitaires phpunit + E2E boîte noire im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # Tests unitaires phpunit + E2E boîte noire im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## Utilisation

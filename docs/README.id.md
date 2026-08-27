@@ -10,7 +10,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; state machine live/ruang suara/panggilan 1v1 dimigrasikan ke Rust (infrastructure/bee-rust); kontroler PHP terhubung langsung via gRPC; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6 menghadirkan migrasi Rust untuk state machine live/voice (PHP memanggil Rust langsung lewat gRPC; circuit breaker / degradasi / rate limiting)
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei)
 
 ## Ringkasan Fitur
 
@@ -48,7 +48,8 @@ Struktur internal service:
 ```
 service/
 ├── app/
-│   ├── controller/   # Kontroler REST (auth/post/follow/im/voice/...)
+│   ├── controller/   # Kontroler REST (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (saldo/riwayat/idempoten) · GiftService (hadiah/bagian)
 │   ├── ws/           # WsServer · protokol frame Envelope · push Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: state machine panggilan 1v1 (dimigrasikan ke Rust di M6; sisi PHP dipertahankan untuk sinyal WS)
 │   ├── room/         # RoomCenter: ruang obrolan suara (dimigrasikan ke Rust di M6; sisi PHP dipertahankan untuk sinyal WS)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Proses kustom Http / WsServer
 │   └── storage/      # Penyimpanan file suara (m4a; ditangani Rust VoiceStorage sejak M6)
 ├── config/           # route.php (grup rute /api/v1) · process.php (:8788/:8789)
-└── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## Petunjuk Penggunaan

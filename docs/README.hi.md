@@ -10,7 +10,7 @@
 - **बिज़नेस सेवाएँ**: webman v2 (PHP 8.3) REST और WebSocket दोनों चैनल संभालता है; लाइव / वॉइस रूम / 1v1 कॉल स्टेट मशीनें Rust में माइग्रेट हो गईं (infrastructure/bee-rust); PHP कंट्रोलर gRPC से सीधे जुड़ते हैं; API का वर्ज़न `X-Api-Version` से होता है (डिफ़ॉल्ट v1, पुराने `/api/vX` पाथ से संगत)
 - **स्वनिर्मित मीडिया लेयर**: mediasoup SFU + coturn TURN, 1v1 वॉइस कॉल और वॉइस चैट रूम (8 सीटें) के मीडिया फ़ॉरवर्डिंग के लिए
 - **स्टेट लेयरिंग**: MySQL बिज़नेस डेटा का स्रोत, Redis सेशन / IM / कॉल / रूम की रियल-टाइम स्थिति के लिए
-- **माइलस्टोन**: M0–M5 डिलीवर हो चुके (वॉइस मैसेज, 1v1 कॉल, वॉइस चैट रूम, लाइव स्ट्रीमिंग); M6 live/voice स्टेट मशीनों का Rust माइग्रेशन डिलीवर करता है (PHP सीधे gRPC से Rust को कॉल करता है; सर्किट ब्रेकर / डिग्रेडेशन / रेट लिमिटिंग)
+- **माइलस्टोन**: M0–M5 डिलीवर हो चुके (वॉइस मैसेज, 1v1 कॉल, वॉइस चैट रूम, लाइव स्ट्रीमिंग); M6a वर्चुअल इकोनॉमी डिलीवर करता है: वॉलेट (बैलेंस/लेजर, MySQL एकमात्र सत्य स्रोत), गिफ्ट टिपिंग और स्ट्रीमर हिस्सा, मोबाइल IAP रिचार्ज (App Store / Google Play / Huawei)
 
 ## फ़ीचर अवलोकन
 
@@ -48,7 +48,8 @@ service की आंतरिक संरचना:
 ```
 service/
 ├── app/
-│   ├── controller/   # REST कंट्रोलर (auth/post/follow/im/voice/...)
+│   ├── controller/   # REST कंट्रोलर (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (बैलेंस/लेजर/आइडेम्पोटेंट) · GiftService (गिफ्ट/हिस्सा)
 │   ├── ws/           # WsServer · Envelope फ्रेम प्रोटोकॉल · Deliverer पुश · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 कॉल स्टेट मशीन (M6 में Rust में स्थानांतरित; PHP पक्ष WS सिग्नलिंग के लिए रखा गया)
 │   ├── room/         # RoomCenter: वॉइस चैट रूम (M6 में Rust में स्थानांतरित; PHP पक्ष WS सिग्नलिंग के लिए रखा गया)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Http / WsServer कस्टम प्रोसेस
 │   └── storage/      # वॉइस फ़ाइल स्टोरेज (m4a; M6 से Rust VoiceStorage द्वारा संभाला जाता है)
 ├── config/           # route.php (/api/v1 रूट ग्रुप) · process.php (:8788/:8789)
-└── tests/            # phpunit यूनिट टेस्ट + im_e2e.php / voice_e2e.php / live_e2e.php ब्लैक-बॉक्स E2E
+└── tests/            # phpunit यूनिट टेस्ट + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php ब्लैक-बॉक्स E2E
 ```
 
 ## उपयोग निर्देश

@@ -10,7 +10,7 @@
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. 라이브 / 음성방 / 1v1 통화 상태 머신은 Rust로 마이그레이션됨(infrastructure/bee-rust). PHP 컨트롤러는 gRPC로 직접 연결; API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
 - **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6는 live/voice 상태 머신의 Rust 마이그레이션 제공(PHP가 gRPC로 Rust를 직접 호출, 서킷 브레이커/디그레이드/레이트 리밋)
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei))
 
 ## 기능 개요
 
@@ -48,7 +48,8 @@ service 내부 구조:
 ```
 service/
 ├── app/
-│   ├── controller/   # REST 컨트롤러 (auth/post/follow/im/voice/...)
+│   ├── controller/   # REST 컨트롤러 (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService(잔액/원장/멱등) · GiftService(선물/분배)
 │   ├── ws/           # WsServer · Envelope 프레임 프로토콜 · Deliverer 푸시 · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 통화 상태 머신 (M6에서 Rust로 마이그레이션, PHP 쪽은 WS 시그널링용으로 유지)
 │   ├── room/         # RoomCenter: 보이스 채팅방 (M6에서 Rust로 마이그레이션, PHP 쪽은 WS 시그널링용으로 유지)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Http / WsServer 커스텀 프로세스
 │   └── storage/      # 음성 파일 저장소(m4a, M6부터 Rust VoiceStorage가 담당)
 ├── config/           # route.php(/api/v1 라우트 그룹) · process.php(:8788/:8789)
-└── tests/            # phpunit 단위 테스트 + im_e2e.php / voice_e2e.php / live_e2e.php 블랙박스 E2E
+└── tests/            # phpunit 단위 테스트 + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php 블랙박스 E2E
 ```
 
 ## 사용 방법

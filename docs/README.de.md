@@ -10,7 +10,7 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 - **Business-Services**: webman v2 (PHP 8.3) bedient sowohl REST als auch WebSocket; Live-/Voice- und 1v1-Anruf-Zustandsmaschinen wurden nach Rust migriert (infrastructure/bee-rust); PHP-Controller verbinden sich direkt per gRPC; die API wird über `X-Api-Version` versioniert (Standard v1, kompatibel mit alten `/api/vX`-Pfaden)
 - **Eigene Medienebene**: mediasoup SFU + coturn TURN für die Medienweiterleitung bei 1v1-Sprachanrufen und Sprachräumen (8 Plätze)
 - **Status-Schichtung**: MySQL als Quelle der Geschäftsdaten, Redis für den Echtzeitstatus von Sitzung / IM / Anruf / Raum
-- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6 liefert die Rust-Migration der Live-/Voice-Zustandsmaschinen (PHP ruft Rust direkt über gRPC auf; Circuit Breaker / Degradation / Rate Limiting)
+- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6a liefert die virtuelle Ökonomie: Wallet (Guthaben/Journal, MySQL als einzige Wahrheitsquelle), Geschenke-Trinkgeld mit Streamer-Anteil und mobiles IAP-Aufladen (App Store / Google Play / Huawei)
 
 ## Funktionsübersicht
 
@@ -48,7 +48,8 @@ Interne Struktur von service:
 ```
 service/
 ├── app/
-│   ├── controller/   # REST-Controller (auth/post/follow/im/voice/...)
+│   ├── controller/   # REST-Controller (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (Guthaben/Journal/idempotent) · GiftService (Geschenke/Split)
 │   ├── ws/           # WsServer · Envelope-Frame-Protokoll · Deliverer-Push · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1-Anruf-Zustandsmaschine (M6 nach Rust migriert; PHP-Seite für WS-Signalisierung beibehalten)
 │   ├── room/         # RoomCenter: Sprachräume (M6 nach Rust migriert; PHP-Seite für WS-Signalisierung beibehalten)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Benutzerdefinierte Http-/WsServer-Prozesse
 │   └── storage/      # Speicherung von Sprachdateien (m4a; seit M6 von Rust VoiceStorage getragen)
 ├── config/           # route.php (/api/v1-Routengruppe) · process.php (:8788/:8789)
-└── tests/            # phpunit-Unit-Tests + Blackbox-E2E im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # phpunit-Unit-Tests + Blackbox-E2E im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## Verwendung

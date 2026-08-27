@@ -10,7 +10,7 @@
 - **Бизнес-сервис**: webman v2 (PHP 8.3) обслуживает оба канала — REST и WebSocket; машины состояний стримов/голосовых комнат/звонков 1v1 переведены на Rust (infrastructure/bee-rust); PHP-контроллеры подключаются напрямую по gRPC; API версионируется через `X-Api-Version` (по умолчанию v1, совместимо со старыми путями `/api/vX`)
 - **Собственный медиаслой**: mediasoup SFU + coturn TURN для пересылки медиа в голосовых звонках 1v1 и голосовых комнатах (8 мест)
 - **Многоуровневое состояние**: MySQL — источник бизнес-данных, Redis — реальное время для состояния сессий / IM / звонков / комнат
-- **Вехи**: M0–M5 сданы (голосовые сообщения, звонки 1v1, голосовые комнаты, стриминг); M6 — миграция стейт-машин live/voice на Rust (PHP вызывает Rust напрямую по gRPC; circuit breaker / деградация / лимит запросов)
+- **Вехи**: M0–M5 сданы (голосовые сообщения, звонки 1v1, голосовые комнаты, стриминг); M6a — виртуальная экономика: кошелёк (баланс/журнал, MySQL единственный источник правды), подарки с долей стримера, мобильное пополнение IAP (App Store / Google Play / Huawei)
 
 ## Обзор функций
 
@@ -48,7 +48,8 @@
 ```
 service/
 ├── app/
-│   ├── controller/   # REST-контроллеры (auth/post/follow/im/voice/...)
+│   ├── controller/   # REST-контроллеры (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (баланс/журнал/идемпотентно) · GiftService (подарки/доля)
 │   ├── ws/           # WsServer · протокол кадров Envelope · доставка через Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: конечный автомат звонка 1v1 (перенесено на Rust в M6; PHP-сторона оставлена для WS-сигнализации)
 │   ├── room/         # RoomCenter: голосовые комнаты (перенесено на Rust в M6; PHP-сторона оставлена для WS-сигнализации)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Пользовательские процессы Http / WsServer
 │   └── storage/      # Хранение голосовых файлов (m4a; с M6 обеспечивается Rust VoiceStorage)
 ├── config/           # route.php (группа маршрутов /api/v1) · process.php (:8788/:8789)
-└── tests/            # phpunit-тесты + чёрный ящик E2E: im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # phpunit-тесты + чёрный ящик E2E: im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## Использование

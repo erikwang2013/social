@@ -10,7 +10,7 @@
 - **বিজনেস সার্ভিস**: webman v2 (PHP 8.3) REST এবং WebSocket উভয় চ্যানেল পরিচালনা করে; লাইভ / ভয়েস রুম / 1v1 কল স্টেট মেশিন Rust-এ মাইগ্রেট হয়েছে (infrastructure/bee-rust); PHP কন্ট্রোলার gRPC-তে সরাসরি সংযুক্ত; API-র ভার্সন `X-Api-Version` দিয়ে হয় (ডিফল্ট v1, পুরনো `/api/vX` পাথের সাথে সামঞ্জস্যপূর্ণ)
 - **নিজস্ব মিডিয়া লেয়ার**: mediasoup SFU + coturn TURN, 1v1 ভয়েস কল এবং ভয়েস চ্যাট রুম (৮টি সিট) এর মিডিয়া ফরওয়ার্ডিংয়ের জন্য
 - **স্টেট লেয়ারিং**: MySQL ব্যবসার তথ্যের উৎস, Redis সেশন / IM / কল / রুমের রিয়েল-টাইম অবস্থার জন্য
-- **মাইলস্টোন**: M0–M5 ডেলিভারি সম্পন্ন (ভয়েস মেসেজ, 1v1 কল, ভয়েস চ্যাট রুম, লাইভ স্ট্রিমিং); M6 live/voice স্টেট মেশিনের Rust মাইগ্রেশন ডেলিভার করে (PHP সরাসরি gRPC-র মাধ্যমে Rust কল করে; সার্কিট ব্রেকার / ডিগ্রেডেশন / রেট লিমিটিং)
+- **মাইলস্টোন**: M0–M5 ডেলিভারি সম্পন্ন (ভয়েস মেসেজ, 1v1 কল, ভয়েস চ্যাট রুম, লাইভ স্ট্রিমিং); M6a ভার্চুয়াল অর্থনীতি ডেলিভারি করে: ওয়ালেট (ব্যালেন্স/লেজার, MySQL একমাত্র সত্যের উৎস), গিফট টিপিং ও স্ট্রিমার শেয়ার, মোবাইল IAP রিচার্জ (App Store / Google Play / Huawei)
 
 ## ফিচার ওভারভিউ
 
@@ -48,7 +48,8 @@ service-এর অভ্যন্তরীণ কাঠামো:
 ```
 service/
 ├── app/
-│   ├── controller/   # REST কন্ট্রোলার (auth/post/follow/im/voice/...)
+│   ├── controller/   # REST কন্ট্রোলার (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (ব্যালেন্স/লেজার/আইডেম্পোটেন্ট) · GiftService (গিফট/শেয়ার)
 │   ├── ws/           # WsServer · Envelope ফ্রেম প্রোটোকল · Deliverer পুশ · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 কল স্টেট মেশিন (M6-এ Rust-এ স্থানান্তরিত; WS সিগন্যালিংয়ের জন্য PHP পাশ রাখা হয়েছে)
 │   ├── room/         # RoomCenter: ভয়েস চ্যাট রুম (M6-এ Rust-এ স্থানান্তরিত; WS সিগন্যালিংয়ের জন্য PHP পাশ রাখা হয়েছে)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Http / WsServer কাস্টম প্রসেস
 │   └── storage/      # ভয়েস ফাইল স্টোরেজ (m4a; M6 থেকে Rust VoiceStorage পরিচালনা করে)
 ├── config/           # route.php (/api/v1 রুট গ্রুপ) · process.php (:8788/:8789)
-└── tests/            # phpunit ইউনিট টেস্ট + im_e2e.php / voice_e2e.php / live_e2e.php ব্ল্যাক-বক্স E2E
+└── tests/            # phpunit ইউনিট টেস্ট + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php ব্ল্যাক-বক্স E2E
 ```
 
 ## ব্যবহার নির্দেশিকা

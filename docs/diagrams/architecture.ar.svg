@@ -61,6 +61,9 @@
     <rect class="box" x="480" y="328" width="220" height="56"/>
     <text class="t" x="590" y="350">بث مباشر / غرفة صوتية / مكالمة 1v1</text>
     <text class="ts" x="590" y="368">حالة Rust (bee_live) · gRPC :50051</text>
+    <rect class="box" x="720" y="328" width="200" height="56"/>
+    <text class="t" x="820" y="350">الاقتصاد الافتراضي (PHP)</text>
+    <text class="ts" x="820" y="368">المحفظة · هدايا الإكرامية · حصة البث · شحن IAP</text>
   </g>
 
   <!-- 媒体层 -->
@@ -99,6 +102,7 @@
   <path class="edge" d="M 590 384 L 590 474"/>
   <path class="edge" d="M 140 384 L 140 578"/>
   <path class="edge" d="M 360 384 L 360 578"/>
+  <path class="edge" d="M 820 384 L 820 578"/>
   <path class="edgeg" d="M 340 512 L 340 578"/>
   <text class="el" x="352" y="552">وسائط RTP مباشرة (UDP)</text>
 </svg>

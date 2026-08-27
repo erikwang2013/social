@@ -10,7 +10,7 @@ Monorepo de plataforma social multilíngue: comunidade de texto/imagem + mensage
 - **Serviços de negócio**: webman v2 (PHP 8.3) atende tanto REST quanto WebSocket; as máquinas de estado de lives/salas de voz/chamadas 1v1 migraram para Rust (infrastructure/bee-rust); os controladores PHP conectam-se diretamente via gRPC; a API é versionada via `X-Api-Version` (padrão v1, compatível com os caminhos antigos `/api/vX`)
 - **Camada de mídia própria**: mediasoup SFU + coturn TURN para o encaminhamento de mídia em chamadas de voz 1v1 e salas de voz (8 assentos)
 - **Camadas de estado**: MySQL como fonte de verdade dos negócios, Redis para o estado em tempo real de sessão / IM / chamadas / salas
-- **Marcos**: M0–M5 entregues (mensagens de voz, chamadas 1v1, salas de voz, transmissão ao vivo); M6 entrega a migração para Rust das máquinas de estado live/voice (PHP chama Rust diretamente via gRPC; disjuntor / degradação / limite de taxa)
+- **Marcos**: M0–M5 entregues (mensagens de voz, chamadas 1v1, salas de voz, transmissão ao vivo); M6a entrega a economia virtual: carteira (saldo/registro, MySQL como fonte única da verdade), gorjetas com presentes e partilha com o streamer, e recarga IAP móvel (App Store / Google Play / Huawei)
 
 ## Visão geral dos recursos
 
@@ -48,7 +48,8 @@ Estrutura interna do service:
 ```
 service/
 ├── app/
-│   ├── controller/   # Controladores REST (auth/post/follow/im/voice/...)
+│   ├── controller/   # Controladores REST (auth/post/follow/im/voice/wallet/gift/...)
+│   ├── common/        # WalletService (saldo/registro/idempotente) · GiftService (presentes/parte)
 │   ├── ws/           # WsServer · protocolo de frames Envelope · push do Deliverer · ConnectionRegistry
 │   ├── call/         # CallCenter: máquina de estados de chamada 1v1 (migrado para Rust no M6; o lado PHP é mantido para sinalização WS)
 │   ├── room/         # RoomCenter: salas de voz (migrado para Rust no M6; o lado PHP é mantido para sinalização WS)
@@ -57,7 +58,7 @@ service/
 │   ├── process/      # Processos personalizados Http / WsServer
 │   └── storage/      # Armazenamento de arquivos de voz (m4a; gerido pelo Rust VoiceStorage desde M6)
 ├── config/           # route.php (grupo de rotas /api/v1) · process.php (:8788/:8789)
-└── tests/            # Testes unitários phpunit + E2E de caixa preta im_e2e.php / voice_e2e.php / live_e2e.php
+└── tests/            # Testes unitários phpunit + E2E de caixa preta im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
 ```
 
 ## Como usar

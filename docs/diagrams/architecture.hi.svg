@@ -61,6 +61,9 @@
     <rect class="box" x="480" y="328" width="220" height="56"/>
     <text class="t" x="590" y="350">लाइव / वॉइस रूम / 1v1 कॉल</text>
     <text class="ts" x="590" y="368">Rust स्टेट मशीन (bee_live) · gRPC :50051</text>
+    <rect class="box" x="720" y="328" width="200" height="56"/>
+    <text class="t" x="820" y="350">वर्चुअल इकोनॉमी (PHP)</text>
+    <text class="ts" x="820" y="368">वॉलेट · गिफ्ट · स्ट्रीमर हिस्सा · IAP रिचार्ज</text>
   </g>
 
   <!-- 媒体层 -->
@@ -99,6 +102,7 @@
   <path class="edge" d="M 590 384 L 590 474"/>
   <path class="edge" d="M 140 384 L 140 578"/>
   <path class="edge" d="M 360 384 L 360 578"/>
+  <path class="edge" d="M 820 384 L 820 578"/>
   <path class="edgeg" d="M 340 512 L 340 578"/>
   <text class="el" x="352" y="552">RTP सीधा (UDP)</text>
 </svg>
