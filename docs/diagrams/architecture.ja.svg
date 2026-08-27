@@ -58,12 +58,9 @@
     <rect class="box" x="260" y="328" width="200" height="56"/>
     <text class="t" x="360" y="350">IM</text>
     <text class="ts" x="360" y="368">1v1 テキスト / 音声 · 通知</text>
-    <rect class="box" x="480" y="328" width="200" height="56"/>
-    <text class="t" x="580" y="350">1v1 通話 · CallCenter</text>
-    <text class="ts" x="580" y="368">状態機械 · 30秒 · ビジー排他</text>
-    <rect class="box" x="700" y="328" width="220" height="56"/>
-    <text class="t" x="810" y="350">ボイスルーム · RoomCenter</text>
-    <text class="ts" x="810" y="368">8席 · オンライン表 · SFU 中継</text>
+    <rect class="box" x="480" y="328" width="220" height="56"/>
+    <text class="t" x="590" y="350">ライブ / ボイスルーム / 1v1 通話</text>
+    <text class="ts" x="590" y="368">Rust 状態機械（bee_live）· gRPC :50051</text>
   </g>
 
   <!-- 媒体层 -->
@@ -97,10 +94,11 @@
   <path class="edge" d="M 810 94 L 810 182"/>
   <path class="edge" d="M 260 234 L 260 328"/>
   <path class="edge" d="M 710 234 L 710 328"/>
-  <path class="edge" d="M 580 384 L 580 474"/>
-  <path class="edge" d="M 810 384 L 810 474"/>
-  <path class="edge" d="M 160 328 L 160 578"/>
-  <path class="edge" d="M 400 328 L 400 578"/>
+  <path class="edgeg" d="M 460 252 L 930 252 L 930 594 L 720 594"/>
+  <text class="el" x="840" y="434">gRPC :50051</text>
+  <path class="edge" d="M 590 384 L 590 474"/>
+  <path class="edge" d="M 140 384 L 140 578"/>
+  <path class="edge" d="M 360 384 L 360 578"/>
   <path class="edgeg" d="M 340 512 L 340 578"/>
   <text class="el" x="352" y="552">RTP メディア直結 (UDP)</text>
 </svg>

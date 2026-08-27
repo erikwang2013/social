@@ -25,11 +25,11 @@
   <rect class="it" x="40" y="198" width="400" height="30"/>
   <text class="t" x="240" y="217">1v1 会话 / 文本 / 语音消息（type=3）</text>
   <rect class="it" x="40" y="234" width="400" height="30"/>
-  <text class="t" x="240" y="253">语音上传 → service/storage/voice（m4a）</text>
+  <text class="t" x="240" y="253">语音上传 → gRPC Rust VoiceStorage（m4a）</text>
 
   <!-- 通话模块 -->
   <rect class="mod" x="480" y="126" width="460" height="150"/>
-  <text class="tm" x="710" y="150">1v1 通话 · app/call/CallCenter</text>
+  <text class="tm" x="710" y="150">1v1 通话 · Rust bee_live（HTTP 经 gRPC · WS 走 PHP）</text>
   <rect class="it" x="500" y="162" width="420" height="30"/>
   <text class="t" x="710" y="181">Redis im:call:{id} 状态机（HSET）</text>
   <rect class="it" x="500" y="198" width="420" height="30"/>
@@ -39,7 +39,7 @@
 
   <!-- 语聊房模块 -->
   <rect class="mod" x="20" y="296" width="440" height="150"/>
-  <text class="tm" x="240" y="320">语聊房 · app/room/RoomCenter</text>
+  <text class="tm" x="240" y="320">语聊房 · Rust bee_live（HTTP 经 gRPC · WS 走 PHP）</text>
   <rect class="it" x="40" y="332" width="400" height="30"/>
   <text class="t" x="240" y="351">DB rooms/room_members 为事实 · Redis 在线表</text>
   <rect class="it" x="40" y="368" width="400" height="30"/>

@@ -7,7 +7,7 @@
 ## مقدمة المشروع
 
 - **ثلاثة عملاء أصليون**: Android (Kotlin + Compose) وiOS (SwiftUI) وHarmonyOS (ArkTS)، بالإضافة إلى لوحة إدارة Flutter
-- **خدمات الأعمال**: webman v2 (PHP 8.3) يقدم قناتي REST وWebSocket معًا؛ إصدارات API عبر `X-Api-Version` (الافتراضي v1، متوافق مع المسارات القديمة `/api/vX`)
+- **خدمات الأعمال**: webman v2 (PHP 8.3) يقدم قناتي REST وWebSocket معًا؛ مآلات الحالة للبث المباشر/الغرف الصوتية/مكالمات 1v1 هُجرت إلى Rust (infrastructure/bee-rust)؛ وحدات التحكم PHP تتصل مباشرة عبر gRPC؛ إصدارات API عبر `X-Api-Version` (الافتراضي v1، متوافق مع المسارات القديمة `/api/vX`)
 - **طبقة وسائط مبنية داخليًا**: mediasoup SFU + coturn TURN لنقل الوسائط في مكالمات الصوت 1v1 وغرف الدردشة الصوتية (8 مقاعد)
 - **تقسيم الحالة**: MySQL كمصدر حقيقة للأعمال، وRedis لحالة الجلسة / المراسلة / المكالمة / الغرفة لحظيًا
 - **المعالم**: اكتمل M0–M5 (الرسائل الصوتية، مكالمات 1v1، غرف الدردشة الصوتية، البث المباشر)؛ يقدّم M6 ترحيل آلات حالة البث/الصوت إلى Rust (يستدعي PHP Rust مباشرة عبر gRPC؛ قاطع الدائرة / التدهور / الحد من المعدل)
@@ -39,7 +39,7 @@
 | contracts/ | عقود gRPC (proto، نقطة دخول توليد buf) | protobuf / buf |
 | service/ | خدمة الأعمال لجهة المستخدم (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | لوحة الإدارة (مبنية على open-admin) | webman v2 + Flutter |
-| infrastructure/ | طبقة الحوسبة عالية الإنتاجية | bee-rust (tonic) |
+| infrastructure/ | طبقة الحوسبة عالية الإنتاجية (خدمات gRPC للبث/الصوت) | bee-rust (tonic) |
 | media/sfu/ | طبقة الوسائط المبنية داخليًا (mediasoup SFU :8790 + coturn :3478) | Node.js (مفعّلة في M4) |
 | apps/ | ثلاثة عملاء أصليين | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # وحدات تحكم REST (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · بروتوكول إطارات Envelope · دفع Deliverer · ConnectionRegistry
-│   ├── call/         # CallCenter: آلة حالات مكالمات 1v1 (مهلة رنين 30 ثانية · استبعاد متبادل عند الانشغال)
-│   ├── room/         # RoomCenter: غرف الدردشة الصوتية (8 مقاعد · ترجمة إشارات SFU)
-│   ├── live/         # LiveCenter: غرف البث المباشر (دفع RTMP / سحب HLS · دانماكو · 8 ميكروفونات)
+│   ├── call/         # CallCenter: آلة حالات مكالمات 1v1 (تم ترحيله إلى Rust في M6؛ جانب PHP محفوظ لإشارات WS)
+│   ├── room/         # RoomCenter: غرف الدردشة الصوتية (تم ترحيله إلى Rust في M6؛ جانب PHP محفوظ لإشارات WS)
+│   ├── live/         # LiveCenter: غرف البث المباشر (تم ترحيله إلى Rust في M6؛ جانب PHP محفوظ لإشارات WS)
 │   ├── model/        # نماذج البيانات
 │   ├── process/      # عمليات Http / WsServer المخصصة
-│   └── storage/      # تخزين ملفات الصوت (m4a، لا تُحفظ في قاعدة البيانات)
+│   └── storage/      # تخزين ملفات الصوت (m4a؛ تتولاه Rust VoiceStorage منذ M6)
 ├── config/           # route.php (مجموعة مسارات /api/v1) · process.php (:8788/:8789)
 └── tests/            # اختبارات phpunit + اختبارات E2E للصندوق الأسود im_e2e.php / voice_e2e.php / live_e2e.php
 ```

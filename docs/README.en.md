@@ -7,7 +7,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 ## Introduction
 
 - **Three native clients**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus a Flutter admin console
-- **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
+- **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
 - **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting)
@@ -39,7 +39,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 | contracts/ | gRPC contracts (proto, buf generation entry) | protobuf / buf |
 | service/ | User-facing business service (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | Admin console (built on open-admin) | webman v2 + Flutter |
-| infrastructure/ | High-throughput compute layer | bee-rust (tonic) |
+| infrastructure/ | High-throughput compute layer (live/voice gRPC services) | bee-rust (tonic) |
 | media/sfu/ | In-house media layer (mediasoup SFU :8790 + coturn :3478) | Node.js (enabled in M4) |
 | apps/ | Three native clients | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # REST controllers (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · Envelope frame protocol · Deliverer push · ConnectionRegistry
-│   ├── call/         # CallCenter: 1v1 call state machine (30s ring timeout · busy-line mutual exclusion)
-│   ├── room/         # RoomCenter: voice chat rooms (8 seats · SFU signaling translation)
-│   ├── live/         # LiveCenter: live rooms (RTMP push / HLS pull · danmaku · 8-seat mic link)
+│   ├── call/         # CallCenter: 1v1 call state machine (M6 migrated to Rust; PHP side kept for WS signaling)
+│   ├── room/         # RoomCenter: voice chat rooms (M6 migrated to Rust; PHP side kept for WS signaling)
+│   ├── live/         # LiveCenter: live rooms (M6 migrated to Rust; PHP side kept for WS signaling)
 │   ├── model/        # Data models
 │   ├── process/      # Custom Http / WsServer processes
-│   └── storage/      # Voice file storage (m4a, not stored in DB)
+│   └── storage/      # Voice file storage (m4a; carried by Rust VoiceStorage since M6)
 ├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789)
 └── tests/            # phpunit unit tests + im_e2e.php / voice_e2e.php / live_e2e.php black-box E2E
 ```

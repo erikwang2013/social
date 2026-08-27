@@ -7,7 +7,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 ## Pengenalan Proyek
 
 - **Tiga klien native**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus konsol admin Flutter
-- **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
+- **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; state machine live/ruang suara/panggilan 1v1 dimigrasikan ke Rust (infrastructure/bee-rust); kontroler PHP terhubung langsung via gRPC; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
 - **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6 menghadirkan migrasi Rust untuk state machine live/voice (PHP memanggil Rust langsung lewat gRPC; circuit breaker / degradasi / rate limiting)
@@ -39,7 +39,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 | contracts/ | Kontrak gRPC (proto, titik masuk pembuatan buf) | protobuf / buf |
 | service/ | Layanan bisnis sisi pengguna (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | Konsol admin (berbasis open-admin) | webman v2 + Flutter |
-| infrastructure/ | Lapisan komputasi throughput tinggi | bee-rust (tonic) |
+| infrastructure/ | Lapisan komputasi throughput tinggi (layanan gRPC live/suara) | bee-rust (tonic) |
 | media/sfu/ | Lapisan media sendiri (mediasoup SFU :8790 + coturn :3478) | Node.js (diaktifkan di M4) |
 | apps/ | Tiga klien native | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # Kontroler REST (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · protokol frame Envelope · push Deliverer · ConnectionRegistry
-│   ├── call/         # CallCenter: state machine panggilan 1v1 (timeout dering 30 detik · saling mengecualikan saat sibuk)
-│   ├── room/         # RoomCenter: ruang obrolan suara (8 kursi · terjemahan sinyal SFU)
-│   ├── live/         # LiveCenter: ruang live (push RTMP / pull HLS · danmaku · tautan mikrofon 8 kursi)
+│   ├── call/         # CallCenter: state machine panggilan 1v1 (dimigrasikan ke Rust di M6; sisi PHP dipertahankan untuk sinyal WS)
+│   ├── room/         # RoomCenter: ruang obrolan suara (dimigrasikan ke Rust di M6; sisi PHP dipertahankan untuk sinyal WS)
+│   ├── live/         # LiveCenter: ruang live (dimigrasikan ke Rust di M6; sisi PHP dipertahankan untuk sinyal WS)
 │   ├── model/        # Model data
 │   ├── process/      # Proses kustom Http / WsServer
-│   └── storage/      # Penyimpanan file suara (m4a, tidak disimpan di database)
+│   └── storage/      # Penyimpanan file suara (m4a; ditangani Rust VoiceStorage sejak M6)
 ├── config/           # route.php (grup rute /api/v1) · process.php (:8788/:8789)
 └── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php / live_e2e.php
 ```

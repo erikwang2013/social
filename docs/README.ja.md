@@ -7,7 +7,7 @@
 ## プロジェクト紹介
 
 - **3つのネイティブクライアント**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS）。Flutter製の管理コンソールもあり
-- **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
+- **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。ライブ / ボイスルーム / 1v1 通話の状態機械は Rust に移行（infrastructure/bee-rust）、PHP コントローラは gRPC で直接接続；APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
 - **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席）のメディア中継
 - **状態の階層化**：MySQLはビジネスの事実、Redisはセッション / IM / 通話 / ルームのリアルタイム状態を担当
 - **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）
@@ -39,7 +39,7 @@
 | contracts/ | gRPC契約（proto、buf生成エントリ） | protobuf / buf |
 | service/ | ユーザー向けビジネスサービス（REST :8788 + WS :8789） | webman v2 (PHP 8.3) |
 | admin/ | 管理コンソール（open-adminベース） | webman v2 + Flutter |
-| infrastructure/ | 高スループット計算層 | bee-rust (tonic) |
+| infrastructure/ | 高スループット計算層（live/voice gRPC サービス） | bee-rust (tonic) |
 | media/sfu/ | 自前メディア層（mediasoup SFU :8790 + coturn :3478） | Node.js（M4で有効化） |
 | apps/ | 3つのネイティブクライアント | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # RESTコントローラ（auth/post/follow/im/voice/...）
 │   ├── ws/           # WsServer · Envelopeフレームプロトコル · Deliverer配信 · ConnectionRegistry
-│   ├── call/         # CallCenter：1v1通話ステートマシン（30秒着信タイムアウト · 通話中は相互排他）
-│   ├── room/         # RoomCenter：ボイスチャットルーム（8席 · SFUシグナリング変換）
-│   ├── live/         # LiveCenter：ライブルーム（RTMPプッシュ / HLSプル · 弾幕 · 8席マイク接続）
+│   ├── call/         # CallCenter：1v1通話ステートマシン（M6 で Rust に移行、PHP 側は WS シグナリング用に維持）
+│   ├── room/         # RoomCenter：ボイスチャットルーム（M6 で Rust に移行、PHP 側は WS シグナリング用に維持）
+│   ├── live/         # LiveCenter：ライブルーム（M6 で Rust に移行、PHP 側は WS シグナリング用に維持）
 │   ├── model/        # データモデル
 │   ├── process/      # Http / WsServer カスタムプロセス
-│   └── storage/      # 音声ファイル保存（m4a、DB非保存）
+│   └── storage/      # 音声ファイル保存（m4a；M6 以降は Rust VoiceStorage が担う）
 ├── config/           # route.php（/api/v1 ルートグループ）· process.php（:8788/:8789）
 └── tests/            # phpunit単体テスト + im_e2e.php / voice_e2e.php / live_e2e.php ブラックボックスE2E
 ```

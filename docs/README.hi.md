@@ -7,7 +7,7 @@
 ## परियोजना परिचय
 
 - **तीन नेटिव क्लाइंट**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), साथ ही Flutter एडमिन कंसोल
-- **बिज़नेस सेवाएँ**: webman v2 (PHP 8.3) REST और WebSocket दोनों चैनल संभालता है; API का वर्ज़न `X-Api-Version` से होता है (डिफ़ॉल्ट v1, पुराने `/api/vX` पाथ से संगत)
+- **बिज़नेस सेवाएँ**: webman v2 (PHP 8.3) REST और WebSocket दोनों चैनल संभालता है; लाइव / वॉइस रूम / 1v1 कॉल स्टेट मशीनें Rust में माइग्रेट हो गईं (infrastructure/bee-rust); PHP कंट्रोलर gRPC से सीधे जुड़ते हैं; API का वर्ज़न `X-Api-Version` से होता है (डिफ़ॉल्ट v1, पुराने `/api/vX` पाथ से संगत)
 - **स्वनिर्मित मीडिया लेयर**: mediasoup SFU + coturn TURN, 1v1 वॉइस कॉल और वॉइस चैट रूम (8 सीटें) के मीडिया फ़ॉरवर्डिंग के लिए
 - **स्टेट लेयरिंग**: MySQL बिज़नेस डेटा का स्रोत, Redis सेशन / IM / कॉल / रूम की रियल-टाइम स्थिति के लिए
 - **माइलस्टोन**: M0–M5 डिलीवर हो चुके (वॉइस मैसेज, 1v1 कॉल, वॉइस चैट रूम, लाइव स्ट्रीमिंग); M6 live/voice स्टेट मशीनों का Rust माइग्रेशन डिलीवर करता है (PHP सीधे gRPC से Rust को कॉल करता है; सर्किट ब्रेकर / डिग्रेडेशन / रेट लिमिटिंग)
@@ -39,7 +39,7 @@
 | contracts/ | gRPC कॉन्ट्रैक्ट (proto, buf जनरेशन एंट्री) | protobuf / buf |
 | service/ | यूज़र-साइड बिज़नेस सेवा (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | एडमिन कंसोल (open-admin पर आधारित) | webman v2 + Flutter |
-| infrastructure/ | हाई-थ्रूपुट कंप्यूट लेयर | bee-rust (tonic) |
+| infrastructure/ | हाई-थ्रूपुट कंप्यूट लेयर (live/voice gRPC सेवाएँ) | bee-rust (tonic) |
 | media/sfu/ | स्वनिर्मित मीडिया लेयर (mediasoup SFU :8790 + coturn :3478) | Node.js (M4 में सक्रिय) |
 | apps/ | तीन नेटिव क्लाइंट | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # REST कंट्रोलर (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · Envelope फ्रेम प्रोटोकॉल · Deliverer पुश · ConnectionRegistry
-│   ├── call/         # CallCenter: 1v1 कॉल स्टेट मशीन (30 सेकंड रिंग टाइमआउट · व्यस्त होने पर परस्पर बहिष्करण)
-│   ├── room/         # RoomCenter: वॉइस चैट रूम (8 सीटें · SFU सिग्नलिंग अनुवाद)
-│   ├── live/         # LiveCenter: लाइव रूम (RTMP पुश / HLS पुल · दानमाकु · 8-सीट माइक लिंक)
+│   ├── call/         # CallCenter: 1v1 कॉल स्टेट मशीन (M6 में Rust में स्थानांतरित; PHP पक्ष WS सिग्नलिंग के लिए रखा गया)
+│   ├── room/         # RoomCenter: वॉइस चैट रूम (M6 में Rust में स्थानांतरित; PHP पक्ष WS सिग्नलिंग के लिए रखा गया)
+│   ├── live/         # LiveCenter: लाइव रूम (M6 में Rust में स्थानांतरित; PHP पक्ष WS सिग्नलिंग के लिए रखा गया)
 │   ├── model/        # डेटा मॉडल
 │   ├── process/      # Http / WsServer कस्टम प्रोसेस
-│   └── storage/      # वॉइस फ़ाइल स्टोरेज (m4a, डेटाबेस में नहीं)
+│   └── storage/      # वॉइस फ़ाइल स्टोरेज (m4a; M6 से Rust VoiceStorage द्वारा संभाला जाता है)
 ├── config/           # route.php (/api/v1 रूट ग्रुप) · process.php (:8788/:8789)
 └── tests/            # phpunit यूनिट टेस्ट + im_e2e.php / voice_e2e.php / live_e2e.php ब्लैक-बॉक्स E2E
 ```

@@ -7,7 +7,7 @@
 ## 项目介绍
 
 - **三端原生客户端**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS），另有 Flutter 管理后台
-- **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
+- **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
 - **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）
@@ -39,7 +39,7 @@
 | contracts/ | gRPC 契约（proto，buf 生成入口） | protobuf / buf |
 | service/ | 用户端业务服务（REST :8788 + WS :8789） | webman v2 (PHP 8.3) |
 | admin/ | 管理后台（open-admin 改造） | webman v2 + Flutter |
-| infrastructure/ | 高吞吐计算层 | bee-rust (tonic) |
+| infrastructure/ | 高吞吐计算层（live/voice gRPC 服务） | bee-rust (tonic) |
 | media/sfu/ | 自建媒体层（mediasoup SFU :8790 + coturn :3478） | Node.js（M4 启用） |
 | apps/ | 三端原生客户端 | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # REST 控制器（auth/post/follow/im/voice/...）
 │   ├── ws/           # WsServer · Envelope 帧协议 · Deliverer 推送 · ConnectionRegistry
-│   ├── call/         # CallCenter：1v1 通话状态机（30s 响铃超时 · 忙线互斥）
-│   ├── room/         # RoomCenter：语聊房（8 麦位 · SFU 信令转译）
-│   ├── live/         # LiveCenter：直播房（RTMP 推流/HLS 拉流 · 弹幕 · 8 麦位连麦）
+│   ├── call/         # CallCenter：1v1 通话状态机（M6 迁 Rust，PHP 侧保留供 WS 信令）
+│   ├── room/         # RoomCenter：语聊房（M6 迁 Rust，PHP 侧保留供 WS 信令）
+│   ├── live/         # LiveCenter：直播房（M6 迁 Rust，PHP 侧保留供 WS 信令）
 │   ├── model/        # 数据模型
 │   ├── process/      # Http / WsServer 自定义进程
-│   └── storage/      # 语音文件存储（m4a，不入库）
+│   └── storage/      # 语音文件存储（m4a；M6 起由 Rust VoiceStorage 承载）
 ├── config/           # route.php（/api/v1 路由组）· process.php（:8788/:8789）
 └── tests/            # phpunit 单元测试 + im_e2e.php / voice_e2e.php / live_e2e.php 黑盒 E2E
 ```

@@ -7,7 +7,7 @@
 ## О проекте
 
 - **Три нативных клиента**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), плюс админ-панель на Flutter
-- **Бизнес-сервис**: webman v2 (PHP 8.3) обслуживает оба канала — REST и WebSocket; API версионируется через `X-Api-Version` (по умолчанию v1, совместимо со старыми путями `/api/vX`)
+- **Бизнес-сервис**: webman v2 (PHP 8.3) обслуживает оба канала — REST и WebSocket; машины состояний стримов/голосовых комнат/звонков 1v1 переведены на Rust (infrastructure/bee-rust); PHP-контроллеры подключаются напрямую по gRPC; API версионируется через `X-Api-Version` (по умолчанию v1, совместимо со старыми путями `/api/vX`)
 - **Собственный медиаслой**: mediasoup SFU + coturn TURN для пересылки медиа в голосовых звонках 1v1 и голосовых комнатах (8 мест)
 - **Многоуровневое состояние**: MySQL — источник бизнес-данных, Redis — реальное время для состояния сессий / IM / звонков / комнат
 - **Вехи**: M0–M5 сданы (голосовые сообщения, звонки 1v1, голосовые комнаты, стриминг); M6 — миграция стейт-машин live/voice на Rust (PHP вызывает Rust напрямую по gRPC; circuit breaker / деградация / лимит запросов)
@@ -39,7 +39,7 @@
 | contracts/ | gRPC-контракты (proto, точка входа генерации buf) | protobuf / buf |
 | service/ | Бизнес-сервис для пользователей (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | Админ-панель (на базе open-admin) | webman v2 + Flutter |
-| infrastructure/ | Вычислительный слой высокой пропускной способности | bee-rust (tonic) |
+| infrastructure/ | Вычислительный слой высокой пропускной способности (live/voice gRPC-сервисы) | bee-rust (tonic) |
 | media/sfu/ | Собственный медиаслой (mediasoup SFU :8790 + coturn :3478) | Node.js (включён с M4) |
 | apps/ | Три нативных клиента | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # REST-контроллеры (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · протокол кадров Envelope · доставка через Deliverer · ConnectionRegistry
-│   ├── call/         # CallCenter: конечный автомат звонка 1v1 (таймаут звонка 30 с · взаимное исключение при занятости)
-│   ├── room/         # RoomCenter: голосовые комнаты (8 мест · трансляция сигналов SFU)
-│   ├── live/         # LiveCenter: стрим-комнаты (push RTMP / pull HLS · данмаку · связь 8 микрофонов)
+│   ├── call/         # CallCenter: конечный автомат звонка 1v1 (перенесено на Rust в M6; PHP-сторона оставлена для WS-сигнализации)
+│   ├── room/         # RoomCenter: голосовые комнаты (перенесено на Rust в M6; PHP-сторона оставлена для WS-сигнализации)
+│   ├── live/         # LiveCenter: стрим-комнаты (перенесено на Rust в M6; PHP-сторона оставлена для WS-сигнализации)
 │   ├── model/        # Модели данных
 │   ├── process/      # Пользовательские процессы Http / WsServer
-│   └── storage/      # Хранение голосовых файлов (m4a, не в БД)
+│   └── storage/      # Хранение голосовых файлов (m4a; с M6 обеспечивается Rust VoiceStorage)
 ├── config/           # route.php (группа маршрутов /api/v1) · process.php (:8788/:8789)
 └── tests/            # phpunit-тесты + чёрный ящик E2E: im_e2e.php / voice_e2e.php / live_e2e.php
 ```

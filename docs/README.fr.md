@@ -7,7 +7,7 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 ## Présentation du projet
 
 - **Trois clients natifs** : Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus une console d'administration Flutter
-- **Services métier** : webman v2 (PHP 8.3) sert à la fois REST et WebSocket ; l'API est versionnée via `X-Api-Version` (v1 par défaut, compatible avec les anciens chemins `/api/vX`)
+- **Services métier** : webman v2 (PHP 8.3) sert à la fois REST et WebSocket ; les machines à états live/salon vocal/appel 1v1 sont migrées vers Rust (infrastructure/bee-rust) ; les contrôleurs PHP se connectent directement en gRPC ; l'API est versionnée via `X-Api-Version` (v1 par défaut, compatible avec les anciens chemins `/api/vX`)
 - **Couche média maison** : mediasoup SFU + coturn TURN pour le relais média des appels vocaux 1v1 et des salons vocaux (8 sièges)
 - **Stratification des états** : MySQL comme source de vérité métier, Redis pour l'état temps réel des sessions / IM / appels / salons
 - **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming) ; M6 livre la migration Rust des machines à états live/voix (PHP appelle Rust directement via gRPC ; disjoncteur / dégradation / limite de débit)
@@ -39,7 +39,7 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 | contracts/ | Contrats gRPC (proto, point d'entrée de génération buf) | protobuf / buf |
 | service/ | Service métier côté utilisateur (REST :8788 + WS :8789) | webman v2 (PHP 8.3) |
 | admin/ | Console d'administration (basée sur open-admin) | webman v2 + Flutter |
-| infrastructure/ | Couche de calcul à haut débit | bee-rust (tonic) |
+| infrastructure/ | Couche de calcul à haut débit (services gRPC live/voix) | bee-rust (tonic) |
 | media/sfu/ | Couche média maison (mediasoup SFU :8790 + coturn :3478) | Node.js (activée en M4) |
 | apps/ | Trois clients natifs | SwiftUI / Kotlin+Compose / ArkTS |
 
@@ -50,12 +50,12 @@ service/
 ├── app/
 │   ├── controller/   # Contrôleurs REST (auth/post/follow/im/voice/...)
 │   ├── ws/           # WsServer · protocole de trames Envelope · push Deliverer · ConnectionRegistry
-│   ├── call/         # CallCenter : machine à états d'appel 1v1 (timeout sonnerie 30 s · mutex d'occupation)
-│   ├── room/         # RoomCenter : salons vocaux (8 sièges · traduction de signalisation SFU)
-│   ├── live/         # LiveCenter : salles en direct (push RTMP / pull HLS · danmaku · 8 micros en liaison)
+│   ├── call/         # CallCenter : machine à états d'appel 1v1 (migré vers Rust en M6 ; côté PHP conservé pour la signalisation WS)
+│   ├── room/         # RoomCenter : salons vocaux (migré vers Rust en M6 ; côté PHP conservé pour la signalisation WS)
+│   ├── live/         # LiveCenter : salles en direct (migré vers Rust en M6 ; côté PHP conservé pour la signalisation WS)
 │   ├── model/        # Modèles de données
 │   ├── process/      # Processus personnalisés Http / WsServer
-│   └── storage/      # Stockage des fichiers vocaux (m4a, hors base de données)
+│   └── storage/      # Stockage des fichiers vocaux (m4a ; pris en charge par Rust VoiceStorage depuis M6)
 ├── config/           # route.php (groupe de routes /api/v1) · process.php (:8788/:8789)
 └── tests/            # Tests unitaires phpunit + E2E boîte noire im_e2e.php / voice_e2e.php / live_e2e.php
 ```

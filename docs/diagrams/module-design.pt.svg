@@ -25,11 +25,11 @@
   <rect class="it" x="40" y="198" width="400" height="30"/>
   <text class="t" x="240" y="217">Chat 1v1 / texto / voz (type=3)</text>
   <rect class="it" x="40" y="234" width="400" height="30"/>
-  <text class="t" x="240" y="253">Enviar voz → service/storage/voice (m4a)</text>
+  <text class="t" x="240" y="253">Enviar voz → gRPC Rust VoiceStorage (m4a)</text>
 
   <!-- 通话模块 -->
   <rect class="mod" x="480" y="126" width="460" height="150"/>
-  <text class="tm" x="710" y="150">Chamada 1v1 · app/call/CallCenter</text>
+  <text class="tm" x="710" y="150">Chamada 1v1 · Rust bee_live (HTTP via gRPC · WS via PHP)</text>
   <rect class="it" x="500" y="162" width="420" height="30"/>
   <text class="t" x="710" y="181">Redis im:call:{id} máq. de estados (HSET)</text>
   <rect class="it" x="500" y="198" width="420" height="30"/>
@@ -39,7 +39,7 @@
 
   <!-- 语聊房模块 -->
   <rect class="mod" x="20" y="296" width="440" height="150"/>
-  <text class="tm" x="240" y="320">Sala de voz · app/room/RoomCenter</text>
+  <text class="tm" x="240" y="320">Sala de voz · Rust bee_live (HTTP via gRPC · WS via PHP)</text>
   <rect class="it" x="40" y="332" width="400" height="30"/>
   <text class="t" x="240" y="351">DB rooms/room_members fatos · Redis online</text>
   <rect class="it" x="40" y="368" width="400" height="30"/>
