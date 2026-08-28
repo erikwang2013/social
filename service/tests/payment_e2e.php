@@ -69,23 +69,23 @@ check((int) ($order['data']['coins'] ?? 0) === 10, '定价映射 CNY:100 → 10 
 
 // 3. 回调：直调 handleCallback 注入 mock 验签器（模拟微信回调验签通过）→ 入账 10 币
 $tradeNo = 'CH-E2E-' . uniqid();
-$verify = fn(array $ov = []) => array_merge([
+$verify = fn(string $platform, array $payload, array $headers = [], string $rawBody = '', string $path = '') => array_merge([
     'code' => 0, 'transaction_id' => $tradeNo, 'out_trade_no' => $clientRef,
     'amount_cents' => 100, 'currency' => 'CNY',
-], $ov);
-$cb = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify());
+], []);
+$cb = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify);
 check($cb['code'] === 0 && (int) ($cb['data']['balance'] ?? 0) === 10, '回调入账成功 balance=10');
 
 // 4. 同 trade_no 重复回调：幂等返回原结果，不重复加币
-$again = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify());
+$again = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify);
 check($again['code'] === 0 && (int) ($again['data']['balance'] ?? 0) === 10, '重复回调幂等（balance 仍 10）');
 
 // 5. 金额不符回调：需新订单（已 succeeded 单重放直接幂等返回）；422 amount_mismatch 且订单落 failed
 $ref2 = 'e2e-pay-' . uniqid();
 $order2 = http('POST', '/api/v1/payment/order', ['platform' => 'wechat', 'amount_cents' => 100, 'currency' => 'CNY', 'client_ref' => $ref2], $aTok);
 check($order2['code'] === 0, '第二单建单成功');
-$verify2 = fn() => ['code' => 0, 'transaction_id' => 'CH-E2E-' . uniqid(), 'out_trade_no' => $ref2, 'amount_cents' => 200, 'currency' => 'CNY'];
-$bad = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify2());
+$verify2 = fn(string $platform, array $payload, array $headers = [], string $rawBody = '', string $path = '') => ['code' => 0, 'transaction_id' => 'CH-E2E-' . uniqid(), 'out_trade_no' => $ref2, 'amount_cents' => 200, 'currency' => 'CNY'];
+$bad = PaymentService::handleCallback('wechat', ['event' => 'test'], [], '{}', '/api/v1/payment/callback/wechat', $verify2);
 check($bad['code'] === 422 && $bad['lang_key'] === 'payment.amount_mismatch', '金额不符 → 422 amount_mismatch');
 check(Payment::find((int) $order2['data']['order_id'])->status === 'failed', '金额不符订单落 failed');
 

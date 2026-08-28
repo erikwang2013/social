@@ -436,6 +436,7 @@ CREATE TABLE IF NOT EXISTS social_gifts_given (
   coins_total BIGINT UNSIGNED NOT NULL,
   client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（重试去重）',
   created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
   UNIQUE KEY uniq_client_ref (client_ref),
   KEY idx_from (from_uid, created_at),
   KEY idx_to (to_uid, created_at),
@@ -449,6 +450,7 @@ CREATE TABLE IF NOT EXISTS social_streamer_earnings (
   ratio INT UNSIGNED NOT NULL COMMENT '主播分成比例（百分数，如 70）',
   coins_amount BIGINT UNSIGNED NOT NULL COMMENT '入账币值',
   created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
   KEY idx_streamer (streamer_uid, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='主播分成入账';
 

@@ -71,3 +71,8 @@ admin/public/upload/
 service/public/upload/
 # env backups
 service/.env.api-test-bak
+# M6b4 审查建议
+# upload test residue
+/docs/coin/
+# phpunit cache
+admin/.phpunit.result.cache

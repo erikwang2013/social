@@ -173,3 +173,20 @@ Route::group('/admin/iap-product', function () {
     Route::put('/{id}', [app\admin\controller\IapProductController::class, 'update']);
     Route::post('/{id}/status', [app\admin\controller\IapProductController::class, 'status']);
 })->middleware([app\middleware\AdminAuth::class]);
+
+// ============================================================
+// 支付订单管理（M6b4，直查 social_payments）
+// ============================================================
+Route::group('/admin/payment-order', function () {
+    Route::get('', [app\admin\controller\PaymentOrderController::class, 'list']);
+    Route::get('/{id}', [app\admin\controller\PaymentOrderController::class, 'detail']);
+})->middleware([app\middleware\AdminAuth::class]);
+
+// ============================================================
+// 提现单管理（M6b4，直查 social_withdrawals）
+// ============================================================
+Route::group('/admin/withdrawal', function () {
+    Route::get('', [app\admin\controller\WithdrawalController::class, 'list']);
+    Route::get('/{id}', [app\admin\controller\WithdrawalController::class, 'detail']);
+    Route::post('/{id}/status', [app\admin\controller\WithdrawalController::class, 'status']);
+})->middleware([app\middleware\AdminAuth::class]);

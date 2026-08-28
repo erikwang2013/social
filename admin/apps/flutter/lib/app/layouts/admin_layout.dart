@@ -13,6 +13,8 @@ import '../pages/config/config_page.dart';
 import '../pages/log/log_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
 import '../pages/profile/profile_page.dart';
+import '../pages/payment_order/payment_order_page.dart';
+import '../pages/withdrawal/withdrawal_page.dart';
 import '../theme/app_theme.dart';
 
 class AdminLayout extends StatefulWidget {
@@ -40,6 +42,8 @@ class _AdminLayoutState extends State<AdminLayout> {
     RoleListPage(),
     ConfigPage(),
     LogPage(),
+    PaymentOrderPage(),
+    WithdrawalPage(),
   ];
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
@@ -171,6 +175,8 @@ class _AdminLayoutState extends State<AdminLayout> {
       (showCollapsed ? null : t('nav_roles'), Icons.security),
       (showCollapsed ? null : t('nav_config'), Icons.settings),
       (showCollapsed ? null : t('nav_logs'), Icons.description),
+      (showCollapsed ? null : t('nav_payments'), Icons.payments),
+      (showCollapsed ? null : t('nav_withdrawals'), Icons.account_balance_wallet),
     ];
 
     return AnimatedContainer(
@@ -280,6 +286,16 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.description, size: 20),
         label: Text(t('nav_logs')),
         selectedIcon: const Icon(Icons.description, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.payments, size: 20),
+        label: Text(t('nav_payments')),
+        selectedIcon: const Icon(Icons.payments, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.account_balance_wallet, size: 20),
+        label: Text(t('nav_withdrawals')),
+        selectedIcon: const Icon(Icons.account_balance_wallet, size: 20),
       ),
     ];
   }
