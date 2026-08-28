@@ -254,5 +254,22 @@ Capsule::schema()->create('payments', function ($t) {
     $t->index(['user_id', 'created_at']);
 });
 
+// M6b2 提现单（与 database/install.sql 对齐）
+Capsule::schema()->create('withdrawals', function ($t) {
+    $t->increments('id');
+    $t->unsignedBigInteger('user_id');
+    $t->string('platform', 16);
+    $t->text('account');
+    $t->unsignedBigInteger('coins');
+    $t->string('currency', 3)->default('CNY');
+    $t->string('status', 16)->default('pending');
+    $t->string('reason', 255)->nullable();
+    $t->string('client_ref', 64)->nullable();
+    $t->timestamps();
+    $t->unique('client_ref');
+    $t->index(['user_id', 'created_at']);
+    $t->index('status');
+});
+
 // CLI 下 request() 返回 null，Post::getLikedAttribute 依赖 request()->uid，注入默认请求
 \Webman\Context::set(\Webman\Http\Request::class, new \support\Request('GET / HTTP/1.1'));

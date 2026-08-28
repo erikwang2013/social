@@ -10,7 +10,7 @@
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. 라이브 / 음성방 / 1v1 통화 상태 머신은 Rust로 마이그레이션됨(infrastructure/bee-rust). PHP 컨트롤러는 gRPC로 직접 연결; API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
 - **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금/대사는 후속))
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금 제공 완료, 대사는 후속))
 
 ## 기능 개요
 

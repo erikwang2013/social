@@ -481,3 +481,21 @@ CREATE TABLE IF NOT EXISTS social_payments (
   UNIQUE KEY uniq_client_ref (client_ref),
   KEY idx_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='支付订单';
+
+-- ############### 提现 (M6b2) ###############
+CREATE TABLE IF NOT EXISTS social_withdrawals (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  platform VARCHAR(16) NOT NULL COMMENT 'wechat/alipay/stripe',
+  account TEXT NOT NULL COMMENT '收款账户 JSON，如 {"alipay":"u@x.com"}',
+  coins BIGINT UNSIGNED NOT NULL COMMENT '提现虚拟币数（钱包单位）',
+  currency VARCHAR(3) NOT NULL DEFAULT 'CNY',
+  status VARCHAR(16) NOT NULL DEFAULT 'pending' COMMENT 'pending/cancelled/succeeded/failed',
+  reason VARCHAR(255) NULL COMMENT '取消/失败原因',
+  client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（防重复申请）',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  UNIQUE KEY uniq_client_ref (client_ref),
+  KEY idx_user_created (user_id, created_at),
+  KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='提现单';
