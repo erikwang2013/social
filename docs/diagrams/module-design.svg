@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 730" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 766" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -68,7 +68,7 @@
   <text class="t" x="240" y="593">礼物特效 live_gift 同通道广播</text>
 
   <!-- 虚拟经济 -->
-  <rect class="mod" x="480" y="466" width="460" height="150"/>
+  <rect class="mod" x="480" y="466" width="460" height="186"/>
   <text class="tm" x="710" y="490">虚拟经济 · app/common（PHP）</text>
   <rect class="it" x="500" y="502" width="420" height="30"/>
   <text class="t" x="710" y="521">钱包 余额/流水（MySQL 唯一事实源）</text>
@@ -76,14 +76,16 @@
   <text class="t" x="710" y="557">礼物 扣款/分成（client_ref 幂等）</text>
   <rect class="it" x="500" y="574" width="420" height="30"/>
   <text class="t" x="710" y="593">IAP 充值 三端校验幂等入账</text>
+  <rect class="it" x="500" y="610" width="420" height="30"/>
+  <text class="t" x="710" y="629">支付渠道 微信/支付宝/Stripe 回调验签</text>
 
   <!-- 数据与状态 -->
-  <rect class="mod" x="20" y="636" width="920" height="76"/>
-  <text class="tm" x="480" y="660">状态与一致性设计</text>
-  <rect class="it" x="40" y="672" width="290" height="30"/>
-  <text class="t" x="185" y="691">MySQL：业务事实（用户/帖子/房间）</text>
-  <rect class="it" x="350" y="672" width="290" height="30"/>
-  <text class="t" x="495" y="691">Redis：会话 / IM / 通话 / 房间在线</text>
-  <rect class="it" x="660" y="672" width="260" height="30"/>
-  <text class="t" x="790" y="691">REST 广播跨进程 no-op（已知）</text>
+  <rect class="mod" x="20" y="672" width="920" height="76"/>
+  <text class="tm" x="480" y="696">状态与一致性设计</text>
+  <rect class="it" x="40" y="708" width="290" height="30"/>
+  <text class="t" x="185" y="727">MySQL：业务事实（用户/帖子/房间）</text>
+  <rect class="it" x="350" y="708" width="290" height="30"/>
+  <text class="t" x="495" y="727">Redis：会话 / IM / 通话 / 房间在线</text>
+  <rect class="it" x="660" y="708" width="260" height="30"/>
+  <text class="t" x="790" y="727">REST 广播跨进程 no-op（已知）</text>
 </svg>

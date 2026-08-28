@@ -62,5 +62,5 @@
   <text class="tm" x="670" y="315">直播 / 虚拟经济</text>
   <path class="edge" d="M 480 60 L 670 290"/>
   <rect class="fn" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">直播 · Rust 状态机 · gRPC</text>
-  <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">钱包 · 礼物打赏 · 主播分成 · IAP 充值</text>
+  <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">钱包 · 礼物打赏 · 主播分成 · IAP/支付渠道</text>
 </svg>

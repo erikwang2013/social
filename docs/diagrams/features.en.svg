@@ -62,5 +62,5 @@
   <text class="tm" x="670" y="315">Live / Virtual Economy</text>
   <path class="edge" d="M 480 60 L 670 290"/>
   <rect class="fn" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">Live · Rust state machine · gRPC</text>
-  <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">Wallet · gift tips · streamer split · IAP recharge</text>
+  <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">Wallet · gift tips · streamer split · IAP/payment channels</text>
 </svg>

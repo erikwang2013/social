@@ -10,7 +10,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei)
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawal/reconciliation later)
 
 ## Feature Overview
 
@@ -48,8 +48,8 @@ Internal structure of service:
 ```
 service/
 ├── app/
-│   ├── controller/   # REST controllers (auth/post/follow/im/voice/wallet/gift/...)
-│   ├── common/        # WalletService (balance/ledger/idempotent) · GiftService (gift/split)
+│   ├── controller/   # REST controllers (auth/post/follow/im/voice/wallet/gift/payment/...)
+│   ├── common/        # WalletService (balance/ledger/idempotent) · GiftService (gift/split) · PaymentService (idempotent order/credit) · PaymentVerifier (3-channel verify)
 │   ├── ws/           # WsServer · Envelope frame protocol · Deliverer push · ConnectionRegistry
 │   ├── call/         # CallCenter: 1v1 call state machine (M6 migrated to Rust; PHP side kept for WS signaling)
 │   ├── room/         # RoomCenter: voice chat rooms (M6 migrated to Rust; PHP side kept for WS signaling)
@@ -57,8 +57,8 @@ service/
 │   ├── model/        # Data models
 │   ├── process/      # Custom Http / WsServer processes
 │   └── storage/      # Voice file storage (m4a; carried by Rust VoiceStorage since M6)
-├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789)
-└── tests/            # phpunit unit tests + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php black-box E2E
+├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789) · payment.php (channel keys/pricing)
+└── tests/            # phpunit unit tests (incl. PaymentServiceTest) + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php / payment_e2e.php black-box E2E
 ```
 
 ## Getting Started
