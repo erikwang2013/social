@@ -10,7 +10,7 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; las máquinas de estado de directos/salas de voz/llamadas 1v1 se migraron a Rust (infrastructure/bee-rust); los controladores PHP se conectan directamente por gRPC; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
 - **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro entregado, conciliación después)
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados)
 
 ## Resumen de funciones
 
