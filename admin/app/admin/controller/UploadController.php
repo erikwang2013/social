@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use app\common\WatermarkService;
 use support\Request;
 use support\Response;
 
@@ -57,6 +58,10 @@ class UploadController extends BaseController
         }
 
         $file->move($absoluteDir . '/' . $filename);
+
+        if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'], true)) {
+            WatermarkService::tile($absoluteDir . '/' . $filename);
+        }
 
         return $this->success(['url' => $relativePath], '上传成功');
     }

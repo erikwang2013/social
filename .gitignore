@@ -68,5 +68,6 @@ apps/harmonyos/**/*.iml
 
 # runtime uploads
 admin/public/upload/
+service/public/upload/
 # env backups
 service/.env.api-test-bak
