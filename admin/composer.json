@@ -46,7 +46,8 @@
     "symfony/var-dumper": "^7.4",
     "erikwang2013/poster-php": "^1.2",
     "grpc/grpc": "^1.82",
-    "google/protobuf": "^5.35"
+    "google/protobuf": "^5.35",
+    "aws/aws-sdk-php": "^3.394"
   },
   "suggest": {
     "ext-event": "For better performance. "

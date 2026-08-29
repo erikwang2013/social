@@ -85,6 +85,13 @@ Route::group('/admin', function () {
     Route::put('/config/{id}', [app\admin\controller\ConfigController::class, 'update']);
     Route::delete('/config/{id}', [app\admin\controller\ConfigController::class, 'destroy']);
 
+    // CDN 存储服务商（M6c）
+    Route::get('/storage/providers', [app\admin\controller\StorageProviderController::class, 'index']);
+    Route::post('/storage/providers', [app\admin\controller\StorageProviderController::class, 'store']);
+    Route::put('/storage/providers/{id}', [app\admin\controller\StorageProviderController::class, 'update']);
+    Route::delete('/storage/providers/{id}', [app\admin\controller\StorageProviderController::class, 'destroy']);
+    Route::post('/storage/providers/{id}/activate', [app\admin\controller\StorageProviderController::class, 'activate']);
+
     // 操作日志
     Route::get('/log', [app\admin\controller\LogController::class, 'index']);
 
