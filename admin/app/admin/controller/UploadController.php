@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use app\common\Storage;
 use app\common\WatermarkService;
 use support\Request;
 use support\Response;
@@ -50,19 +51,18 @@ class UploadController extends BaseController
 
         $dateDir  = date('Y-m-d');
         $filename = md5(uniqid((string) mt_rand(), true)) . '.' . $ext;
-        $relativePath = "/upload/{$dateDir}/{$filename}";
-        $absoluteDir  = public_path() . "/upload/{$dateDir}";
-
-        if (!is_dir($absoluteDir)) {
-            mkdir($absoluteDir, 0755, true);
-        }
-
-        $file->move($absoluteDir . '/' . $filename);
+        // 水印在系统临时目录处理，避免与 local 落盘路径重叠（同路径会被下方 unlink 误删）
+        $tmp = sys_get_temp_dir() . '/up_' . $filename;
+        $file->move($tmp);
 
         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif'], true)) {
-            WatermarkService::tile($absoluteDir . '/' . $filename);
+            WatermarkService::tile($tmp);
         }
 
-        return $this->success(['url' => $relativePath], '上传成功');
+        // M6c：交 Storage（local 落盘 / s3 传桶），URL 随活动服务商
+        $url = Storage::put("upload/{$dateDir}/{$filename}", (string) file_get_contents($tmp));
+        unlink($tmp);
+
+        return $this->success(['url' => $url], '上传成功');
     }
 }
