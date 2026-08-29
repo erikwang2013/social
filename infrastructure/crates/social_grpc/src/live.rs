@@ -192,7 +192,7 @@ pub struct VoiceSvc {
 }
 
 impl VoiceSvc {
-    pub fn from_env() -> Option<Self> {
+    pub async fn from_env() -> Option<Self> {
         let store = MySqlRoomStore::from_env()?;
         let queue = RedisConn::from_env();
         let send = Box::new(move |_uid: i64, payload: String| {
@@ -201,7 +201,7 @@ impl VoiceSvc {
             }
         });
         let voice = Arc::new(RoomCenter::new(store, send, Box::new(sfu_http)));
-        let storage = Arc::new(VoiceStorage::new(std::env::var("VOICE_DIR").unwrap_or_else(|_| "storage/voice".into())));
+        let storage = Arc::new(VoiceStorage::from_active_provider().await.ok()?);
         Some(Self { voice, storage })
     }
 }
@@ -322,28 +322,23 @@ impl VoiceService for VoiceSvc {
         if r.voice.len() as u64 > MAX_BYTES {
             return Ok(Response::new(err_reply(413, "voice.too_large", "voice.too_large")));
         }
-        let storage = Arc::clone(&self.storage);
-        let reply = blocking(move || {
-            let tmp = std::env::temp_dir().join(format!("voice_grpc_{}_{}.upload", r.uid, std::process::id()));
-            if std::fs::write(&tmp, &r.voice).is_err() {
-                return err_reply(500, "voice.io_failed", "voice.io_failed");
+        let tmp = std::env::temp_dir().join(format!("voice_grpc_{}_{}.upload", r.uid, std::process::id()));
+        if std::fs::write(&tmp, &r.voice).is_err() {
+            return Ok(Response::new(err_reply(500, "voice.io_failed", "voice.io_failed")));
+        }
+        let out = match self.storage.ingest(&tmp).await {
+            Ok(v) => v,
+            Err(e) => {
+                let _ = std::fs::remove_file(&tmp);
+                let (s, _, k) = e.status();
+                return Ok(Response::new(err_reply(s, k, k))); // PHP: message = lang_key
             }
-            let out = match storage.ingest(&tmp) {
-                Ok(v) => v,
-                Err(e) => {
-                    let _ = std::fs::remove_file(&tmp);
-                    let (s, _, k) = e.status();
-                    return err_reply(s, k, k); // PHP: message = lang_key
-                }
-            };
-            let _ = std::fs::remove_file(&tmp);
-            ok_reply(json!({
-                "voice_url": format!("/api/v1{}", out.url),
-                "voice_duration": out.duration,
-            }))
-        })
-        .await?;
-        Ok(Response::new(reply))
+        };
+        let _ = std::fs::remove_file(&tmp);
+        Ok(Response::new(ok_reply(json!({
+            "voice_url": format!("/api/v1{}", out.url),
+            "voice_duration": out.duration,
+        }))))
     }
 
     /// 静态语音文件（白名单防路径穿越），PHP 端以 audio/mp4 转发
@@ -352,18 +347,15 @@ impl VoiceService for VoiceSvc {
         if !valid_file_name(&r.file) {
             return Ok(Response::new(err_reply(400, "voice.bad_file", "bad file")));
         }
-        let storage = Arc::clone(&self.storage);
-        let reply = blocking(move || match std::fs::read(storage.path_of(&r.file)) {
-            Ok(bytes) => LiveReply {
+        match self.storage.read(&r.file).await {
+            Ok(bytes) => Ok(Response::new(LiveReply {
                 code: 0,
                 message: "ok".into(),
                 lang_key: "ok".into(),
                 data_json: String::new(),
                 bytes_data: bytes,
-            },
-            Err(_) => err_reply(404, "voice.not_found", "not found"),
-        })
-        .await?;
-        Ok(Response::new(reply))
+            })),
+            Err(_) => Ok(Response::new(err_reply(404, "voice.not_found", "not found"))),
+        }
     }
 }

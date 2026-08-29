@@ -30,6 +30,22 @@ pub fn mysql_opts() -> Opts {
         .into()
 }
 
+/// open_admin 库（erik_storage_provider 所在），凭据同 DB_HOST/USER/PASS。
+pub fn open_admin_opts() -> Opts {
+    let host = std::env::var("DB_HOST").unwrap_or_else(|_| "127.0.0.1".into());
+    let port = std::env::var("DB_PORT").ok().and_then(|v| v.parse().ok()).unwrap_or(3306);
+    let db = std::env::var("DB_OPEN_ADMIN_DATABASE").unwrap_or_else(|_| "open_admin".into());
+    let user = std::env::var("DB_USERNAME").unwrap_or_else(|_| "root".into());
+    let pass = std::env::var("DB_PASSWORD").unwrap_or_default();
+    OptsBuilder::default()
+        .ip_or_hostname(host)
+        .tcp_port(port)
+        .db_name(Some(db))
+        .user(Some(user))
+        .pass(Some(pass))
+        .into()
+}
+
 /// Redis 连接助手：单连接 + Mutex，与 PHP WsRedis（单例连接）同构。
 pub struct RedisConn {
     conn: Mutex<redis::Connection>,

@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         health_reporter.set_serving::<LiveSrvServer<LiveSvc>>().await;
         builder = builder.add_service(LiveSrvServer::new(svc));
     }
-    if let Some(svc) = VoiceSvc::from_env() {
+    if let Some(svc) = VoiceSvc::from_env().await {
         health_reporter.set_serving::<VoiceSrvServer<VoiceSvc>>().await;
         builder = builder.add_service(VoiceSrvServer::new(svc));
     }

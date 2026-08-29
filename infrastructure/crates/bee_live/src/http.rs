@@ -13,6 +13,7 @@ use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
+use object_store::memory::InMemory;
 use serde_json::{json, Value};
 use std::sync::Arc;
 use std::time::Duration;
@@ -26,7 +27,7 @@ pub struct AppState {
     pub breaker: Arc<CircuitBreaker>,
 }
 
-pub fn app() -> Router {
+pub async fn app() -> Router {
     let queue: Option<Arc<RedisConn>> = RedisConn::from_env().map(Arc::new);
     let live_send = queue.clone();
     let voice_send = queue;
@@ -49,7 +50,10 @@ pub fn app() -> Router {
             }),
             Box::new(sfu_http),
         )),
-        voice_storage: Arc::new(VoiceStorage::new(std::env::var("VOICE_DIR").unwrap_or_else(|_| "storage/voice".into()))),
+        voice_storage: Arc::new(match VoiceStorage::from_active_provider().await {
+            Ok(s) => s,
+            Err(_) => VoiceStorage::new(Arc::new(InMemory::new())).await,
+        }),
         limiter: Arc::new(RateLimiter::new(60, Duration::from_secs(60))),
         breaker: Arc::new(CircuitBreaker::new(3, Duration::from_secs(10))),
     };
@@ -249,7 +253,7 @@ async fn voice_upload(State(st): State<AppState>, headers: HeaderMap, mut multip
     if std::fs::write(&tmp, &bytes).is_err() {
         return fail(StatusCode::INTERNAL_SERVER_ERROR, 500, "voice.io_failed", "voice.io_failed");
     }
-    let out = match st.voice_storage.ingest(&tmp) {
+    let out = match st.voice_storage.ingest(&tmp).await {
         Ok(v) => v,
         Err(e) => {
             let _ = std::fs::remove_file(&tmp);
@@ -266,7 +270,7 @@ async fn voice_file(State(st): State<AppState>, Path(file): Path<String>) -> Res
     if !valid_file_name(&file) {
         return fail(StatusCode::BAD_REQUEST, 400, "bad file", "voice.bad_file");
     }
-    match std::fs::read(st.voice_storage.path_of(&file)) {
+    match st.voice_storage.read(&file).await {
         Ok(bytes) => (StatusCode::OK, [(header::CONTENT_TYPE, "audio/mp4")], bytes).into_response(),
         Err(_) => fail(StatusCode::NOT_FOUND, 404, "not found", "voice.not_found"),
     }
