@@ -2,6 +2,7 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 namespace app\controller;
 
+use app\common\Storage;
 use app\common\WatermarkService;
 use support\Request;
 use Webman\Http\Response;
@@ -10,7 +11,7 @@ class ImageController
 {
     private const MAX_SIZE = 10 * 1024 * 1024;
 
-    /** 图片上传：multipart field=image → 存 public/upload/{Y-m-d}/{md5}.{ext} + 平铺水印 → {url, width, height} */
+    /** 图片上传：multipart field=image → 水印 → Storage（local 落盘 / s3 传桶）→ {url, width, height} */
     public function upload(Request $request): Response
     {
         $file = $request->file('image');
@@ -30,16 +31,18 @@ class ImageController
         }
 
         $dateDir = date('Y-m-d');
-        $dir = public_path() . '/upload/' . $dateDir;
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
         $filename = md5(uniqid((string) mt_rand(), true)) . '.' . $ext;
-        $file->move($dir . '/' . $filename);
-        WatermarkService::tile($dir . '/' . $filename);
+        // 水印在系统临时目录处理，避免与 local 落盘路径重叠（同路径会被下方 unlink 误删）
+        $tmp = sys_get_temp_dir() . '/wm_' . $filename;
+        $file->move($tmp);
+        WatermarkService::tile($tmp);
+
+        // M6c：水印后交 Storage（local 落盘 / s3 传桶），URL 随活动服务商
+        $url = Storage::put('upload/' . $dateDir . '/' . $filename, (string) file_get_contents($tmp));
+        unlink($tmp);
 
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'image.uploaded', 'data' => [
-            'url' => '/upload/' . $dateDir . '/' . $filename,
+            'url' => $url,
             'width' => (int) $size[0],
             'height' => (int) $size[1],
         ]]);
