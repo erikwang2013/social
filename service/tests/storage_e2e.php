@@ -2,6 +2,7 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 // STORAGE E2E 冒烟：图片上传 → Storage（local 落盘 / s3 传桶）→ URL 前缀与活动服务商匹配（黑盒 HTTP，需要 php start.php start 运行中 + Redis + open_admin 库 erik_storage_provider 种子已落）
 // 测试用户在 dev 库留痕（uniqid 邮箱无碰撞，无删除用户接口）；local 落盘文件用毕 unlink
+require __DIR__ . '/../vendor/autoload.php';
 
 function http(string $method, string $path, array $json = [], string $token = '', array $headers = []): array
 {
