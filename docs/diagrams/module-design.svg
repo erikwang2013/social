@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 766" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 856" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -88,4 +88,13 @@
   <text class="t" x="495" y="727">Redis：会话 / IM / 通话 / 房间在线</text>
   <rect class="it" x="660" y="708" width="260" height="30"/>
   <text class="t" x="790" y="727">REST 广播跨进程 no-op（已知）</text>
+  <!-- CDN 存储模块 -->
+  <rect class="mod" x="20" y="768" width="920" height="76"/>
+  <text class="tm" x="480" y="792">CDN 存储 · app/common/Storage + 管理端（S3 兼容）</text>
+  <rect class="it" x="40" y="804" width="290" height="30"/>
+  <text class="t" x="185" y="823">上传 → PHP 校验 + 水印</text>
+  <rect class="it" x="350" y="804" width="290" height="30"/>
+  <text class="t" x="495" y="823">对象存储（S3/R2/OSS/COS/B2）</text>
+  <rect class="it" x="660" y="804" width="260" height="30"/>
+  <text class="t" x="790" y="823">CDN 分发 · 管理端可配置</text>
 </svg>

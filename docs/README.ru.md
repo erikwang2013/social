@@ -10,7 +10,7 @@
 - **Бизнес-сервис**: webman v2 (PHP 8.3) обслуживает оба канала — REST и WebSocket; машины состояний стримов/голосовых комнат/звонков 1v1 переведены на Rust (infrastructure/bee-rust); PHP-контроллеры подключаются напрямую по gRPC; API версионируется через `X-Api-Version` (по умолчанию v1, совместимо со старыми путями `/api/vX`)
 - **Собственный медиаслой**: mediasoup SFU + coturn TURN для пересылки медиа в голосовых звонках 1v1 и голосовых комнатах (8 мест)
 - **Многоуровневое состояние**: MySQL — источник бизнес-данных, Redis — реальное время для состояния сессий / IM / звонков / комнат
-- **Вехи**: M0–M5 сданы (голосовые сообщения, звонки 1v1, голосовые комнаты, стриминг); M6a — виртуальная экономика: кошелёк (баланс/журнал, MySQL единственный источник правды), подарки с долей стримера, мобильное пополнение IAP (App Store / Google Play / Huawei); M6b — платёжные каналы: скелет зачисления пополнения (проверка подписи колбэка WeChat/Alipay/Stripe, серверные цены, идемпотентное зачисление; вывод и сверка сданы)
+- **Вехи**: M0–M5 сданы (голосовые сообщения, звонки 1v1, голосовые комнаты, стриминг); M6a — виртуальная экономика: кошелёк (баланс/журнал, MySQL единственный источник правды), подарки с долей стримера, мобильное пополнение IAP (App Store / Google Play / Huawei); M6b — платёжные каналы: скелет зачисления пополнения (проверка подписи колбэка WeChat/Alipay/Stripe, серверные цены, идемпотентное зачисление; вывод и сверка сданы); M6c — CDN-хранилище (в работе): провайдеры настраиваются из админ-панели (S3-совместимо: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); изображения/голос/файлы раздаются через объектное хранилище + CDN
 
 ## Обзор функций
 
@@ -168,6 +168,22 @@ npm run smoke                         # Смоук-тест протокола S
 | SWIFT Code | IRVTUS3NXXX |
 | Адрес банка | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
 
+### Пожертвование в криптовалюте (Crypto Donation)
+
+Если этот проект помог вам, отсканируйте QR-код, чтобы сделать пожертвование, спасибо!
+
+| Сеть (Network) | QR-код (QR Code) | Адрес кошелька (Wallet Address) |
+|---|---|---|
+| BNB Smart Chain (BEP20) | [<img src="coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Tron (TRC20) | [<img src="coin/2.jpg" width="150" alt="Tron (TRC20)">](coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
+| Ethereum (ERC20) | [<img src="coin/3.jpg" width="150" alt="Ethereum (ERC20)">](coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Aptos | [<img src="coin/4.jpg" width="150" alt="Aptos">](coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
+| Plasma | [<img src="coin/5.jpg" width="150" alt="Plasma">](coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Polygon POS | [<img src="coin/6.jpg" width="150" alt="Polygon POS">](coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Solana | [<img src="coin/7.jpg" width="150" alt="Solana">](coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
+| The Open Network (TON) | [<img src="coin/8.jpg" width="150" alt="The Open Network (TON)">](coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
+| Arbitrum One | [<img src="coin/9.jpg" width="150" alt="Arbitrum One">](coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| AVAX C-Chain | [<img src="coin/10.jpg" width="150" alt="AVAX C-Chain">](coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
 ## Документация
 

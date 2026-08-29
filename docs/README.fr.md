@@ -10,7 +10,7 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 - **Services métier** : webman v2 (PHP 8.3) sert à la fois REST et WebSocket ; les machines à états live/salon vocal/appel 1v1 sont migrées vers Rust (infrastructure/bee-rust) ; les contrôleurs PHP se connectent directement en gRPC ; l'API est versionnée via `X-Api-Version` (v1 par défaut, compatible avec les anciens chemins `/api/vX`)
 - **Couche média maison** : mediasoup SFU + coturn TURN pour le relais média des appels vocaux 1v1 et des salons vocaux (8 sièges)
 - **Stratification des états** : MySQL comme source de vérité métier, Redis pour l'état temps réel des sessions / IM / appels / salons
-- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming)  ; M6a livre l'économie virtuelle : portefeuille (solde/journal, MySQL comme source de vérité unique), pourboires-cadeaux avec part du streamer et rechargement IAP mobile (App Store / Google Play / Huawei) ; M6b livre les canaux de paiement : squelette de crédit de recharge (vérification de signature de callback WeChat/Alipay/Stripe, tarification côté serveur, crédit idempotent ; retrait et réconciliation livrés)
+- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming)  ; M6a livre l'économie virtuelle : portefeuille (solde/journal, MySQL comme source de vérité unique), pourboires-cadeaux avec part du streamer et rechargement IAP mobile (App Store / Google Play / Huawei) ; M6b livre les canaux de paiement : squelette de crédit de recharge (vérification de signature de callback WeChat/Alipay/Stripe, tarification côté serveur, crédit idempotent ; retrait et réconciliation livrés) ; M6c livre le stockage CDN (en cours) : fournisseurs configurables depuis le panneau d'administration (compatible S3 : AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2) ; images/voix/fichiers servis via stockage objet + CDN
 
 ## Aperçu des fonctionnalités
 
@@ -168,6 +168,22 @@ Pour les virements dans d'autres devises, la banque correspondante est **BNY Mel
 | SWIFT Code | IRVTUS3NXXX |
 | Adresse de la banque | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
 
+### Don en cryptomonnaie (Crypto Donation)
+
+Si ce projet vous est utile, scannez le code QR pour faire un don, merci !
+
+| Réseau (Network) | Code QR (QR Code) | Adresse du portefeuille (Wallet Address) |
+|---|---|---|
+| BNB Smart Chain (BEP20) | [<img src="coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Tron (TRC20) | [<img src="coin/2.jpg" width="150" alt="Tron (TRC20)">](coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
+| Ethereum (ERC20) | [<img src="coin/3.jpg" width="150" alt="Ethereum (ERC20)">](coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Aptos | [<img src="coin/4.jpg" width="150" alt="Aptos">](coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
+| Plasma | [<img src="coin/5.jpg" width="150" alt="Plasma">](coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Polygon POS | [<img src="coin/6.jpg" width="150" alt="Polygon POS">](coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Solana | [<img src="coin/7.jpg" width="150" alt="Solana">](coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
+| The Open Network (TON) | [<img src="coin/8.jpg" width="150" alt="The Open Network (TON)">](coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
+| Arbitrum One | [<img src="coin/9.jpg" width="150" alt="Arbitrum One">](coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| AVAX C-Chain | [<img src="coin/10.jpg" width="150" alt="AVAX C-Chain">](coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
 ## Documentation
 

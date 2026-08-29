@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 730" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 856" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -68,7 +68,7 @@
   <text class="t" x="240" y="593">Эффекты подарков live_gift тем же каналом</text>
 
   <!-- 虚拟经济 -->
-  <rect class="mod" x="480" y="466" width="460" height="150"/>
+  <rect class="mod" x="480" y="466" width="460" height="186"/>
   <text class="tm" x="710" y="490">Виртуальная экономика · app/common (PHP)</text>
   <rect class="it" x="500" y="502" width="420" height="30"/>
   <text class="t" x="710" y="521">Кошелёк баланс/операции (MySQL единственный источник)</text>
@@ -76,14 +76,25 @@
   <text class="t" x="710" y="557">Подарок списание/доля (client_ref идемпотентно)</text>
   <rect class="it" x="500" y="574" width="420" height="30"/>
   <text class="t" x="710" y="593">Пополнение IAP проверка 3 сторон идемпотентно</text>
+  <rect class="it" x="500" y="610" width="420" height="30"/>
+  <text class="t" x="710" y="629">Платёжные каналы WeChat/Alipay/Stripe проверка колбэка</text>
 
   <!-- 数据与状态 -->
-  <rect class="mod" x="20" y="636" width="920" height="76"/>
-  <text class="tm" x="480" y="660">Состояние и консистентность</text>
-  <rect class="it" x="40" y="672" width="290" height="30"/>
-  <text class="t" x="185" y="691">MySQL: факты (пользователи/посты/комнаты)</text>
-  <rect class="it" x="350" y="672" width="290" height="30"/>
-  <text class="t" x="495" y="691">Redis: сессии / IM / звонки / комнаты</text>
-  <rect class="it" x="660" y="672" width="260" height="30"/>
-  <text class="t" x="790" y="691">REST-рассылка no-op (известно)</text>
+  <rect class="mod" x="20" y="672" width="920" height="76"/>
+  <text class="tm" x="480" y="696">Состояние и консистентность</text>
+  <rect class="it" x="40" y="708" width="290" height="30"/>
+  <text class="t" x="185" y="727">MySQL: факты (пользователи/посты/комнаты)</text>
+  <rect class="it" x="350" y="708" width="290" height="30"/>
+  <text class="t" x="495" y="727">Redis: сессии / IM / звонки / комнаты</text>
+  <rect class="it" x="660" y="708" width="260" height="30"/>
+  <text class="t" x="790" y="727">REST-рассылка no-op (известно)</text>
+  <!-- CDN 存储模块 -->
+  <rect class="mod" x="20" y="768" width="920" height="76"/>
+  <text class="tm" x="480" y="792">CDN-хранилище · app/common/Storage + админка (S3-совместимо)</text>
+  <rect class="it" x="40" y="804" width="290" height="30"/>
+  <text class="t" x="185" y="823">Загрузка → проверка PHP + водяной знак</text>
+  <rect class="it" x="350" y="804" width="290" height="30"/>
+  <text class="t" x="495" y="823">Объектное хранилище (S3/R2/OSS/COS/B2)</text>
+  <rect class="it" x="660" y="804" width="260" height="30"/>
+  <text class="t" x="790" y="823">CDN edge · настраивается в админке</text>
 </svg>

@@ -10,7 +10,7 @@
 - **বিজনেস সার্ভিস**: webman v2 (PHP 8.3) REST এবং WebSocket উভয় চ্যানেল পরিচালনা করে; লাইভ / ভয়েস রুম / 1v1 কল স্টেট মেশিন Rust-এ মাইগ্রেট হয়েছে (infrastructure/bee-rust); PHP কন্ট্রোলার gRPC-তে সরাসরি সংযুক্ত; API-র ভার্সন `X-Api-Version` দিয়ে হয় (ডিফল্ট v1, পুরনো `/api/vX` পাথের সাথে সামঞ্জস্যপূর্ণ)
 - **নিজস্ব মিডিয়া লেয়ার**: mediasoup SFU + coturn TURN, 1v1 ভয়েস কল এবং ভয়েস চ্যাট রুম (৮টি সিট) এর মিডিয়া ফরওয়ার্ডিংয়ের জন্য
 - **স্টেট লেয়ারিং**: MySQL ব্যবসার তথ্যের উৎস, Redis সেশন / IM / কল / রুমের রিয়েল-টাইম অবস্থার জন্য
-- **মাইলস্টোন**: M0–M5 ডেলিভারি সম্পন্ন (ভয়েস মেসেজ, 1v1 কল, ভয়েস চ্যাট রুম, লাইভ স্ট্রিমিং); M6a ভার্চুয়াল অর্থনীতি ডেলিভারি করে: ওয়ালেট (ব্যালেন্স/লেজার, MySQL একমাত্র সত্যের উৎস), গিফট টিপিং ও স্ট্রিমার শেয়ার, মোবাইল IAP রিচার্জ (App Store / Google Play / Huawei); M6b পেমেন্ট চ্যানেল ডেলিভারি করে: টপ-আপ ক্রেডিট স্কেলটন (WeChat/Alipay/Stripe কলব্যাক স্বাক্ষর যাচাই, সার্ভার-সাইড প্রাইসিং, আইডেম্পোটেন্ট ক্রেডিট; উইথড্রয়াল এবং রিকনসিলিয়েশন ডেলিভারড)
+- **মাইলস্টোন**: M0–M5 ডেলিভারি সম্পন্ন (ভয়েস মেসেজ, 1v1 কল, ভয়েস চ্যাট রুম, লাইভ স্ট্রিমিং); M6a ভার্চুয়াল অর্থনীতি ডেলিভারি করে: ওয়ালেট (ব্যালেন্স/লেজার, MySQL একমাত্র সত্যের উৎস), গিফট টিপিং ও স্ট্রিমার শেয়ার, মোবাইল IAP রিচার্জ (App Store / Google Play / Huawei); M6b পেমেন্ট চ্যানেল ডেলিভারি করে: টপ-আপ ক্রেডিট স্কেলটন (WeChat/Alipay/Stripe কলব্যাক স্বাক্ষর যাচাই, সার্ভার-সাইড প্রাইসিং, আইডেম্পোটেন্ট ক্রেডিট; উইথড্রয়াল এবং রিকনসিলিয়েশন ডেলিভারড); M6c CDN স্টোরেজ ডেলিভারি করছে (চলমান): প্রোভাইডার অ্যাডমিন প্যানেল থেকে কনফিগারযোগ্য (S3-সামঞ্জস্যপূর্ণ: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), ছবি/ভয়েস/ফাইল অবজেক্ট স্টোরেজ + CDN দিয়ে বিতরণ
 
 ## ফিচার ওভারভিউ
 
@@ -168,6 +168,22 @@ npm run smoke                         # SFU /signal প্রোটোকল স
 | SWIFT Code | IRVTUS3NXXX |
 | ব্যাংকের ঠিকানা | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
 
+### ক্রিপ্টো দান (Crypto Donation)
+
+এই প্রকল্পটি আপনার কাজে লাগলে, দান করতে QR কোড স্ক্যান করুন, ধন্যবাদ!
+
+| নেটওয়ার্ক (Network) | QR কোড (QR Code) | ওয়ালেট ঠিকানা (Wallet Address) |
+|---|---|---|
+| BNB Smart Chain (BEP20) | [<img src="coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Tron (TRC20) | [<img src="coin/2.jpg" width="150" alt="Tron (TRC20)">](coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
+| Ethereum (ERC20) | [<img src="coin/3.jpg" width="150" alt="Ethereum (ERC20)">](coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Aptos | [<img src="coin/4.jpg" width="150" alt="Aptos">](coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
+| Plasma | [<img src="coin/5.jpg" width="150" alt="Plasma">](coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Polygon POS | [<img src="coin/6.jpg" width="150" alt="Polygon POS">](coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Solana | [<img src="coin/7.jpg" width="150" alt="Solana">](coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
+| The Open Network (TON) | [<img src="coin/8.jpg" width="150" alt="The Open Network (TON)">](coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
+| Arbitrum One | [<img src="coin/9.jpg" width="150" alt="Arbitrum One">](coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| AVAX C-Chain | [<img src="coin/10.jpg" width="150" alt="AVAX C-Chain">](coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
 ## ডকুমেন্টেশন
 

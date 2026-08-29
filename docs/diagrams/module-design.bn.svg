@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 730" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 856" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <style>
     .mod  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.6; rx: 10 }
     .it   { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.2; rx: 6 }
@@ -68,7 +68,7 @@
   <text class="t" x="240" y="593">উপহার ইফেক্ট live_gift একই চ্যানেলে</text>
 
   <!-- 虚拟经济 -->
-  <rect class="mod" x="480" y="466" width="460" height="150"/>
+  <rect class="mod" x="480" y="466" width="460" height="186"/>
   <text class="tm" x="710" y="490">ভার্চুয়াল অর্থনীতি · app/common (PHP)</text>
   <rect class="it" x="500" y="502" width="420" height="30"/>
   <text class="t" x="710" y="521">ওয়ালেট ব্যালেন্স/লেজার (MySQL একমাত্র উৎস)</text>
@@ -76,14 +76,25 @@
   <text class="t" x="710" y="557">উপহার কর্তন/ভাগ (client_ref idempotent)</text>
   <rect class="it" x="500" y="574" width="420" height="30"/>
   <text class="t" x="710" y="593">IAP রিচার্জ ৩-পার্শ্ব যাচাই idempotent</text>
+  <rect class="it" x="500" y="610" width="420" height="30"/>
+  <text class="t" x="710" y="629">পেমেন্ট চ্যানেল WeChat/Alipay/Stripe কলব্যাক যাচাই</text>
 
   <!-- 数据与状态 -->
-  <rect class="mod" x="20" y="636" width="920" height="76"/>
-  <text class="tm" x="480" y="660">স্টেট ও সামঞ্জস্য ডিজাইন</text>
-  <rect class="it" x="40" y="672" width="290" height="30"/>
-  <text class="t" x="185" y="691">MySQL: তথ্য (ব্যবহারকারী/পোস্ট/রুম)</text>
-  <rect class="it" x="350" y="672" width="290" height="30"/>
-  <text class="t" x="495" y="691">Redis: সেশন / IM / কল / রুম</text>
-  <rect class="it" x="660" y="672" width="260" height="30"/>
-  <text class="t" x="790" y="691">REST ব্রডকাস্ট no-op (জ্ঞাত)</text>
+  <rect class="mod" x="20" y="672" width="920" height="76"/>
+  <text class="tm" x="480" y="696">স্টেট ও সামঞ্জস্য ডিজাইন</text>
+  <rect class="it" x="40" y="708" width="290" height="30"/>
+  <text class="t" x="185" y="727">MySQL: তথ্য (ব্যবহারকারী/পোস্ট/রুম)</text>
+  <rect class="it" x="350" y="708" width="290" height="30"/>
+  <text class="t" x="495" y="727">Redis: সেশন / IM / কল / রুম</text>
+  <rect class="it" x="660" y="708" width="260" height="30"/>
+  <text class="t" x="790" y="727">REST ব্রডকাস্ট no-op (জ্ঞাত)</text>
+  <!-- CDN 存储模块 -->
+  <rect class="mod" x="20" y="768" width="920" height="76"/>
+  <text class="tm" x="480" y="792">CDN স্টোরেজ · app/common/Storage + অ্যাডমিন (S3-সামঞ্জস্যপূর্ণ)</text>
+  <rect class="it" x="40" y="804" width="290" height="30"/>
+  <text class="t" x="185" y="823">আপলোড → PHP যাচাই + ওয়াটারমার্ক</text>
+  <rect class="it" x="350" y="804" width="290" height="30"/>
+  <text class="t" x="495" y="823">অবজেক্ট স্টোরেজ (S3/R2/OSS/COS/B2)</text>
+  <rect class="it" x="660" y="804" width="260" height="30"/>
+  <text class="t" x="790" y="823">CDN এজ · অ্যাডমিন থেকে কনফিগারযোগ্য</text>
 </svg>

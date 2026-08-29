@@ -10,7 +10,7 @@
 - **बिज़नेस सेवाएँ**: webman v2 (PHP 8.3) REST और WebSocket दोनों चैनल संभालता है; लाइव / वॉइस रूम / 1v1 कॉल स्टेट मशीनें Rust में माइग्रेट हो गईं (infrastructure/bee-rust); PHP कंट्रोलर gRPC से सीधे जुड़ते हैं; API का वर्ज़न `X-Api-Version` से होता है (डिफ़ॉल्ट v1, पुराने `/api/vX` पाथ से संगत)
 - **स्वनिर्मित मीडिया लेयर**: mediasoup SFU + coturn TURN, 1v1 वॉइस कॉल और वॉइस चैट रूम (8 सीटें) के मीडिया फ़ॉरवर्डिंग के लिए
 - **स्टेट लेयरिंग**: MySQL बिज़नेस डेटा का स्रोत, Redis सेशन / IM / कॉल / रूम की रियल-टाइम स्थिति के लिए
-- **माइलस्टोन**: M0–M5 डिलीवर हो चुके (वॉइस मैसेज, 1v1 कॉल, वॉइस चैट रूम, लाइव स्ट्रीमिंग); M6a वर्चुअल इकोनॉमी डिलीवर करता है: वॉलेट (बैलेंस/लेजर, MySQL एकमात्र सत्य स्रोत), गिफ्ट टिपिंग और स्ट्रीमर हिस्सा, मोबाइल IAP रिचार्ज (App Store / Google Play / Huawei); M6b पेमेंट चैनल डिलीवर करता है: टॉप-अप क्रेडिट स्केलेटन (WeChat/Alipay/Stripe कॉलबैक सिग्नेचर वेरिफिकेशन, सर्वर-साइड प्राइसिंग, आइडेम्पोटेंट क्रेडिट; विदड्रॉल और रिकंसिलिएशन डिलीवर्ड)
+- **माइलस्टोन**: M0–M5 डिलीवर हो चुके (वॉइस मैसेज, 1v1 कॉल, वॉइस चैट रूम, लाइव स्ट्रीमिंग); M6a वर्चुअल इकोनॉमी डिलीवर करता है: वॉलेट (बैलेंस/लेजर, MySQL एकमात्र सत्य स्रोत), गिफ्ट टिपिंग और स्ट्रीमर हिस्सा, मोबाइल IAP रिचार्ज (App Store / Google Play / Huawei); M6b पेमेंट चैनल डिलीवर करता है: टॉप-अप क्रेडिट स्केलेटन (WeChat/Alipay/Stripe कॉलबैक सिग्नेचर वेरिफिकेशन, सर्वर-साइड प्राइसिंग, आइडेम्पोटेंट क्रेडिट; विदड्रॉल और रिकंसिलिएशन डिलीवर्ड); M6c CDN स्टोरेज डिलीवर कर रहा है (जारी): प्रोवाइडर एडमिन पैनल से कॉन्फ़िगर करने योग्य (S3-संगत: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), इमेज/वॉइस/फाइल ऑब्जेक्ट स्टोरेज + CDN से डिलीवर होती हैं
 
 ## फ़ीचर अवलोकन
 
@@ -168,6 +168,22 @@ npm run smoke                         # SFU /signal प्रोटोकॉल 
 | SWIFT Code | IRVTUS3NXXX |
 | बैंक का पता | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
 
+### क्रिप्टो दान (Crypto Donation)
+
+यदि यह प्रोजेक्ट आपके काम आए, तो दान करने के लिए QR कोड स्कैन करें, धन्यवाद!
+
+| नेटवर्क (Network) | QR कोड (QR Code) | वॉलेट पता (Wallet Address) |
+|---|---|---|
+| BNB Smart Chain (BEP20) | [<img src="coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Tron (TRC20) | [<img src="coin/2.jpg" width="150" alt="Tron (TRC20)">](coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
+| Ethereum (ERC20) | [<img src="coin/3.jpg" width="150" alt="Ethereum (ERC20)">](coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Aptos | [<img src="coin/4.jpg" width="150" alt="Aptos">](coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
+| Plasma | [<img src="coin/5.jpg" width="150" alt="Plasma">](coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Polygon POS | [<img src="coin/6.jpg" width="150" alt="Polygon POS">](coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| Solana | [<img src="coin/7.jpg" width="150" alt="Solana">](coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
+| The Open Network (TON) | [<img src="coin/8.jpg" width="150" alt="The Open Network (TON)">](coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
+| Arbitrum One | [<img src="coin/9.jpg" width="150" alt="Arbitrum One">](coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
+| AVAX C-Chain | [<img src="coin/10.jpg" width="150" alt="AVAX C-Chain">](coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
 ## दस्तावेज़
 
