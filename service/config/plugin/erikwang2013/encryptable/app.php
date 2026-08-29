@@ -5,15 +5,16 @@
  */
 
 /**
- * 多框架共用的插件布局主配置：顶层 {@code key} / {@code cipher}。
+ * 数据库敏感字段加解密插件配置
  *
- * - Webman：置于 {@code config/plugin/{vendor}/{package}/app.php}，读取 {@code config('plugin.{vendor}.{package}.app.*')}。
- * - Laravel / Lumen / ThinkPHP：同路径，由本包在启动时合并或注入到 {@code encryptable.*}。
+ * 与 admin 端（open_admin 库 erik_storage_provider）共用同一密钥体系：
+ * service 读活动存储服务商时需解密 key/secret，密钥与算法必须与 admin 一致。
+ * 生产环境在两端 .env 配置相同的 ENCRYPTABLE_KEY（32 字节）。
  *
- * @see https://webman.workerman.net/doc/en/plugin/create.html
+ * Webman—plugin 统一布局: 顶层 key/cipher/previous_keys
  */
 return [
-    'key' => env('ENCRYPTION_KEY'),
-    'cipher' => env('ENCRYPTION_CIPHER', 'aes-256-gcm'),
-    'previous_keys' => \Erikwang2013\Encryptable\Support\PreviousKeysParser::parse(env('ENCRYPTION_PREVIOUS_KEYS')),
+    'key' => getenv('ENCRYPTABLE_KEY') ?: 'open-admin-db-encryption-key-32b',
+    'cipher' => getenv('ENCRYPTABLE_CIPHER') ?: 'aes-128-ecb',
+    'previous_keys' => Erikwang2013\Encryptable\Support\PreviousKeysParser::parse(getenv('ENCRYPTION_PREVIOUS_KEYS') ?: ''),
 ];
