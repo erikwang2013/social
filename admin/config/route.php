@@ -92,6 +92,12 @@ Route::group('/admin', function () {
     Route::delete('/storage/providers/{id}', [app\admin\controller\StorageProviderController::class, 'destroy']);
     Route::post('/storage/providers/{id}/activate', [app\admin\controller\StorageProviderController::class, 'activate']);
 
+    // 报表（M6d，RBAC 权限 slug：get.admin/report/*、post.admin/report/export）
+    Route::get('/report/users', [app\admin\controller\ReportController::class, 'users']);
+    Route::get('/report/payments', [app\admin\controller\ReportController::class, 'payments']);
+    Route::get('/report/withdrawals', [app\admin\controller\ReportController::class, 'withdrawals']);
+    Route::post('/report/export', [app\admin\controller\ReportController::class, 'export']);
+
     // 操作日志
     Route::get('/log', [app\admin\controller\LogController::class, 'index']);
 
