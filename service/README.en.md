@@ -1,71 +1,71 @@
-<div style="padding:18px;max-width: 1024px;margin:0 auto;background-color:#fff;color:#333">
-<h1>webman</h1>
+# Social Service (user-facing business service)
 
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) 
-Ultra-high-performance PHP framework built on <a href="https://www.workerman.net" target="__blank">workerman</a>
+**Language / Languages:** [中文](README.md) · [English](README.en.md)
 
+webman v2 (PHP 8.3) user-facing business service: REST :8788 + WebSocket :8789 dual channel; live / voice chat room / 1v1 call state machines migrated to Rust (infrastructure/bee-rust), PHP controllers connect via gRPC.
 
-<h1>Learn</h1>
+## Features
 
-<ul>
-  <li>
-    <a href="https://www.workerman.net/webman" target="__blank">Home page</a>
-  </li>
-  <li>
-    <a href="https://webman.workerman.net" target="__blank">Document</a>
-  </li>
-  <li>
-    <a href="https://www.workerman.net/doc/webman/install.html" target="__blank">Install</a>
-  </li>
-  <li>
-    <a href="https://www.workerman.net/questions" target="__blank">Questions</a>
-  </li>
-  <li>
-    <a href="https://www.workerman.net/apps" target="__blank">Apps</a>
-  </li>
-  <li>
-    <a href="https://www.workerman.net/sponsor" target="__blank">Sponsors</a>
-  </li>
-  <li>
-    <a href="https://www.workerman.net/doc/webman/thanks.html" target="__blank">Thanks</a>
-  </li>
-</ul>
+- **REST APIs**: auth / post / follow / im / voice / wallet / gift / payment / withdrawal controllers, `/api/v1` route group, versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
+- **WebSocket**: WsServer · Envelope frame protocol · Deliverer push · ConnectionRegistry
+- **Voice / live**: 1v1 calls / voice chat rooms (8 seats) / live state machines carried by Rust, PHP side kept for WS signaling
+- **Storage**: voice files (m4a) uploaded and served by Rust VoiceStorage (object_store, S3-compatible); providers configurable from the admin panel
+- **Virtual economy**: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, mobile IAP top-up
+- **Payment channels**: WeChat / Alipay / Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and internal reconciliation
 
-<div style="float:left;padding-bottom:30px;">
+## One-Click Install
 
-  <h1>Sponsors</h1>
+Prerequisites: PHP ≥ 8.3 (composer), MySQL, Redis.
 
-  <h4>Special Sponsor</h4>
-  <a href="https://www.crmeb.com/?form=workerman" target="__blank">
-    <img src="https://www.workerman.net/img/sponsors/6429/20230719111500.svg" width="200">
-  </a>
+Run from the repository root:
 
-  <h4>Platinum Sponsor</h4>
-  <a href="https://www.fadetask.com/?from=workerman" target="__blank"><img src="https://www.workerman.net/img/sponsors/1/20230719084316.png" width="200"></a>
-  <a href="https://www.yilianyun.net/?from=workerman" target="__blank" style="margin-left:20px;"><img src="https://www.workerman.net/img/sponsors/6218/20230720114049.png" width="200"></a>
+```bash
+./install.sh
+```
 
+The script runs `composer install` once for `service/` and once for `admin/`, creates the database from the root `database/install.sql` (idempotent), generates `service/.env` and `admin/.env` (never overwrites existing files), and prints the commands to start each service and the access URLs.
 
-</div>
+## Manual Install
 
+1. Install dependencies:
 
-<div style="float:left;padding-bottom:30px;clear:both">
+```bash
+cd service && composer install
+```
 
-  <h1>Buy the author a coffee</h1>
+2. Create the database (service and admin share one database):
 
-<img src="https://www.workerman.net/img/wx_donate.png" width="200">
-<img src="https://www.workerman.net/img/ali_donate.png" width="200">
-<br>
-<b>If you find webman helpful, donations are welcome.</b>
+```bash
+mysql -u root -p < ../database/install.sql
+```
 
+3. Configure environment: for a manual install, copy `.env.example` to `.env` and fill in the DB / Redis / JWT keys (always random in production); `install.sh` generates it automatically. Configure `REDIS` and `SFU_URL` (default 127.0.0.1:8790) as needed.
 
-</div>
+4. Start the service:
 
+```bash
+php start.php start -d      # HTTP :8788 · WS :8789
+```
 
-<div style="clear: both">
-<h1>LICENSE</h1>
-webman is open-sourced software licensed under the MIT.
-</div>
+## Usage
 
-</div>
+### Routes and processes
 
+- `config/route.php`: `/api/v1` route group (default v1, compatible with legacy `/api/vX` paths)
+- `config/process.php`: registers HTTP :8788 and WsServer :8789 processes
+- `config/payment.php`: payment channel keys and pricing
 
+### Tests
+
+```bash
+vendor/bin/phpunit      # unit tests (incl. PaymentServiceTest / WalletServiceTest / VoiceStorageTest)
+
+php tests/im_e2e.php          # IM black-box E2E (requires :8788/:8789 running + Redis)
+php tests/voice_e2e.php       # Voice E2E: versioning / voice messages / calls / voice chat rooms
+php tests/live_e2e.php        # Live E2E: rooms / danmaku / mic / close (RTMP push, HLS pull)
+php tests/wallet_e2e.php      # Wallet E2E: balance / ledger / gift split
+php tests/payment_e2e.php     # Payment E2E: order creation / callback verification / idempotent crediting
+php tests/storage_e2e.php     # Storage E2E: upload URL matches the active provider (local/s3)
+```
+
+> Media layer (SFU / coturn) local debugging: `cd media/sfu && npm run smoke`; containerized: `docker compose up -d --build`.
