@@ -10,6 +10,9 @@ namespace app\admin\controller;
 use app\model\AdminUser;
 use app\common\EncryptionService;
 use app\model\OperationLog;
+use app\model\Payment;
+use app\model\SocialUser;
+use app\model\Withdrawal;
 use support\Redis;
 use support\Request;
 use support\Response;
@@ -43,6 +46,7 @@ class DashboardController extends BaseController
 
         $data = [
             'stats' => $this->getStats($today),
+            'platform_stats' => $this->getPlatformStats($today),
             'trends' => $this->getTrends($startOfRange),
             'distribution' => $this->getDistribution(),
             'recent_logs' => $this->getRecentLogs(),
@@ -86,6 +90,23 @@ class DashboardController extends BaseController
                 'icon' => 'description',
                 'color' => '#722ED1',
             ],
+        ];
+    }
+
+    /** 平台业务统计（M6d）：直查 social_ 库，金额单位分 → 元保留 2 位小数 */
+    private function getPlatformStats(string $today): array
+    {
+        // 今日充值 = 已成功订单实付；今日提现 = 当日全部申请（提现表无金额字段，coins 即分）
+        $todayRecharge = Payment::whereDate('created_at', $today)->where('status', 'succeeded')->sum('amount_cents');
+        $todayWithdraw = Withdrawal::whereDate('created_at', $today)->sum('coins');
+
+        return [
+            ['label' => '社交用户总数', 'value' => (string) SocialUser::count(), 'icon' => 'people', 'color' => '#1677FF'],
+            ['label' => '今日新增用户', 'value' => (string) SocialUser::whereDate('created_at', $today)->count(), 'icon' => 'person_add', 'color' => '#52C41A'],
+            ['label' => '支付订单数', 'value' => (string) Payment::count(), 'icon' => 'payments', 'color' => '#FA8C16'],
+            ['label' => '今日充值(元)', 'value' => number_format($todayRecharge / 100, 2, '.', ''), 'icon' => 'savings', 'color' => '#722ED1'],
+            ['label' => '提现笔数', 'value' => (string) Withdrawal::count(), 'icon' => 'account_balance', 'color' => '#13C2C2'],
+            ['label' => '今日提现(元)', 'value' => number_format($todayWithdraw / 100, 2, '.', ''), 'icon' => 'money_off', 'color' => '#EB2F96'],
         ];
     }
 
