@@ -222,8 +222,8 @@ class ReportController extends BaseController
     /** 校验 start/end（Y-m-d、end>=start、≤366天），非法返回 400 响应 */
     private function validateRange(Request $request): ?Response
     {
-        $start = trim((string) $request->get('start', ''));
-        $end = trim((string) $request->get('end', ''));
+        $start = trim((string) $request->input('start', ''));
+        $end = trim((string) $request->input('end', ''));
         if ($start !== '' && !self::isValidDate($start)) {
             return $this->fail('start 须为 Y-m-d 格式', 400);
         }
@@ -234,16 +234,16 @@ class ReportController extends BaseController
             return $this->fail('end 不得早于 start', 400);
         }
         if ($start !== '' && $end !== '' && strtotime($end) - strtotime($start) > self::MAX_DAYS * 86400) {
-            return $this->fail("查询区间不得超过 {$this->MAX_DAYS} 天", 400);
+            return $this->fail('查询区间不得超过 ' . self::MAX_DAYS . ' 天', 400);
         }
         return null;
     }
 
-    /** 解析区间：缺省近 30 天 */
+    /** 解析区间：缺省近 30 天（POST 导出时参数在 body，统一用 input()） */
     private function resolveRange(Request $request): array
     {
-        $start = trim((string) $request->get('start', ''));
-        $end = trim((string) $request->get('end', ''));
+        $start = trim((string) $request->input('start', ''));
+        $end = trim((string) $request->input('end', ''));
         return [
             $start !== '' ? $start : date('Y-m-d', strtotime('-29 days')),
             $end !== '' ? $end : date('Y-m-d'),
