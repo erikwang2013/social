@@ -105,6 +105,8 @@ open-admin/
 
 ## Quick Start
 
+> Running `./install.sh` from the repository root completes everything in one command: dependency install, database creation (`../database/install.sql`), `.env` generation (one each for service/ and admin/, never overwrites existing files), optional media-layer startup. The steps below are for manual installation.
+
 ### 1. Install Dependencies
 
 ```bash
@@ -162,7 +164,8 @@ Visit `http://localhost:8787` and log in with the admin credentials set during i
 ```bash
 cd apps/flutter
 flutter pub get
-flutter run -d chrome    # Web (desktop admin panel style)
+flutter run -d chrome    # Dev (desktop admin panel style)
+flutter build web        # Production build (build/web/)
 ```
 
 **HarmonyOS client (Mobile):**
@@ -193,6 +196,13 @@ docker-compose up -d
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, based on `php:8.3-cli`
 - `docker-compose.yml`: 5 services, isolated network, persistent volumes
 - `.env.docker`: Docker-specific environment variables
+
+## Tests
+
+```bash
+vendor/bin/phpunit      # PHPUnit unit tests
+cd apps/flutter && flutter analyze   # Flutter static analysis (same as CI)
+```
 
 ## Database Conventions
 

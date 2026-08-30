@@ -112,6 +112,8 @@ open-admin/
 
 ## 快速开始
 
+> 仓库根目录执行 `./install.sh` 可一键完成：依赖安装、建库（`../database/install.sql`）、`.env` 生成（service/ 与 admin/ 各一份，不覆盖已存在文件）、可选媒体层启动。以下为手工安装步骤。
+
 ### 1. 安装依赖
 
 ```bash
@@ -171,7 +173,8 @@ php start.php start
 ```bash
 cd apps/flutter
 flutter pub get
-flutter run -d chrome    # Web 端（PC 管理后台风格）
+flutter run -d chrome    # 开发调试（PC 管理后台风格）
+flutter build web        # 构建生产产物（build/web/）
 ```
 
 **HarmonyOS 客户端（手机端）:**
@@ -203,6 +206,13 @@ docker-compose up -d
 - `docker-compose.yml`: 5 个服务编排，网络隔离，数据卷持久化
 - `.env.docker`: Docker 环境专用环境变量
 
+
+## 测试
+
+```bash
+vendor/bin/phpunit      # PHPUnit 单元测试
+cd apps/flutter && flutter analyze   # Flutter 静态分析（CI 同款）
+```
 
 ## 数据库规范
 
