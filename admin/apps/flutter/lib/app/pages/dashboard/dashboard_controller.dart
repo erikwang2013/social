@@ -14,6 +14,7 @@ class DashboardController extends GetxController {
   final stats = <Map<String, dynamic>>[].obs;
   final trends = <String, dynamic>{}.obs;
   final recentLogs = <Map<String, dynamic>>[].obs;
+  final platformStats = <Map<String, dynamic>>[].obs; // M6d 平台统计 6 卡片
 
   List<List<FlSpot>> get trendSpots {
     final allSeries = trends['series'] as List<dynamic>? ?? [];
@@ -44,6 +45,7 @@ class DashboardController extends GetxController {
       stats.value = List<Map<String, dynamic>>.from(data['stats'] ?? []);
       trends.value = Map<String, dynamic>.from(data['trends'] ?? {});
       recentLogs.value = List<Map<String, dynamic>>.from(data['recent_logs'] ?? []);
+      platformStats.value = List<Map<String, dynamic>>.from(data['platform_stats'] ?? []);
     } catch (e) {
       // 开发环境使用模拟数据
       stats.value = [
@@ -61,6 +63,14 @@ class DashboardController extends GetxController {
           },
         ],
       };
+      platformStats.value = [
+        {'label': '社交用户总数', 'value': '1,024', 'icon': 'people', 'color': '#1677FF'},
+        {'label': '今日新增用户', 'value': '12', 'icon': 'person_add', 'color': '#52C41A'},
+        {'label': '支付订单数', 'value': '356', 'icon': 'payments', 'color': '#FA8C16'},
+        {'label': '今日充值(元)', 'value': '2,356.80', 'icon': 'savings', 'color': '#722ED1'},
+        {'label': '提现笔数', 'value': '48', 'icon': 'account_balance', 'color': '#13C2C2'},
+        {'label': '今日提现(元)', 'value': '1,200.00', 'icon': 'money_off', 'color': '#EB2F96'},
+      ];
     } finally {
       isLoading.value = false;
     }

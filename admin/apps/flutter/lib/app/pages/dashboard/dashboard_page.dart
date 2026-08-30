@@ -46,6 +46,8 @@ class DashboardPage extends GetView<DashboardController> {
             const SizedBox(height: 24),
             _buildStatsGrid(context),
             const SizedBox(height: 24),
+            _buildPlatformStatsGrid(context),
+            const SizedBox(height: 24),
             _buildTrendChart(context),
             const SizedBox(height: 24),
             Row(
@@ -94,6 +96,52 @@ class DashboardPage extends GetView<DashboardController> {
                     Text(stat['label'], style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                     const SizedBox(height: 4),
                     Text(stat['value'], style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  /// M6d 平台统计卡片行（6 卡片：社交用户/支付/提现）
+  Widget _buildPlatformStatsGrid(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 900 ? 6 : (constraints.maxWidth > 500 ? 3 : 2);
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisExtent: 110,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: 6,
+          itemBuilder: (context, index) {
+            if (index >= controller.platformStats.length) {
+              return const SizedBox.shrink();
+            }
+            final stat = controller.platformStats[index];
+            final color = Color(int.parse('0xFF${stat['color'].replaceFirst('#', '')}'));
+            return Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(_getIcon(stat['icon']), color: color, size: 20),
+                    const Spacer(),
+                    Text(stat['label'], style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    const SizedBox(height: 4),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(stat['value'],
+                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                    ),
                   ],
                 ),
               ),
@@ -246,6 +294,10 @@ class DashboardPage extends GetView<DashboardController> {
       case 'people': return Icons.people;
       case 'person_add': return Icons.person_add;
       case 'bolt': return Icons.bolt;
+      case 'payments': return Icons.payments;
+      case 'savings': return Icons.savings;
+      case 'account_balance': return Icons.account_balance;
+      case 'money_off': return Icons.money_off;
       default: return Icons.description;
     }
   }

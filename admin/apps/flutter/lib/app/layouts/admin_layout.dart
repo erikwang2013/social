@@ -16,6 +16,7 @@ import '../pages/profile/profile_page.dart';
 import '../pages/payment_order/payment_order_page.dart';
 import '../pages/withdrawal/withdrawal_page.dart';
 import '../pages/storage_provider/storage_provider_page.dart';
+import '../pages/report/report_page.dart';
 import '../theme/app_theme.dart';
 
 class AdminLayout extends StatefulWidget {
@@ -46,6 +47,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     PaymentOrderPage(),
     WithdrawalPage(),
     StorageProviderPage(),
+    ReportPage(),
   ];
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
@@ -180,6 +182,7 @@ class _AdminLayoutState extends State<AdminLayout> {
       (showCollapsed ? null : t('nav_payments'), Icons.payments),
       (showCollapsed ? null : t('nav_withdrawals'), Icons.account_balance_wallet),
       (showCollapsed ? null : t('nav_storage_providers'), Icons.cloud_outlined),
+      (showCollapsed ? null : t('nav_reports'), Icons.bar_chart),
     ];
 
     return AnimatedContainer(
@@ -304,6 +307,11 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.cloud_outlined, size: 20),
         label: Text(t('nav_storage_providers')),
         selectedIcon: const Icon(Icons.cloud_outlined, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.bar_chart, size: 20),
+        label: Text(t('nav_reports')),
+        selectedIcon: const Icon(Icons.bar_chart, size: 20),
       ),
     ];
   }
