@@ -10,11 +10,13 @@
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片
 
 ## 功能总览
 
 ![功能总览](docs/diagrams/features.svg)
+
+图内功能随里程碑持续更新，最新纳入管理报表（用户 / 支付 / 提现）与起始页平台统计。
 
 ## 架构设计
 
@@ -59,6 +61,46 @@ service/
 │   └── storage/      # 语音文件存储（m4a；M6 起由 Rust VoiceStorage 承载）
 ├── config/           # route.php（/api/v1 路由组）· process.php（:8788/:8789）· payment.php（渠道密钥/定价）
 └── tests/            # phpunit 单元测试（含 PaymentServiceTest）+ im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php / payment_e2e.php 黑盒 E2E
+```
+
+## 一键安装
+
+前置要求：PHP ≥ 8.3（composer）、MySQL、Redis（Docker 可选，用于媒体层）。
+
+```bash
+./install.sh
+```
+
+脚本会依次：对 `service/` 与 `admin/` 各执行一次 `composer install`；以 `database/install.sql` 建库（幂等，CREATE IF NOT EXISTS）；为两个服务生成 `.env`（随机 JWT / APP 密钥，不覆盖已存在文件）；可选启动媒体层（`docker compose up -d` 起 media/sfu 与 coturn，`--skip-media` 跳过）；最后打印各服务启动命令与访问地址。
+
+## 安装说明（手工安装）
+
+1. 安装依赖：
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. 建库：
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. 配置环境：将 `service/.env.example`、`admin/.env.example` 复制为 `.env`，填入 DB / Redis / JWT / APP 密钥（生产环境务必使用随机密钥）。
+
+4. 启动服务：
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. 启动媒体层（可选）：
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## 使用说明
@@ -118,6 +160,8 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 - 总体设计：`docs/superpowers/specs/2026-08-16-social-platform-design.md`
 - M4 语音设计：`docs/superpowers/specs/2026-08-17-m4-voice-design.md`
 - 实施计划：`docs/superpowers/plans/2026-08-17-m4-voice.md`
+- M6d 报表 + 起始页统计设计：`docs/superpowers/specs/2026-08-31-m6d-reports-dashboard-design.md`
+- M6d 实施计划：`docs/superpowers/plans/2026-08-31-m6d-reports-dashboard.md`
 
 ## 欢迎支持
 

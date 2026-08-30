@@ -10,7 +10,7 @@
 - **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。ライブ / ボイスルーム / 1v1 通話の状態機械は Rust に移行（infrastructure/bee-rust）、PHP コントローラは gRPC で直接接続；APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
 - **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席）のメディア中継
 - **状態の階層化**：MySQLはビジネスの事実、Redisはセッション / IM / 通話 / ルームのリアルタイム状態を担当
-- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信
+- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信；M6dは管理レポートとダッシュボード統計を納品：レポートモジュール（ユーザー/決済/出金——日付フィルタ、集計、トレンド、分布、Excelエクスポート）とトップページのプラットフォーム統計カード
 
 ## 機能概要
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # 音声ファイル保存（m4a；M6 以降は Rust VoiceStorage が担う）
 ├── config/           # route.php（/api/v1 ルートグループ）· process.php（:8788/:8789）
 └── tests/            # phpunit単体テスト + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php ブラックボックスE2E
+```
+
+## ワンクリックインストール
+
+前提条件：PHP ≥ 8.3（composer）、MySQL、Redis（Docker は任意、メディア層用）。
+
+```bash
+./install.sh
+```
+
+スクリプトの内容：`service/` と `admin/` でそれぞれ `composer install` を実行；`database/install.sql` からデータベースを作成（冪等、CREATE IF NOT EXISTS）；両サービスの `.env` を生成（ランダムなJWT / APPキー、既存ファイルは上書きしない）；任意でメディア層を起動（`docker compose up -d` で media/sfu と coturn、`--skip-media` でスキップ）；最後に各サービスの起動コマンドとアクセスURLを出力。
+
+## 手動インストール
+
+1. 依存関係をインストール：
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. データベースを作成：
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. 環境を設定：`service/.env.example` と `admin/.env.example` を `.env` にコピーし、DB / Redis / JWT / APP キーを記入（本番では必ずランダムなキーを使用）。
+
+4. サービスを起動：
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. メディア層を起動（任意）：
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## 使い方

@@ -10,7 +10,7 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 - **Business-Services**: webman v2 (PHP 8.3) bedient sowohl REST als auch WebSocket; Live-/Voice- und 1v1-Anruf-Zustandsmaschinen wurden nach Rust migriert (infrastructure/bee-rust); PHP-Controller verbinden sich direkt per gRPC; die API wird über `X-Api-Version` versioniert (Standard v1, kompatibel mit alten `/api/vX`-Pfaden)
 - **Eigene Medienebene**: mediasoup SFU + coturn TURN für die Medienweiterleitung bei 1v1-Sprachanrufen und Sprachräumen (8 Plätze)
 - **Status-Schichtung**: MySQL als Quelle der Geschäftsdaten, Redis für den Echtzeitstatus von Sitzung / IM / Anruf / Raum
-- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6a liefert die virtuelle Ökonomie: Wallet (Guthaben/Journal, MySQL als einzige Wahrheitsquelle), Geschenke-Trinkgeld mit Streamer-Anteil und mobiles IAP-Aufladen (App Store / Google Play / Huawei); M6b liefert Zahlungskanäle: Gerüst für Auflade-Gutschrift (WeChat/Alipay/Stripe-Callback-Signaturprüfung, serverseitige Preisgestaltung, idempotente Gutschrift; Auszahlung und Abgleich geliefert); M6c liefert CDN-Speicher: Anbieter über das Admin-Panel konfigurierbar (S3-kompatibel: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); Bilder/Sprachaufnahmen/Dateien werden über Objektspeicher + CDN ausgeliefert
+- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6a liefert die virtuelle Ökonomie: Wallet (Guthaben/Journal, MySQL als einzige Wahrheitsquelle), Geschenke-Trinkgeld mit Streamer-Anteil und mobiles IAP-Aufladen (App Store / Google Play / Huawei); M6b liefert Zahlungskanäle: Gerüst für Auflade-Gutschrift (WeChat/Alipay/Stripe-Callback-Signaturprüfung, serverseitige Preisgestaltung, idempotente Gutschrift; Auszahlung und Abgleich geliefert); M6c liefert CDN-Speicher: Anbieter über das Admin-Panel konfigurierbar (S3-kompatibel: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); Bilder/Sprachaufnahmen/Dateien werden über Objektspeicher + CDN ausgeliefert; M6d liefert Verwaltungsberichte und Dashboard-Statistiken: Berichtsmodul (Benutzer/Zahlungen/Auszahlungen — Datumsfilter, Summen, Trends, Verteilungen, Excel-Export) sowie Plattform-Statistik-Karten auf der Startseite
 
 ## Funktionsübersicht
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # Speicherung von Sprachdateien (m4a; seit M6 von Rust VoiceStorage getragen)
 ├── config/           # route.php (/api/v1-Routengruppe) · process.php (:8788/:8789)
 └── tests/            # phpunit-Unit-Tests + Blackbox-E2E im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
+```
+
+## Ein-Klick-Installation
+
+Voraussetzungen: PHP ≥ 8.3 (composer), MySQL, Redis (Docker optional, für die Medienebene).
+
+```bash
+./install.sh
+```
+
+Das Skript: führt `composer install` je einmal für `service/` und `admin/` aus; legt die Datenbank aus `database/install.sql` an (idempotent, CREATE IF NOT EXISTS); erzeugt für beide Dienste eine `.env` (zufällige JWT-/APP-Schlüssel, vorhandene Dateien werden nicht überschrieben); startet optional die Medienebene (`docker compose up -d` für media/sfu und coturn, `--skip-media` zum Überspringen); gibt abschließend die Startbefehle für alle Dienste und die Zugriffsadressen aus.
+
+## Manuelle Installation
+
+1. Abhängigkeiten installieren:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. Datenbank anlegen:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. Umgebung konfigurieren: `service/.env.example` und `admin/.env.example` nach `.env` kopieren und DB-/Redis-/JWT-/APP-Schlüssel eintragen (in Produktion immer zufällige Schlüssel verwenden).
+
+4. Dienste starten:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. Medienebene starten (optional):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## Verwendung

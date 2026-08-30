@@ -10,7 +10,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page
 
 ## Feature Overview
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # Voice file storage (m4a; carried by Rust VoiceStorage since M6)
 ├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789) · payment.php (channel keys/pricing)
 └── tests/            # phpunit unit tests (incl. PaymentServiceTest) + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php / payment_e2e.php black-box E2E
+```
+
+## One-Click Install
+
+Prerequisites: PHP ≥ 8.3 (composer), MySQL, Redis (Docker optional, for the media layer).
+
+```bash
+./install.sh
+```
+
+The script: runs `composer install` once for each of `service/` and `admin/`; creates the database from `database/install.sql` (idempotent, CREATE IF NOT EXISTS); generates `.env` for both services (random JWT / APP keys, never overwrites existing files); optionally starts the media layer (`docker compose up -d` for media/sfu and coturn, `--skip-media` to skip); finally prints the commands to start each service and the access URLs.
+
+## Manual Install
+
+1. Install dependencies:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. Create the database:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. Configure environment: copy `service/.env.example` and `admin/.env.example` to `.env`, fill in DB / Redis / JWT / APP keys (always use random keys in production).
+
+4. Start the services:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. Start the media layer (optional):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## Getting Started

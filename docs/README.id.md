@@ -10,7 +10,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; state machine live/ruang suara/panggilan 1v1 dimigrasikan ke Rust (infrastructure/bee-rust); kontroler PHP terhubung langsung via gRPC; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN; M6d menghadirkan laporan admin dan statistik dasbor: modul laporan (pengguna/pembayaran/penarikan — filter tanggal, total, tren, distribusi, ekspor Excel) dan kartu statistik platform di halaman beranda
 
 ## Ringkasan Fitur
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # Penyimpanan file suara (m4a; ditangani Rust VoiceStorage sejak M6)
 ├── config/           # route.php (grup rute /api/v1) · process.php (:8788/:8789)
 └── tests/            # Unit test phpunit + E2E black-box im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
+```
+
+## Instalasi Satu Klik
+
+Prasyarat: PHP ≥ 8.3 (composer), MySQL, Redis (Docker opsional, untuk lapisan media).
+
+```bash
+./install.sh
+```
+
+Isi skrip: menjalankan `composer install` sekali untuk `service/` dan sekali untuk `admin/`; membuat database dari `database/install.sql` (idempoten, CREATE IF NOT EXISTS); membuat `.env` untuk kedua layanan (kunci JWT / APP acak, tidak pernah menimpa file yang ada); secara opsional menjalankan lapisan media (`docker compose up -d` untuk media/sfu dan coturn, `--skip-media` untuk melewati); terakhir mencetak perintah menjalankan setiap layanan dan alamat akses.
+
+## Instalasi Manual
+
+1. Pasang dependensi:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. Buat database:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. Konfigurasi lingkungan: salin `service/.env.example` dan `admin/.env.example` ke `.env`, isi kunci DB / Redis / JWT / APP (di produksi selalu gunakan kunci acak).
+
+4. Jalankan layanan:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. Jalankan lapisan media (opsional):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## Petunjuk Penggunaan

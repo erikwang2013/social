@@ -10,7 +10,7 @@ Monorepo de plataforma social multilíngue: comunidade de texto/imagem + mensage
 - **Serviços de negócio**: webman v2 (PHP 8.3) atende tanto REST quanto WebSocket; as máquinas de estado de lives/salas de voz/chamadas 1v1 migraram para Rust (infrastructure/bee-rust); os controladores PHP conectam-se diretamente via gRPC; a API é versionada via `X-Api-Version` (padrão v1, compatível com os caminhos antigos `/api/vX`)
 - **Camada de mídia própria**: mediasoup SFU + coturn TURN para o encaminhamento de mídia em chamadas de voz 1v1 e salas de voz (8 assentos)
 - **Camadas de estado**: MySQL como fonte de verdade dos negócios, Redis para o estado em tempo real de sessão / IM / chamadas / salas
-- **Marcos**: M0–M5 entregues (mensagens de voz, chamadas 1v1, salas de voz, transmissão ao vivo); M6a entrega a economia virtual: carteira (saldo/registro, MySQL como fonte única da verdade), gorjetas com presentes e partilha com o streamer, e recarga IAP móvel (App Store / Google Play / Huawei); M6b entrega canais de pagamento: esqueleto de crédito de recarga (verificação de assinatura de callback WeChat/Alipay/Stripe, preços no servidor, crédito idempotente; saque e conciliação entregues); M6c entrega armazenamento CDN: provedores configuráveis no painel de administração (compatível com S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imagens/voz/arquivos servidos via armazenamento de objetos + CDN
+- **Marcos**: M0–M5 entregues (mensagens de voz, chamadas 1v1, salas de voz, transmissão ao vivo); M6a entrega a economia virtual: carteira (saldo/registro, MySQL como fonte única da verdade), gorjetas com presentes e partilha com o streamer, e recarga IAP móvel (App Store / Google Play / Huawei); M6b entrega canais de pagamento: esqueleto de crédito de recarga (verificação de assinatura de callback WeChat/Alipay/Stripe, preços no servidor, crédito idempotente; saque e conciliação entregues); M6c entrega armazenamento CDN: provedores configuráveis no painel de administração (compatível com S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imagens/voz/arquivos servidos via armazenamento de objetos + CDN; M6d entrega relatórios administrativos e estatísticas do painel: módulo de relatórios (usuários/pagamentos/saques — filtro por datas, totais, tendências, distribuições, exportação Excel) e cartões de estatísticas da plataforma na página inicial
 
 ## Visão geral dos recursos
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # Armazenamento de arquivos de voz (m4a; gerido pelo Rust VoiceStorage desde M6)
 ├── config/           # route.php (grupo de rotas /api/v1) · process.php (:8788/:8789)
 └── tests/            # Testes unitários phpunit + E2E de caixa preta im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
+```
+
+## Instalação com um clique
+
+Pré-requisitos: PHP ≥ 8.3 (composer), MySQL, Redis (Docker opcional, para a camada de mídia).
+
+```bash
+./install.sh
+```
+
+O script: executa `composer install` uma vez para `service/` e outra para `admin/`; cria o banco de dados a partir de `database/install.sql` (idempotente, CREATE IF NOT EXISTS); gera o `.env` dos dois serviços (chaves JWT / APP aleatórias, nunca sobrescreve arquivos existentes); inicia opcionalmente a camada de mídia (`docker compose up -d` para media/sfu e coturn, `--skip-media` para pular); por fim imprime os comandos de início de cada serviço e os endereços de acesso.
+
+## Instalação manual
+
+1. Instalar dependências:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. Criar o banco de dados:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. Configurar o ambiente: copiar `service/.env.example` e `admin/.env.example` para `.env` e preencher as chaves DB / Redis / JWT / APP (em produção use sempre chaves aleatórias).
+
+4. Iniciar os serviços:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. Iniciar a camada de mídia (opcional):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## Como usar

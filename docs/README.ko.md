@@ -10,7 +10,7 @@
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. 라이브 / 음성방 / 1v1 통화 상태 머신은 Rust로 마이그레이션됨(infrastructure/bee-rust). PHP 컨트롤러는 gRPC로 직접 연결; API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
 - **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공; M6d는 관리 보고서와 대시보드 통계를 제공: 보고서 모듈(사용자/결제/출금 — 날짜 필터, 집계, 추세, 분포, Excel 내보내기)과 시작 페이지의 플랫폼 통계 카드
 
 ## 기능 개요
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # 음성 파일 저장소(m4a, M6부터 Rust VoiceStorage가 담당)
 ├── config/           # route.php(/api/v1 라우트 그룹) · process.php(:8788/:8789)
 └── tests/            # phpunit 단위 테스트 + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php 블랙박스 E2E
+```
+
+## 원클릭 설치
+
+사전 요구 사항: PHP ≥ 8.3(composer), MySQL, Redis(Docker는 선택 사항, 미디어 계층용).
+
+```bash
+./install.sh
+```
+
+스크립트 내용: `service/`와 `admin/`에서 각각 `composer install` 실행; `database/install.sql`로 데이터베이스 생성(멱등, CREATE IF NOT EXISTS); 두 서비스의 `.env` 생성(랜덤 JWT / APP 키, 기존 파일은 덮어쓰지 않음); 선택적으로 미디어 계층 시작(`docker compose up -d`로 media/sfu와 coturn, `--skip-media`로 건너뛰기); 마지막으로 각 서비스의 시작 명령과 접속 주소 출력.
+
+## 수동 설치
+
+1. 의존성 설치:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. 데이터베이스 생성:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. 환경 구성: `service/.env.example`와 `admin/.env.example`를 `.env`로 복사하고 DB / Redis / JWT / APP 키 입력(프로덕션에서는 반드시 랜덤 키 사용).
+
+4. 서비스 시작:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. 미디어 계층 시작(선택 사항):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## 사용 방법

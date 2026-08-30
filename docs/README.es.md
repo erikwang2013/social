@@ -10,7 +10,7 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; las máquinas de estado de directos/salas de voz/llamadas 1v1 se migraron a Rust (infrastructure/bee-rust); los controladores PHP se conectan directamente por gRPC; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
 - **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN; M6d entrega informes de administración y estadísticas del panel: módulo de informes (usuarios/pagos/retiros — filtro por fechas, totales, tendencias, distribuciones, exportación Excel) y tarjetas de estadísticas de la plataforma en la página de inicio
 
 ## Resumen de funciones
 
@@ -59,6 +59,46 @@ service/
 │   └── storage/      # Almacenamiento de archivos de voz (m4a; gestionado por Rust VoiceStorage desde M6)
 ├── config/           # route.php (grupo de rutas /api/v1) · process.php (:8788/:8789)
 └── tests/            # Pruebas unitarias phpunit + E2E de caja negra im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php
+```
+
+## Instalación con un clic
+
+Requisitos previos: PHP ≥ 8.3 (composer), MySQL, Redis (Docker opcional, para la capa de medios).
+
+```bash
+./install.sh
+```
+
+El script: ejecuta `composer install` una vez para `service/` y otra para `admin/`; crea la base de datos a partir de `database/install.sql` (idempotente, CREATE IF NOT EXISTS); genera el `.env` de ambos servicios (claves JWT / APP aleatorias, nunca sobrescribe archivos existentes); inicia opcionalmente la capa de medios (`docker compose up -d` para media/sfu y coturn, `--skip-media` para omitirlo); por último imprime los comandos de inicio de cada servicio y las direcciones de acceso.
+
+## Instalación manual
+
+1. Instalar dependencias:
+
+```bash
+cd service && composer install
+cd admin && composer install
+```
+
+2. Crear la base de datos:
+
+```bash
+mysql -u root -p < database/install.sql
+```
+
+3. Configurar el entorno: copiar `service/.env.example` y `admin/.env.example` a `.env` y rellenar las claves DB / Redis / JWT / APP (en producción usar siempre claves aleatorias).
+
+4. Iniciar los servicios:
+
+```bash
+cd service && php start.php start -d   # HTTP :8788 · WS :8789
+cd admin && php start.php start -d     # admin :8787
+```
+
+5. Iniciar la capa de medios (opcional):
+
+```bash
+cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ```
 
 ## Uso
