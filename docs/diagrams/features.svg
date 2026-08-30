@@ -1,5 +1,5 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
@@ -63,4 +63,18 @@
   <path class="edge" d="M 480 60 L 670 290"/>
   <rect class="fn" x="510" y="342" width="320" height="26"/><text class="t" x="670" y="360">直播 · Rust 状态机 · gRPC</text>
   <rect class="fn" x="510" y="374" width="320" height="26"/><text class="t" x="670" y="392">钱包 · 礼物打赏 · 主播分成 · IAP/支付渠道</text>
+
+  <!-- 管理报表 -->
+  <rect class="mod" x="240" y="470" width="200" height="40"/>
+  <text class="tm" x="340" y="495">管理报表</text>
+  <path class="edge" d="M 480 60 L 480 440 L 340 470"/>
+  <rect class="fn" x="240" y="522" width="200" height="26"/><text class="t" x="340" y="540">用户 / 支付 / 提现 报表</text>
+  <rect class="fn" x="240" y="554" width="200" height="26"/><text class="t" x="340" y="572">日期筛选 · 趋势 / 分布 · Excel 导出</text>
+
+  <!-- 起始页统计 -->
+  <rect class="mod" x="520" y="470" width="200" height="40"/>
+  <text class="tm" x="620" y="495">起始页统计</text>
+  <path class="edge" d="M 480 60 L 480 440 L 620 470"/>
+  <rect class="fn" x="520" y="522" width="200" height="26"/><text class="t" x="620" y="540">平台统计卡片（用户 / 支付 / 提现）</text>
+  <rect class="fn" x="520" y="554" width="200" height="26"/><text class="t" x="620" y="572">趋势图 · 5 分钟缓存</text>
 </svg>
