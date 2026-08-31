@@ -36,8 +36,9 @@ if [[ "$PHP_VER" < "8.3" ]]; then
 fi
 require composer
 require mysql
+require redis-cli
 require openssl
-echo "前置检查通过（PHP $PHP_VER / composer / mysql / openssl）"
+echo "前置检查通过（PHP $PHP_VER / composer / mysql / redis-cli / openssl）"
 
 # ─────────────────────────── 数据库连接 ───────────────────────────
 
