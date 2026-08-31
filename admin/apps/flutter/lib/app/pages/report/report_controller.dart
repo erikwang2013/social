@@ -57,20 +57,20 @@ class ReportController extends GetxController {
     };
   }
 
-  /// 趋势序列：users 双线（新增/活跃），payments 金额线，withdrawals 笔数线
+  /// 趋势序列：users 双线（新增/活跃），payments/withdrawals 单线，避免重复序列
   List<List<FlSpot>> get trendSpots {
     if (daily.isEmpty) return [];
-    return [0, 1].map((i) {
-      final key = switch (activeTab.value) {
-        'users' => i == 0 ? 'new' : 'active',
-        'payments' => 'amount_cents',
-        _ => 'count',
-      };
+    final keys = switch (activeTab.value) {
+      'users' => ['new', 'active'],
+      'payments' => ['amount_cents'],
+      _ => ['count'],
+    };
+    return keys.map((key) {
       return daily.asMap().entries.map((e) {
         final v = (e.value[key] as num? ?? 0).toDouble();
         return FlSpot(e.key.toDouble(), v);
       }).toList();
-    }).where((s) => s.isNotEmpty).toList();
+    }).toList();
   }
 
   List<PieChartSectionData> get pieSections {
