@@ -253,6 +253,9 @@ class ReportControllerTest extends TestCase
 
         $res = $this->body($this->ctrl()->payments($this->get('/admin/report/payments?start=2025-01-01&end=2026-12-31')));
         $this->assertSame(400, $res['code'], '区间超过 366 天应拒绝');
+
+        $res = $this->body($this->ctrl()->users($this->get('/admin/report/users?start=2020-01-01')));
+        $this->assertSame(400, $res['code'], '只传 start 的区间（补 end=今天后超 366 天）应拒绝');
     }
 
     #[Test]

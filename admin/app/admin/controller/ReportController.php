@@ -232,10 +232,13 @@ class ReportController extends BaseController
         if ($end !== '' && !self::isValidDate($end)) {
             return $this->fail('end 须为 Y-m-d 格式', 400);
         }
-        if ($start !== '' && $end !== '' && strtotime($end) < strtotime($start)) {
+        // 补默认值（近 30 天）后再校验区间，避免只传 start/end 一侧绕过 366 天上限
+        $start = $start !== '' ? $start : date('Y-m-d', strtotime('-29 days'));
+        $end = $end !== '' ? $end : date('Y-m-d');
+        if (strtotime($end) < strtotime($start)) {
             return $this->fail('end 不得早于 start', 400);
         }
-        if ($start !== '' && $end !== '' && strtotime($end) - strtotime($start) > self::MAX_DAYS * 86400) {
+        if (strtotime($end) - strtotime($start) > self::MAX_DAYS * 86400) {
             return $this->fail('查询区间不得超过 ' . self::MAX_DAYS . ' 天', 400);
         }
         return null;
