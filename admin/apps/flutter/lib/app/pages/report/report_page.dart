@@ -69,7 +69,7 @@ class ReportPage extends GetView<ReportController> {
         final picked = await showDatePicker(
           context: context,
           initialDate: value,
-          firstDate: DateTime.now().subtract(const Duration(days: 366 * 2)),
+          firstDate: DateTime.now().subtract(const Duration(days: 366)),
           lastDate: DateTime.now(),
         );
         if (picked == null) return;
