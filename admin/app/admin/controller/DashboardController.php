@@ -98,7 +98,7 @@ class DashboardController extends BaseController
     {
         // 今日充值 = 已成功订单实付；今日提现 = 当日全部申请（提现表无金额字段，coins 即分）
         $todayRecharge = Payment::whereDate('created_at', $today)->where('status', 'succeeded')->sum('amount_cents');
-        $todayWithdraw = Withdrawal::whereDate('created_at', $today)->sum('coins');
+        $todayWithdraw = Withdrawal::whereDate('created_at', $today)->where('status', 'succeeded')->sum('coins');
 
         return [
             ['label' => '社交用户总数', 'value' => (string) SocialUser::count(), 'icon' => 'people', 'color' => '#1677FF'],

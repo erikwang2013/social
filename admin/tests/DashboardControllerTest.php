@@ -100,7 +100,8 @@ class DashboardControllerTest extends TestCase
         SocialUser::forceCreate(['id' => 2, 'email' => 'b@x.com', 'password' => 'x', 'created_at' => $yesterday . ' 09:00:00', 'updated_at' => $yesterday . ' 09:00:00']);
         Payment::forceCreate(['id' => 1, 'user_id' => 1, 'platform' => 'wechat', 'amount_cents' => 1234, 'status' => 'succeeded', 'created_at' => $today . ' 10:00:00', 'updated_at' => $today . ' 10:00:00']);
         Payment::forceCreate(['id' => 2, 'user_id' => 2, 'platform' => 'alipay', 'amount_cents' => 9999, 'status' => 'failed', 'created_at' => $today . ' 11:00:00', 'updated_at' => $today . ' 11:00:00']);
-        Withdrawal::forceCreate(['id' => 1, 'user_id' => 1, 'platform' => 'wechat', 'account' => '{}', 'coins' => 500, 'status' => 'pending', 'created_at' => $today . ' 12:00:00', 'updated_at' => $today . ' 12:00:00']);
+        Withdrawal::forceCreate(['id' => 1, 'user_id' => 1, 'platform' => 'wechat', 'account' => '{}', 'coins' => 500, 'status' => 'succeeded', 'created_at' => $today . ' 12:00:00', 'updated_at' => $today . ' 12:00:00']);
+        Withdrawal::forceCreate(['id' => 2, 'user_id' => 2, 'platform' => 'alipay', 'account' => '{}', 'coins' => 999, 'status' => 'pending', 'created_at' => $today . ' 13:00:00', 'updated_at' => $today . ' 13:00:00']);
 
         $stats = $this->platformStats($today);
 
@@ -110,8 +111,8 @@ class DashboardControllerTest extends TestCase
         $this->assertSame('1', $byLabel['今日新增用户']['value']);
         $this->assertSame('2', $byLabel['支付订单数']['value']);
         $this->assertSame('12.34', $byLabel['今日充值(元)']['value'], '成功订单 1234 分 = 12.34 元，失败单不计');
-        $this->assertSame('1', $byLabel['提现笔数']['value']);
-        $this->assertSame('5.00', $byLabel['今日提现(元)']['value'], '500 coins = 5.00 元');
+        $this->assertSame('2', $byLabel['提现笔数']['value']);
+        $this->assertSame('5.00', $byLabel['今日提现(元)']['value'], '仅 succeeded 的 500 coins = 5.00 元，pending 不计');
 
         foreach ($stats as $card) {
             $this->assertArrayHasKey('label', $card);

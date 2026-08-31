@@ -223,10 +223,11 @@ class ReportControllerTest extends TestCase
         $res = $this->body($this->ctrl()->withdrawals($this->get('/admin/report/withdrawals?start=2026-08-01&end=2026-08-31')));
         $this->assertSame(0, $res['code']);
         $this->assertSame(2, $res['data']['stats']['count']);
-        $this->assertSame(300, $res['data']['stats']['amount_cents'], '提现金额 = coins 求和');
+        $this->assertSame(200, $res['data']['stats']['amount_cents'], '金额仅统计 succeeded，pending 不计');
 
         $daily = $res['data']['daily'];
         $this->assertSame(200, $daily[10]['amount_cents']);
+        $this->assertSame(0, $daily[9]['amount_cents'], 'pending 提现不进入金额');
 
         $status = array_column($res['data']['status_distribution'], 'value', 'name');
         $this->assertSame(1, $status['pending']);

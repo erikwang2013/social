@@ -169,18 +169,20 @@ class ReportController extends BaseController
     private function withdrawalsReport(string $start, string $end): array
     {
         $dates = $this->dateSeries($start, $end);
-        // 提现表无 amount_cents，coins 即金额（分）
+        // 提现表无 amount_cents，coins 即金额（分）；金额口径：仅 succeeded（与支付侧一致）
         $dailyCount = $this->inRange(Withdrawal::query(), $start, $end)
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->groupBy('date')->pluck('count', 'date')->all();
         $dailyAmount = $this->inRange(Withdrawal::query(), $start, $end)
+            ->where('status', 'succeeded')
             ->selectRaw('DATE(created_at) as date, SUM(coins) as total')
             ->groupBy('date')->pluck('total', 'date')->all();
 
         return [
             'stats' => [
                 'count' => (int) $this->inRange(Withdrawal::query(), $start, $end)->count(),
-                'amount_cents' => (int) $this->inRange(Withdrawal::query(), $start, $end)->sum('coins'),
+                'amount_cents' => (int) $this->inRange(Withdrawal::query(), $start, $end)
+                    ->where('status', 'succeeded')->sum('coins'),
             ],
             'daily' => array_map(fn (string $d) => [
                 'date' => $d,
@@ -277,8 +279,8 @@ class ReportController extends BaseController
             ],
             'withdrawals' => [
                 'title' => '提现报表',
-                'stats' => ['笔数', '金额(分)'],
-                'columns' => ['日期', '笔数', '金额(分)'],
+                'stats' => ['笔数', '成功金额(分)'],
+                'columns' => ['日期', '笔数', '成功金额(分)'],
                 'daily' => ['count', 'amount_cents'],
             ],
         ][$type];
