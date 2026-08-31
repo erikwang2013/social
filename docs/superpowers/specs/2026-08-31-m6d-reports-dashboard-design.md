@@ -33,7 +33,7 @@ admin 模型直连 service 库（`connection='social'`，`social_` 前缀无前�
 
 - `GET /admin/report/users?start&end` — 用户报表：`{ stats: {total, new_in_range, active_today}, daily: [{date, new, active}], status_distribution }`
 - `GET /admin/report/payments?start&end` — 支付报表：`{ stats: {orders, succeeded_amount_cents}, daily: [{date, orders, amount_cents}], platform_distribution, status_distribution }`
-- `GET /admin/report/withdrawals?start&end` — 提现报表：`{ stats: {count, amount_cents}, daily: [{date, count, amount_cents}], status_distribution }`
+- `GET /admin/report/withdrawals?start&end` — 提现报表：`{ stats: {count, amount_cents}, daily: [{date, count, amount_cents}], status_distribution }`（金额口径：仅统计 `status='succeeded'`，与支付侧一致）
 - `POST /admin/report/export` — 按报表类型导出 Excel（复用 phpspreadsheet；用户/支付/提现三选一，date 范围）
 
 默认区间：近 30 天（与仪表盘一致）。金额字段均为分（amount_cents）。
@@ -57,8 +57,8 @@ Flutter 起始页在现有卡片区下方追加平台统计行。
 
 ### 3.3 权限
 
-- 新增权限种子：`report:view`（报表查看）、`report:export`（报表导出），路由注册进 RBAC
-- Flutter 侧菜单新增「报表」入口（admin_layout 抽屉），按权限显隐
+- 新增权限种子（type=3 API 权限，AdminPermission 中间件按 `method.path` 校验）：`get.admin/report/users`、`get.admin/report/payments`、`get.admin/report/withdrawals`（报表查看）、`post.admin/report/export`（报表导出），路由注册进 RBAC
+- Flutter 侧菜单新增「报表」入口（admin_layout 抽屉）
 
 ## 4. 一键安装（install.sh）
 
