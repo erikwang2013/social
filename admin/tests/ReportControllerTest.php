@@ -272,10 +272,7 @@ class ReportControllerTest extends TestCase
 
         $this->assertSame(200, $res->getStatusCode());
         $this->assertStringContainsString('report_users_2026-08-01_2026-08-31.xlsx', (string) $res->getHeader('Content-Disposition'), '文件名应含类型与区间');
-        // download() 用 withFile() 流式输出，rawBody 在发送前为空 → 断言磁盘文件为 xlsx zip
-        $file = runtime_path() . '/tmp/report_users_2026-08-01_2026-08-31.xlsx';
-        $this->assertFileExists($file);
-        $this->assertStringStartsWith("PK\x03\x04", (string) file_get_contents($file), '应为 xlsx zip 二进制流');
-        @unlink($file);
+        $this->assertStringStartsWith("PK\x03\x04", (string) $res->rawBody(), '应为 xlsx zip 二进制流');
+        $this->assertFileDoesNotExist(runtime_path() . '/tmp/report_users_2026-08-01_2026-08-31.xlsx', '临时文件发送后已清理');
     }
 }

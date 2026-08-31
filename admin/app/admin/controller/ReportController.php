@@ -361,7 +361,13 @@ class ReportController extends BaseController
             mkdir($dir, 0755, true);
         }
         (new Xlsx($spreadsheet))->save($tmpFile);
+        // 报表 xlsx < 2MB：读入内存后立即删除临时文件（download() 流式发送无发送后清理钩子）
+        $content = (string) file_get_contents($tmpFile);
+        @unlink($tmpFile);
 
-        return response()->download($tmpFile, $filename);
+        return response($content, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }
