@@ -155,7 +155,7 @@ CREATE TABLE IF NOT EXISTS `social_call_records` (
   PRIMARY KEY (`id`), KEY `idx_callee` (`callee_id`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='1v1通话记录';
 CREATE TABLE IF NOT EXISTS `social_voice_rooms` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
   `owner_id` BIGINT UNSIGNED NOT NULL,
   `name` VARCHAR(100) NOT NULL,
   `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1开 0关',
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `social_voice_rooms` (
   PRIMARY KEY (`id`), KEY `idx_status_updated` (`status`, `updated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='语聊房';
 CREATE TABLE IF NOT EXISTS `social_voice_room_members` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
   `room_id` BIGINT UNSIGNED NOT NULL,
   `user_id` BIGINT UNSIGNED NOT NULL,
   `role` TINYINT NOT NULL DEFAULT 0 COMMENT '0听众 1麦位',
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `social_voice_room_members` (
   PRIMARY KEY (`id`), UNIQUE KEY `uk_room_uid` (`room_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='语聊房成员';
 CREATE TABLE IF NOT EXISTS `social_live_rooms` (
-  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
   `owner_id` BIGINT UNSIGNED NOT NULL,
   `title` VARCHAR(100) NOT NULL,
   `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1直播中 0已结束',

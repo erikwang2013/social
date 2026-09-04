@@ -9,8 +9,9 @@ use crate::live::{LiveStore, RoomRow};
 use crate::voice::{RoomStore, VoiceRoomRow};
 use mysql_async::prelude::Queryable;
 use mysql_async::{Conn, Opts, OptsBuilder, Params};
+use idgen_rs::{FastIdGenerator, IGOptions};
 use redis::Commands;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 
 /// 广播队列键（PHP LiveCenter/WsServer 同键：rpush → lrange/ltrim 消费）。
 pub const BROADCAST_QUEUE: &str = "social:live:broadcast";
@@ -44,6 +45,38 @@ pub fn open_admin_opts() -> Opts {
         .user(Some(user))
         .pass(Some(pass))
         .into()
+}
+
+/// 进程级 snowflake 生成器（对齐 PHP config/snowflake.php 的 worker_id 命名）。
+/// ponytail: next_id() as i64 的天花板由 i64 符号位决定，即 2^63 毫秒 ≈ 2.9 亿年；
+/// 时间戳字段 54 位（timestamp_shift = 6+6）约 572877 年才用尽，更不是瓶颈。
+/// base_time 越大符号位越早用尽，故须 ≤ 1_700_000_000_000（对齐 PHP start_timestamp）。
+/// base_time 只让两套生成器的**时间戳部分**可比；位布局不同（PHP 5+5+12，idgen_rs 6+6），
+/// ID 数值域不互换。PHP 的 datacenter_id/worker_id 两个 0-31 字段此处只取 worker_id。
+/// ponytail: SNOWFLAKE_WORKER_ID 越界静默 % 64（0 与 64 撞同一 worker_id），仅告警不 panic。
+/// ponytail: next_id() 遇时钟回拨 >10ms 会进程级 panic（idgen_rs 无 catch），低频写可接受。
+fn id_generator() -> &'static FastIdGenerator {
+    static GEN: OnceLock<FastIdGenerator> = OnceLock::new();
+    GEN.get_or_init(|| {
+        let raw = std::env::var("SNOWFLAKE_WORKER_ID")
+            .ok()
+            .and_then(|v| v.parse::<u64>().ok())
+            .unwrap_or(1);
+        let worker = raw % 64;
+        if raw > 63 {
+            eprintln!(
+                "SNOWFLAKE_WORKER_ID={} 超出 idgen_rs 6bit 范围 0..=63，已取模为 {}；同毫秒内可能与其他节点撞号",
+                raw, worker
+            );
+        }
+        // base_time 必须与 PHP 一致，否则两套生成器产出的 id 时间戳不可比
+        let mut opts = IGOptions::new(worker as u16);
+        opts.base_time = std::env::var("SNOWFLAKE_START_TIMESTAMP")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(1_700_000_000_000);
+        FastIdGenerator::new(&opts)
+    })
 }
 
 /// Redis 连接助手：单连接 + Mutex，与 PHP WsRedis（单例连接）同构。
@@ -140,19 +173,20 @@ impl LiveStore for MySqlLiveStore {
     fn create_room(&self, owner: i64, title: &str) -> i64 {
         let opts = self.opts.clone();
         let title = title.to_string();
+        let id = id_generator().next_id();
         self.rt.block_on(async move {
             let Ok(mut conn) = Conn::new(opts).await else { return 0 };
             if conn
                 .exec_drop(
-                    "INSERT INTO social_live_rooms (owner_id, title, status, started_at, created_at, updated_at) VALUES (?, ?, 1, NOW(), NOW(), NOW())",
-                    Params::from((owner, title.as_str())),
+                    "INSERT INTO social_live_rooms (id, owner_id, title, status, started_at, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW(), NOW())",
+                    Params::from((id as i64, owner, title.as_str())),
                 )
                 .await
                 .is_err()
             {
                 return 0;
             }
-            conn.last_insert_id().unwrap_or(0) as i64
+            id as i64
         })
     }
 
@@ -277,19 +311,20 @@ impl RoomStore for MySqlRoomStore {
     fn create_room(&self, owner: i64, name: &str) -> i64 {
         let opts = self.opts.clone();
         let name = name.to_string();
+        let id = id_generator().next_id();
         self.rt.block_on(async move {
             let Ok(mut conn) = Conn::new(opts).await else { return 0 };
             if conn
                 .exec_drop(
-                    "INSERT INTO social_voice_rooms (owner_id, name, status, created_at, updated_at) VALUES (?, ?, 1, NOW(), NOW())",
-                    Params::from((owner, name.as_str())),
+                    "INSERT INTO social_voice_rooms (id, owner_id, name, status, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())",
+                    Params::from((id as i64, owner, name.as_str())),
                 )
                 .await
                 .is_err()
             {
                 return 0;
             }
-            conn.last_insert_id().unwrap_or(0) as i64
+            id as i64
         })
     }
 
@@ -344,13 +379,14 @@ impl RoomStore for MySqlRoomStore {
 
     fn insert_member(&self, room_id: i64, uid: i64, role: i32) {
         let opts = self.opts.clone();
+        let id = id_generator().next_id();
         self.rt.block_on(async move {
             let Ok(mut conn) = Conn::new(opts).await else { return };
             // firstOrCreate 语义：唯一键冲突时保留原 role 不覆盖
             let _ = conn
                 .exec_drop(
-                    "INSERT INTO social_voice_room_members (room_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE role = role",
-                    Params::from((room_id, uid, role)),
+                    "INSERT INTO social_voice_room_members (id, room_id, user_id, role, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE role = role",
+                    Params::from((id as i64, room_id, uid, role)),
                 )
                 .await;
         });

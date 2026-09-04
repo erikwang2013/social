@@ -85,6 +85,14 @@ INSTALL_SQL="$ROOT/database/install.sql"
 echo "导入 social 段（可重复执行，CREATE IF NOT EXISTS）..."
 sed -n '1,184p;445,$p' "$INSTALL_SQL" | "${MYSQL[@]}" social
 
+# CREATE TABLE IF NOT EXISTS 对已存在表是 no-op，需显式去掉这三张表的 AUTO_INCREMENT：
+# 主键改由应用层 snowflake 生成（Rust idgen_rs），残留自增与显式传入的 id 语义不明。
+echo "移除 live/voice room 三表的 AUTO_INCREMENT ..."
+"${MYSQL[@]}" social -e "
+ALTER TABLE social_live_rooms MODIFY id BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成';
+ALTER TABLE social_voice_rooms MODIFY id BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成';
+ALTER TABLE social_voice_room_members MODIFY id BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成';"
+
 if "${MYSQL[@]}" open_admin -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='open_admin' AND table_name='erik_admin_user'" | grep -q '^0$'; then
   echo "导入 open_admin 段（首次安装）..."
   sed -n '185,444p' "$INSTALL_SQL" | "${MYSQL[@]}" open_admin

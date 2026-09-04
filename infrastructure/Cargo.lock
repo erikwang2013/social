@@ -285,7 +285,7 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bee_cache"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "memcache",
@@ -296,14 +296,14 @@ dependencies = [
 
 [[package]]
 name = "bee_cli"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "clap",
 ]
 
 [[package]]
 name = "bee_config"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "bee_config_macro",
  "notify",
@@ -314,7 +314,7 @@ dependencies = [
 
 [[package]]
 name = "bee_config_macro"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -323,7 +323,7 @@ dependencies = [
 
 [[package]]
 name = "bee_graph"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "axum 0.8.9",
@@ -336,7 +336,7 @@ dependencies = [
 
 [[package]]
 name = "bee_kv"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "memcache",
@@ -347,11 +347,12 @@ dependencies = [
 
 [[package]]
 name = "bee_live"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "axum 0.8.9",
  "bytes",
  "getrandom 0.3.4",
+ "idgen_rs",
  "md5",
  "mysql_async",
  "object_store",
@@ -365,7 +366,7 @@ dependencies = [
 
 [[package]]
 name = "bee_logs"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "tracing",
  "tracing-appender",
@@ -374,7 +375,7 @@ dependencies = [
 
 [[package]]
 name = "bee_orm"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "bee_orm_macro",
@@ -388,7 +389,7 @@ dependencies = [
 
 [[package]]
 name = "bee_orm_macro"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -397,7 +398,7 @@ dependencies = [
 
 [[package]]
 name = "bee_router"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "axum 0.8.9",
@@ -418,7 +419,7 @@ dependencies = [
 
 [[package]]
 name = "bee_rust"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "bee_cache",
  "bee_config",
@@ -435,7 +436,7 @@ dependencies = [
 
 [[package]]
 name = "bee_search"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "axum 0.8.9",
@@ -448,7 +449,7 @@ dependencies = [
 
 [[package]]
 name = "bee_session"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "bee_cache",
@@ -461,7 +462,7 @@ dependencies = [
 
 [[package]]
 name = "bee_template"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "serde",
  "serde_json",
@@ -472,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "bee_tsdb"
-version = "1.0.6"
+version = "1.1.0"
 dependencies = [
  "async-trait",
  "axum 0.8.9",
@@ -1742,6 +1743,15 @@ name = "ident_case"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
+
+[[package]]
+name = "idgen_rs"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60934c6a7f60af409f2060cc08ecf27d5fd0442fbebdb93287617ea74739823c"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "idna"
