@@ -4,13 +4,21 @@
 
 Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Messaging + Live-/Sprachfunktionen + virtuelle Wirtschaft.
 
+## Projekt-Maskottchen
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · eine Brieftaube mit Kopfhörern. Die Taube trägt die Nachrichten (IM / Push), die Kopfhörer nehmen den Anruf an (Sprachanrufe / Sprachräume / Live), und die Klangbalken auf der Brust sind ihr Online-Signal.
+
+Vektorquelle: [`diagrams/mascot.svg`](diagrams/mascot.svg); die vereinfachte Marke [`mascot-mark.svg`](diagrams/mascot-mark.svg) wird zusätzlich als `favicon.svg` auf den service-/admin-Seiten und im Installationsassistenten ausgeliefert.
+
 ## Projektvorstellung
 
 - **Drei native Clients**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), dazu ein Flutter-Admin-Panel
 - **Business-Services**: webman v2 (PHP 8.3) bedient sowohl REST als auch WebSocket; Live-/Voice- und 1v1-Anruf-Zustandsmaschinen wurden nach Rust migriert (infrastructure/bee-rust); PHP-Controller verbinden sich direkt per gRPC; die API wird über `X-Api-Version` versioniert (Standard v1, kompatibel mit alten `/api/vX`-Pfaden)
 - **Eigene Medienebene**: mediasoup SFU + coturn TURN für die Medienweiterleitung bei 1v1-Sprachanrufen und Sprachräumen (8 Plätze)
 - **Status-Schichtung**: MySQL als Quelle der Geschäftsdaten, Redis für den Echtzeitstatus von Sitzung / IM / Anruf / Raum
-- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6a liefert die virtuelle Ökonomie: Wallet (Guthaben/Journal, MySQL als einzige Wahrheitsquelle), Geschenke-Trinkgeld mit Streamer-Anteil und mobiles IAP-Aufladen (App Store / Google Play / Huawei); M6b liefert Zahlungskanäle: Gerüst für Auflade-Gutschrift (WeChat/Alipay/Stripe-Callback-Signaturprüfung, serverseitige Preisgestaltung, idempotente Gutschrift; Auszahlung und Abgleich geliefert); M6c liefert CDN-Speicher: Anbieter über das Admin-Panel konfigurierbar (S3-kompatibel: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); Bilder/Sprachaufnahmen/Dateien werden über Objektspeicher + CDN ausgeliefert; M6d liefert Verwaltungsberichte und Dashboard-Statistiken: Berichtsmodul (Benutzer/Zahlungen/Auszahlungen — Datumsfilter, Summen, Trends, Verteilungen, Excel-Export) sowie Plattform-Statistik-Karten auf der Startseite
+- **Meilensteine**: M0–M5 geliefert (Sprachnachrichten, 1v1-Anrufe, Sprachräume, Live-Streaming); M6a liefert die virtuelle Ökonomie: Wallet (Guthaben/Journal, MySQL als einzige Wahrheitsquelle), Geschenke-Trinkgeld mit Streamer-Anteil und mobiles IAP-Aufladen (App Store / Google Play / Huawei); M6b liefert Zahlungskanäle: Gerüst für Auflade-Gutschrift (WeChat/Alipay/Stripe-Callback-Signaturprüfung, serverseitige Preisgestaltung, idempotente Gutschrift; Auszahlung und Abgleich geliefert); M6c liefert CDN-Speicher: Anbieter über das Admin-Panel konfigurierbar (S3-kompatibel: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); Bilder/Sprachaufnahmen/Dateien werden über Objektspeicher + CDN ausgeliefert; M6d liefert Verwaltungsberichte und Dashboard-Statistiken: Berichtsmodul (Benutzer/Zahlungen/Auszahlungen — Datumsfilter, Summen, Trends, Verteilungen, Excel-Export) sowie Plattform-Statistik-Karten auf der Startseite; v1.1 liefert die Primärschlüssel-Governance: Die drei MySQL-Schreibvorgänge in bee_live übergeben jetzt explizite idgen_rs-Snowflake-IDs, die Abhängigkeit von last_insert_id() entfällt; die betreffenden Tabellen verlieren AUTO_INCREMENT
 
 ## Funktionsübersicht
 
@@ -33,6 +41,8 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 ![Funktionsdesign](diagrams/module-design.de.svg)
 
 ## Projektstruktur
+
+![Projektstruktur](diagrams/structure.de.svg)
 
 | Verzeichnis | Beschreibung | Technologie |
 |------|------|------|

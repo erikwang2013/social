@@ -222,10 +222,13 @@ class InstallController
         <head>
             <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
             <title>{$title} — 开放管理后台</title>
+            <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+            <link rel="shortcut icon" href="/favicon.ico">
             <style>
                 *{margin:0;padding:0;box-sizing:border-box}
                 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;color:#333;min-height:100vh;display:flex;align-items:center;justify-content:center}
                 .box{background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08);width:460px;max-width:95vw;padding:36px 40px}
+                .logo{display:block;margin:0 auto 12px;width:64px;height:64px}
                 h1{font-size:22px;text-align:center;margin-bottom:6px;color:#1a1a2e}
                 .sub{text-align:center;color:#999;font-size:13px;margin-bottom:20px}
                 .field{margin-bottom:16px}
@@ -244,6 +247,7 @@ class InstallController
         </head>
         <body>
             <div class="box">
+                <img class="logo" src="/favicon.svg" width="64" height="64" alt="Geist">
                 <h1>开放管理后台</h1>
                 <div class="sub">安装向导 · {$title}</div>
                 {$body}

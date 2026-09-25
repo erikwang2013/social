@@ -1,0 +1,105 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" width="100%" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <style>
+    .root  { fill: #1e3a8a; rx: 10 }
+    .layer { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.5; rx: 12 }
+    .lt    { font-size: 14px; font-weight: 700; fill: #334155 }
+    .tr    { font-size: 17px; font-weight: 700; fill: #ffffff; text-anchor: middle }
+    .box   { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; rx: 8 }
+    .boxb  { fill: #eff6ff; stroke: #2563eb; stroke-width: 1.5; rx: 8 }
+    .boxg  { fill: #f0fdf4; stroke: #16a34a; stroke-width: 1.5; rx: 8 }
+    .boxy  { fill: #fffbeb; stroke: #d97706; stroke-width: 1.5; rx: 8 }
+    .t     { font-size: 13px; fill: #0f172a; text-anchor: middle }
+    .ts    { font-size: 11px; fill: #475569; text-anchor: middle }
+    .tl    { font-size: 13px; font-weight: 700; fill: #1e3a8a }
+    .tls   { font-size: 11.5px; fill: #475569 }
+    .edge  { stroke: #94a3b8; stroke-width: 1.5; fill: none; marker-end: url(#arr) }
+  </style>
+
+  <rect class="root" x="20" y="16" width="920" height="44"/>
+  <text class="tr" x="480" y="44">প্রকল্প কাঠামো · সোশ্যাল প্লাটফর্ম মনোরেপো</text>
+
+  <!-- 1. Contracts -->
+  <rect class="layer" x="20" y="76" width="920" height="92"/>
+  <text class="lt" x="36" y="100">১. চুক্তি · contracts/　(protobuf / buf, প্রবেশ: buf.gen.yaml)</text>
+  <rect class="boxg" x="40" y="112" width="140" height="40"/><text class="t" x="110" y="137">admin_service.proto</text>
+  <rect class="boxg" x="190" y="112" width="140" height="40"/><text class="t" x="260" y="137">user_service.proto</text>
+  <rect class="boxg" x="340" y="112" width="140" height="40"/><text class="t" x="410" y="137">live_service.proto</text>
+  <rect class="boxg" x="490" y="112" width="150" height="40"/><text class="t" x="565" y="137">search_service.proto</text>
+  <rect class="boxg" x="650" y="112" width="130" height="40"/><text class="t" x="715" y="137">infra_service.proto</text>
+  <rect class="boxg" x="790" y="112" width="130" height="40"/><text class="t" x="855" y="137">common/types.proto</text>
+
+  <path class="edge" d="M 480 170 L 480 188"/>
+
+  <!-- 2. Services -->
+  <rect class="layer" x="20" y="192" width="920" height="268"/>
+  <text class="lt" x="36" y="216">২. সেবা · ব্যবসা / কম্পিউট / মিডিয়া</text>
+
+  <rect class="boxb" x="40" y="232" width="880" height="118"/>
+  <text class="tl" x="48" y="258">service/</text>
+  <text class="tls" x="118" y="258">ব্যবহারকারীমুখী সেবা　webman v2 (PHP 8.3)　REST :8788 · WebSocket :8789</text>
+  <rect class="box" x="48" y="268" width="210" height="32"/>
+  <text class="t" x="153" y="282">app/controller/</text><text class="ts" x="153" y="296">auth · post · follow · im · voice</text>
+  <rect class="box" x="268" y="268" width="210" height="32"/>
+  <text class="t" x="373" y="282">app/common/</text><text class="ts" x="373" y="296">Wallet · Gift · Payment সেবা</text>
+  <rect class="box" x="488" y="268" width="210" height="32"/>
+  <text class="t" x="593" y="282">app/ws/</text><text class="ts" x="593" y="296">Envelope ফ্রেম · Deliverer পুশ</text>
+  <rect class="box" x="708" y="268" width="210" height="32"/>
+  <text class="t" x="813" y="282">app/call · room · live/</text><text class="ts" x="813" y="296">M6 → Rust · PHP-তে WS সিগন্যালিং</text>
+  <rect class="box" x="48" y="306" width="210" height="32"/>
+  <text class="t" x="153" y="320">app/model · middleware/</text><text class="ts" x="153" y="334">মডেল · auth/ভার্সন মিডলওয়্যার</text>
+  <rect class="box" x="268" y="306" width="210" height="32"/>
+  <text class="t" x="373" y="320">config/</text><text class="ts" x="373" y="334">route · process · payment · iap</text>
+  <rect class="box" x="488" y="306" width="210" height="32"/>
+  <text class="t" x="593" y="320">tests/</text><text class="ts" x="593" y="334">phpunit + *_e2e.php ব্ল্যাক-বক্স</text>
+  <rect class="box" x="708" y="306" width="210" height="32"/>
+  <text class="t" x="813" y="320">public/</text><text class="ts" x="813" y="334">apidoc · upload · favicon.svg</text>
+
+  <rect class="box" x="40" y="362" width="280" height="86"/>
+  <text class="tl" x="56" y="388">admin/</text>
+  <text class="tls" x="56" y="408">অ্যাডমিন কনসোল :8787 · open-admin ফর্ক</text>
+  <text class="tls" x="56" y="428">webman v2 + Flutter ওয়েব</text>
+
+  <rect class="box" x="336" y="362" width="280" height="86"/>
+  <text class="tl" x="352" y="388">infrastructure/</text>
+  <text class="tls" x="352" y="408">উচ্চ থ্রুপুট কম্পিউট · bee-rust (tonic)</text>
+  <text class="tls" x="352" y="428">bee_live · social_grpc · bee_orm</text>
+
+  <rect class="boxg" x="632" y="362" width="288" height="86"/>
+  <text class="tl" x="648" y="388">media/sfu/</text>
+  <text class="tls" x="648" y="408">নিজস্ব মিডিয়া স্তর · Node.js</text>
+  <text class="tls" x="648" y="428">mediasoup SFU :8790 · coturn :3478</text>
+
+  <path class="edge" d="M 480 462 L 480 480"/>
+
+  <!-- 3. Clients -->
+  <rect class="layer" x="20" y="484" width="920" height="100"/>
+  <text class="lt" x="36" y="508">৩. ক্লায়েন্ট · apps/　(তিনটি নেটিভ ক্লায়েন্ট + Flutter কনসোল)</text>
+  <rect class="box" x="40" y="520" width="215" height="50"/>
+  <text class="t" x="147" y="542">apps/android</text><text class="ts" x="147" y="560">Kotlin + Compose</text>
+  <rect class="box" x="265" y="520" width="215" height="50"/>
+  <text class="t" x="372" y="542">apps/ios</text><text class="ts" x="372" y="560">SwiftUI</text>
+  <rect class="box" x="490" y="520" width="215" height="50"/>
+  <text class="t" x="597" y="542">apps/harmonyos</text><text class="ts" x="597" y="560">ArkTS</text>
+  <rect class="box" x="715" y="520" width="215" height="50"/>
+  <text class="t" x="822" y="542">admin/apps/flutter</text><text class="ts" x="822" y="560">Flutter ওয়েব কনসোল</text>
+
+  <path class="edge" d="M 480 586 L 480 604"/>
+
+  <!-- 4. Supporting -->
+  <rect class="layer" x="20" y="608" width="920" height="96"/>
+  <text class="lt" x="36" y="632">৪. সহায়ক · database / docs / tests / scripts</text>
+  <rect class="boxy" x="40" y="644" width="200" height="44"/>
+  <text class="t" x="140" y="664">database/</text><text class="ts" x="140" y="680">install.sql এক-ধাপ সেটআপ</text>
+  <rect class="boxy" x="250" y="644" width="200" height="44"/>
+  <text class="t" x="350" y="664">docs/</text><text class="ts" x="350" y="680">ডিজাইন ডকস + ডায়াগ্রাম/</text>
+  <rect class="boxy" x="460" y="644" width="200" height="44"/>
+  <text class="t" x="560" y="664">tests/</text><text class="ts" x="560" y="680">api/ + e2e/ (Playwright)</text>
+  <rect class="boxy" x="670" y="644" width="260" height="44"/>
+  <text class="t" x="800" y="664">scripts/ + install.sh</text><text class="ts" x="800" y="680">ci-probe.sh · gen-contracts.sh</text>
+</svg>

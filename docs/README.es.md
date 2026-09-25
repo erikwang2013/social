@@ -4,13 +4,21 @@
 
 Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajería instantánea + directos/voz + economía virtual.
 
+## Mascota del proyecto
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · una paloma mensajera con auriculares. La paloma lleva los mensajes (IM / notificaciones push), los auriculares atienden la llamada (llamadas de voz / salas de voz / directos) y las barras de sonido del pecho son su señal de «en línea».
+
+Fuente vectorial: [`diagrams/mascot.svg`](diagrams/mascot.svg); la marca simplificada [`mascot-mark.svg`](diagrams/mascot-mark.svg) también se sirve como `favicon.svg` en los sitios service / admin y en el asistente de instalación.
+
 ## Introducción al proyecto
 
 - **Tres clientes nativos**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), más un panel de administración en Flutter
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; las máquinas de estado de directos/salas de voz/llamadas 1v1 se migraron a Rust (infrastructure/bee-rust); los controladores PHP se conectan directamente por gRPC; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
 - **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN; M6d entrega informes de administración y estadísticas del panel: módulo de informes (usuarios/pagos/retiros — filtro por fechas, totales, tendencias, distribuciones, exportación Excel) y tarjetas de estadísticas de la plataforma en la página de inicio
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN; M6d entrega informes de administración y estadísticas del panel: módulo de informes (usuarios/pagos/retiros — filtro por fechas, totales, tendencias, distribuciones, exportación Excel) y tarjetas de estadísticas de la plataforma en la página de inicio; v1.1 entrega la gobernanza de claves primarias: las tres escrituras MySQL de bee_live ahora pasan claves explícitas idgen_rs snowflake, eliminando la dependencia de last_insert_id(); las tablas correspondientes pierden AUTO_INCREMENT
 
 ## Resumen de funciones
 
@@ -33,6 +41,8 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 ![Diseño de módulos](diagrams/module-design.es.svg)
 
 ## Estructura del proyecto
+
+![Estructura del proyecto](diagrams/structure.es.svg)
 
 | Directorio | Descripción | Tecnología |
 |------|------|------|

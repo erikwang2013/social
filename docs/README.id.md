@@ -4,13 +4,21 @@
 
 Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + live/suara + ekonomi virtual.
 
+## Maskot Proyek
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · merpati pos berkepala headphone. Merpati mengantar pesan (IM / push), headphone menjawab panggilan (panggilan suara / ruang suara / live), dan bar suara di dadanya adalah sinyal «online»-nya.
+
+Sumber vektor: [`diagrams/mascot.svg`](diagrams/mascot.svg); marka sederhana [`mascot-mark.svg`](diagrams/mascot-mark.svg) juga disajikan sebagai `favicon.svg` di situs service / admin dan wizard instalasi admin.
+
 ## Pengenalan Proyek
 
 - **Tiga klien native**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus konsol admin Flutter
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; state machine live/ruang suara/panggilan 1v1 dimigrasikan ke Rust (infrastructure/bee-rust); kontroler PHP terhubung langsung via gRPC; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
 - **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN; M6d menghadirkan laporan admin dan statistik dasbor: modul laporan (pengguna/pembayaran/penarikan — filter tanggal, total, tren, distribusi, ekspor Excel) dan kartu statistik platform di halaman beranda
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN; M6d menghadirkan laporan admin dan statistik dasbor: modul laporan (pengguna/pembayaran/penarikan — filter tanggal, total, tren, distribusi, ekspor Excel) dan kartu statistik platform di halaman beranda; v1.1 menghadirkan tata kelola kunci primer: tiga penulisan MySQL di bee_live kini memakai kunci eksplisit idgen_rs snowflake, menghapus ketergantungan pada last_insert_id(); tabel terkait melepas AUTO_INCREMENT
 
 ## Ringkasan Fitur
 
@@ -33,6 +41,8 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 ![Desain Modul](diagrams/module-design.id.svg)
 
 ## Struktur Proyek
+
+![Struktur Proyek](diagrams/structure.id.svg)
 
 | Direktori | Deskripsi | Teknologi |
 |------|------|------|

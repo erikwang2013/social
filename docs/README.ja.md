@@ -4,13 +4,21 @@
 
 多言語ソーシャルプラットフォームのモノレポ：テキスト/画像コミュニティ + インスタントメッセージ + ライブ/ボイス + 仮想経済。
 
+## プロジェクトのマスコット
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · ヘッドホンをつけた伝書鳩。鳩がメッセージを運び（IM / プッシュ通知）、ヘッドホンが通話を引き受け（音声通話 / ボイスルーム / ライブ）、胸の音柱はオンラインの合図です。
+
+ベクター原版は [`diagrams/mascot.svg`](diagrams/mascot.svg)。簡略マーク [`mascot-mark.svg`](diagrams/mascot-mark.svg) は `favicon.svg` として service / admin のサイトと管理画面のインストーラーに組み込まれています。
+
 ## プロジェクト紹介
 
 - **3つのネイティブクライアント**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS）。Flutter製の管理コンソールもあり
 - **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。ライブ / ボイスルーム / 1v1 通話の状態機械は Rust に移行（infrastructure/bee-rust）、PHP コントローラは gRPC で直接接続；APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
 - **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席）のメディア中継
 - **状態の階層化**：MySQLはビジネスの事実、Redisはセッション / IM / 通話 / ルームのリアルタイム状態を担当
-- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信；M6dは管理レポートとダッシュボード統計を納品：レポートモジュール（ユーザー/決済/出金——日付フィルタ、集計、トレンド、分布、Excelエクスポート）とトップページのプラットフォーム統計カード
+- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信；M6dは管理レポートとダッシュボード統計を納品：レポートモジュール（ユーザー/決済/出金——日付フィルタ、集計、トレンド、分布、Excelエクスポート）とトップページのプラットフォーム統計カード。v1.1は主キー統治を納品：bee_liveの3か所のMySQL書き込みがidgen_rs snowflakeの明示的な主キーを使うようになり、last_insert_id()への依存を解消、該当テーブルはAUTO_INCREMENTを廃止
 
 ## 機能概要
 
@@ -33,6 +41,8 @@
 ![機能設計](diagrams/module-design.ja.svg)
 
 ## プロジェクト構成
+
+![プロジェクト構成](diagrams/structure.ja.svg)
 
 | ディレクトリ | 説明 | 技術 |
 |------|------|------|

@@ -4,13 +4,21 @@
 
 다국어 소셜 플랫폼 모노레포: 텍스트/이미지 커뮤니티 + 인스턴트 메시징 + 라이브/음성 + 가상 경제.
 
+## 프로젝트 마스코트
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · 헤드폰을 쓴 전서구. 비둘기가 메시지를 나르고(IM / 푸시), 헤드폰이 통화를 받으며(음성 통화 / 보이스방 / 라이브), 가슴의 음파 막대는 온라인 신호입니다.
+
+벡터 원본은 [`diagrams/mascot.svg`](diagrams/mascot.svg), 단순화 마크 [`mascot-mark.svg`](diagrams/mascot-mark.svg)는 `favicon.svg`로 service / admin 사이트와 관리자 설치 마법사에 포함되어 있습니다.
+
 ## 프로젝트 소개
 
 - **네이티브 클라이언트 3종**: Android(Kotlin + Compose), iOS(SwiftUI), HarmonyOS(ArkTS), Flutter 관리자 콘솔 포함
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. 라이브 / 음성방 / 1v1 통화 상태 머신은 Rust로 마이그레이션됨(infrastructure/bee-rust). PHP 컨트롤러는 gRPC로 직접 연결; API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
 - **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공; M6d는 관리 보고서와 대시보드 통계를 제공: 보고서 모듈(사용자/결제/출금 — 날짜 필터, 집계, 추세, 분포, Excel 내보내기)과 시작 페이지의 플랫폼 통계 카드
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공; M6d는 관리 보고서와 대시보드 통계를 제공: 보고서 모듈(사용자/결제/출금 — 날짜 필터, 집계, 추세, 분포, Excel 내보내기)과 시작 페이지의 플랫폼 통계 카드; v1.1은 기본 키 거버넌스 제공: bee_live의 MySQL 쓰기 3곳이 idgen_rs snowflake 명시적 기본 키를 사용해 last_insert_id() 의존을 제거하고, 해당 테이블은 AUTO_INCREMENT를 제거
 
 ## 기능 개요
 
@@ -33,6 +41,8 @@
 ![기능 설계](diagrams/module-design.ko.svg)
 
 ## 프로젝트 구조
+
+![프로젝트 구조](diagrams/structure.ko.svg)
 
 | 디렉터리 | 설명 | 기술 |
 |------|------|------|

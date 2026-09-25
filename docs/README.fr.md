@@ -4,13 +4,21 @@
 
 Monorepo de plateforme sociale multilingue : communauté texte/image + messagerie instantanée + live/voix + économie virtuelle.
 
+## Mascotte du projet
+
+<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+
+**Geist** · un pigeon voyageur à casque. Le pigeon porte les messages (IM / notifications push), le casque prend l'appel (appels vocaux / salons vocaux / live), et les barres sonores sur son poitrail sont son signal « en ligne ».
+
+Source vectorielle : [`diagrams/mascot.svg`](diagrams/mascot.svg) ; la marque simplifiée [`mascot-mark.svg`](diagrams/mascot-mark.svg) sert aussi de `favicon.svg` sur les sites service / admin et dans l'assistant d'installation.
+
 ## Présentation du projet
 
 - **Trois clients natifs** : Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus une console d'administration Flutter
 - **Services métier** : webman v2 (PHP 8.3) sert à la fois REST et WebSocket ; les machines à états live/salon vocal/appel 1v1 sont migrées vers Rust (infrastructure/bee-rust) ; les contrôleurs PHP se connectent directement en gRPC ; l'API est versionnée via `X-Api-Version` (v1 par défaut, compatible avec les anciens chemins `/api/vX`)
 - **Couche média maison** : mediasoup SFU + coturn TURN pour le relais média des appels vocaux 1v1 et des salons vocaux (8 sièges)
 - **Stratification des états** : MySQL comme source de vérité métier, Redis pour l'état temps réel des sessions / IM / appels / salons
-- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming)  ; M6a livre l'économie virtuelle : portefeuille (solde/journal, MySQL comme source de vérité unique), pourboires-cadeaux avec part du streamer et rechargement IAP mobile (App Store / Google Play / Huawei) ; M6b livre les canaux de paiement : squelette de crédit de recharge (vérification de signature de callback WeChat/Alipay/Stripe, tarification côté serveur, crédit idempotent ; retrait et réconciliation livrés) ; M6c livre le stockage CDN : fournisseurs configurables depuis le panneau d'administration (compatible S3 : AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2) ; images/voix/fichiers servis via stockage objet + CDN ; M6d livre les rapports d'administration et les statistiques du tableau de bord : module de rapports (utilisateurs/paiements/retraits — filtre par dates, totaux, tendances, répartitions, export Excel) et cartes de statistiques de la plateforme sur la page d'accueil
+- **Jalons** : M0–M5 livrés (messages vocaux, appels 1v1, salons vocaux, live streaming)  ; M6a livre l'économie virtuelle : portefeuille (solde/journal, MySQL comme source de vérité unique), pourboires-cadeaux avec part du streamer et rechargement IAP mobile (App Store / Google Play / Huawei) ; M6b livre les canaux de paiement : squelette de crédit de recharge (vérification de signature de callback WeChat/Alipay/Stripe, tarification côté serveur, crédit idempotent ; retrait et réconciliation livrés) ; M6c livre le stockage CDN : fournisseurs configurables depuis le panneau d'administration (compatible S3 : AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2) ; images/voix/fichiers servis via stockage objet + CDN ; M6d livre les rapports d'administration et les statistiques du tableau de bord : module de rapports (utilisateurs/paiements/retraits — filtre par dates, totaux, tendances, répartitions, export Excel) et cartes de statistiques de la plateforme sur la page d'accueil ; v1.1 livre la gouvernance des clés primaires : les trois écritures MySQL de bee_live passent désormais des clés explicites idgen_rs snowflake, supprimant la dépendance à last_insert_id() ; les tables concernées perdent AUTO_INCREMENT
 
 ## Aperçu des fonctionnalités
 
@@ -33,6 +41,8 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 ![Conception des modules](diagrams/module-design.fr.svg)
 
 ## Structure du projet
+
+![Structure du projet](diagrams/structure.fr.svg)
 
 | Répertoire | Description | Technologie |
 |------|------|------|
