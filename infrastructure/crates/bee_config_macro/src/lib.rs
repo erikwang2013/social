@@ -43,9 +43,12 @@ pub fn derive_config(input: TokenStream) -> TokenStream {
             fn reload(&mut self) -> Result<(), bee_config::ConfigError> {
                 let path = bee_config::paths::path_of::<Self>()?;
                 // Retry: editors writing in place can leave a half-written
-                // file behind a change event. 3 attempts x 20ms covers that.
+                // file behind a change event. 5 attempts x 50ms covers that
+                // (~200ms budget) — the previous 3 x 20ms was too tight for
+                // slow/loaded hosts, where the writer thread could be
+                // descheduled past the whole window.
                 let mut last_err = None;
-                for attempt in 0..3 {
+                for attempt in 0..5 {
                     match Self::load(&path) {
                         Ok(cfg) => {
                             *self = cfg;
@@ -53,8 +56,8 @@ pub fn derive_config(input: TokenStream) -> TokenStream {
                         }
                         Err(e) => {
                             last_err = Some(e);
-                            if attempt < 2 {
-                                std::thread::sleep(std::time::Duration::from_millis(20));
+                            if attempt < 4 {
+                                std::thread::sleep(std::time::Duration::from_millis(50));
                             }
                         }
                     }

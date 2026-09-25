@@ -118,6 +118,8 @@ fn test_reload_retries_on_half_written_file() {
     // Simulate an in-place editor write: file is momentarily truncated
     // (no [default] section -> load fails), then fully rewritten shortly
     // after. reload() must retry instead of surfacing the transient error.
+    // This delay must stay below reload()'s retry budget (~200ms) so a loaded
+    // runner descheduling this thread cannot exhaust the window.
     std::fs::write(&path, "partially written\n").unwrap();
     let path = path.clone();
     let writer = std::thread::spawn(move || {
