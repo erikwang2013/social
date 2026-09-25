@@ -21,6 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      # social_grpc/build.rs 经 tonic-build 调 protoc 编译 contracts/*.proto，
+      # 缺 protoc 时 build script 直接报 "Could not find `protoc`"
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
       - run: cd infrastructure && cargo build --workspace
       - run: cd infrastructure && cargo test --workspace
   # android 打包（APK）已取消：推送后不再打包应用，仅由 release.yml 创建 tags/releases
