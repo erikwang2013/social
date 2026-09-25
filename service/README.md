@@ -2,11 +2,11 @@
 
 **语言 / Languages:** [中文](README.md) · [English](README.en.md)
 
-<img src="../docs/diagrams/mascot.svg" width="90" alt="Geist — 项目宠物">
+<img src="../docs/diagrams/mascot.svg" width="90" alt="Bub — 项目宠物">
 
 webman v2（PHP 8.3）用户端业务服务：REST :8788 + WebSocket :8789 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连。
 
-> 项目宠物 **Geist** · 平台总览见 [../README.md](../README.md)
+> 项目宠物 **Bub** · 平台总览见 [../README.md](../README.md)
 
 ## 功能
 

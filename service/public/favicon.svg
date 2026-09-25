@@ -1,25 +1,25 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
-<!-- Geist 简化标记：仅头 + 耳机，用于 16–32px favicon -->
+<!-- Bub 简化标记：气泡本体 + 脸，用于 16–32px favicon -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" role="img" aria-labelledby="markTitle">
-  <title id="markTitle">Geist</title>
+  <title id="markTitle">Bub</title>
   <style>
     .bg    { fill: #2563eb }
-    .head  { fill: #ffffff; stroke: #0f172a; stroke-width: 3 }
-    .disc  { fill: #ffffff; stroke: #0f172a; stroke-width: 3.2 }
-    .pupil { fill: #0f172a }
-    .beak  { fill: #d97706; stroke: #0f172a; stroke-width: 2.2; stroke-linejoin: round }
-    .band  { fill: none; stroke: #0f172a; stroke-width: 4; stroke-linecap: round }
-    .cup   { fill: #0f172a }
+    .body  { fill: #ffffff; stroke: #0f172a; stroke-width: 3.4; stroke-linejoin: round }
+    .ink   { fill: #0f172a }
+    .glint { fill: #ffffff }
+    .blush { fill: #fda4af }
+    .mouth { fill: none; stroke: #0f172a; stroke-width: 2.4; stroke-linecap: round }
   </style>
 
   <rect class="bg" x="2" y="2" width="60" height="60" rx="14"/>
-  <path class="band" d="M 13 30 C 13 5 51 5 51 30"/>
-  <rect class="cup" x="5" y="24" width="10" height="21" rx="5"/>
-  <rect class="cup" x="49" y="24" width="10" height="21" rx="5"/>
-  <circle class="head" cx="32" cy="36" r="22"/>
-  <circle class="disc" cx="25" cy="35" r="8.5"/>
-  <circle class="disc" cx="39" cy="35" r="8.5"/>
-  <circle class="pupil" cx="25" cy="35" r="3.6"/>
-  <circle class="pupil" cx="39" cy="35" r="3.6"/>
-  <path class="beak" d="M 29 42 L 35 42 L 32 48.5 Z"/>
+
+  <path class="body" d="M 26 13 L 42 13 C 48 13 52 17 52 23 L 52 35 C 52 41 48 45 42 45 L 36 45 L 23 57 C 21 59 18 58 18 55 L 19 45 C 16 44 14 40 14 36 L 14 23 C 14 17 20 13 26 13 Z"/>
+
+  <circle class="ink" cx="26" cy="27" r="4.6"/>
+  <circle class="ink" cx="40" cy="27" r="4.6"/>
+  <circle class="glint" cx="24.6" cy="25.6" r="1.5"/>
+  <circle class="glint" cx="38.6" cy="25.6" r="1.5"/>
+  <ellipse class="blush" cx="18" cy="35" rx="4" ry="2.6"/>
+  <ellipse class="blush" cx="48" cy="35" rx="4" ry="2.6"/>
+  <path class="mouth" d="M 29 34 C 31 37 35 37 37 34"/>
 </svg>

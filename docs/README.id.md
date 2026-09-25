@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + live/suara + ekonomi virtual.
+Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + live/suara + ekonomi virtual; tumpukan PHP + Rust, tiga klien native.
 
 ## Maskot Proyek
 
-<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
 
-**Geist** · burung hantu berkepala headphone. Siang menjaga feed (postingan / komunitas), malam menemani live dan ruang suara; bar suara di dadanya adalah sinyal «online»-nya (IM), dan koin di bawah cakarnya adalah ekonomi virtualnya.
+**Bub** · gelembung pesan. Unit terkecil di platform: postingan, pesan suara, danmaku live, dan hadiah semuanya keluar di dalam satu gelembung; ia tersenyum, melambai, dan ekor di kiri bawahnya menunjuk ke arah pesan itu pergi.
 
 Sumber vektor: [`diagrams/mascot.svg`](diagrams/mascot.svg); marka sederhana [`mascot-mark.svg`](diagrams/mascot-mark.svg) juga disajikan sebagai `favicon.svg` di situs service / admin dan wizard instalasi admin.
 
@@ -16,9 +16,9 @@ Sumber vektor: [`diagrams/mascot.svg`](diagrams/mascot.svg); marka sederhana [`m
 
 - **Tiga klien native**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus konsol admin Flutter
 - **Layanan bisnis**: webman v2 (PHP 8.3) melayani saluran REST dan WebSocket; state machine live/ruang suara/panggilan 1v1 dimigrasikan ke Rust (infrastructure/bee-rust); kontroler PHP terhubung langsung via gRPC; API diveri melalui `X-Api-Version` (default v1, kompatibel dengan path lama `/api/vX`)
-- **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi)
+- **Lapisan media sendiri**: mediasoup SFU + coturn TURN untuk penerusan media panggilan suara 1v1 dan ruang obrolan suara (8 kursi: host + 7 mikrofon)
 - **Pelapisan status**: MySQL sebagai sumber fakta bisnis, Redis untuk status real-time sesi / IM / panggilan / ruang
-- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN; M6d menghadirkan laporan admin dan statistik dasbor: modul laporan (pengguna/pembayaran/penarikan — filter tanggal, total, tren, distribusi, ekspor Excel) dan kartu statistik platform di halaman beranda; v1.1 menghadirkan tata kelola kunci primer: tiga penulisan MySQL di bee_live kini memakai kunci eksplisit idgen_rs snowflake, menghapus ketergantungan pada last_insert_id(); tabel terkait melepas AUTO_INCREMENT
+- **Pencapaian**: M0–M5 selesai (pesan suara, panggilan 1v1, ruang obrolan suara, live streaming); M6a menghadirkan ekonomi virtual: dompet (saldo/riwayat, MySQL sebagai sumber kebenaran tunggal), hadiah dengan bagi hasil streamer, dan isi ulang IAP seluler (App Store / Google Play / Huawei); M6b menghadirkan kanal pembayaran: kerangka kredit isi ulang (verifikasi tanda tangan callback WeChat/Alipay/Stripe, harga di sisi server, kredit idempoten; penarikan dan rekonsiliasi selesai); M6c menghadirkan penyimpanan CDN: penyedia dapat dikonfigurasi dari panel admin (kompatibel S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), gambar/suara/berkas disajikan melalui penyimpanan objek + CDN; M6d menghadirkan laporan admin dan statistik dasbor: modul laporan (pengguna/pembayaran/penarikan — filter tanggal, total, tren, distribusi, ekspor Excel) dan kartu statistik platform di halaman beranda; v1.1 menghadirkan tata kelola kunci primer: tiga penulisan MySQL di bee_live kini memakai kunci eksplisit idgen_rs snowflake, menghapus ketergantungan pada last_insert_id(); tabel terkait melepas AUTO_INCREMENT; v1.1.1–v1.1.6 adalah perbaikan dokumentasi / CI / stabilitas tanpa fitur baru
 
 ## Ringkasan Fitur
 
@@ -148,12 +148,19 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 ### Pengujian
 
 ```bash
-cd service
-vendor/bin/phpunit                    # Unit test (79 tests / 230 assertions)
+cd service && vendor/bin/phpunit      # Unit test (229 tests / 660 assertions; kasus live dan suara perlu layanan Rust gRPC berjalan)
+cd admin   && vendor/bin/phpunit      # Unit test admin (98 tests / 340 assertions)
+cd infrastructure && cargo test --workspace   # Rust, 17 crates (204 tests)
+DB_PASS='' php tests/api/run.php      # Otomasi API (116 kasus; admin :8791 / service :8788 harus berjalan)
+cd tests/e2e && npx playwright test   # UI ujung ke ujung (41 kasus)
 
-php tests/im_e2e.php                  # E2E black-box IM (perlu :8788/:8789 berjalan + Redis)
-php tests/voice_e2e.php               # E2E suara: versi / pesan suara / panggilan / ruang obrolan suara
-php tests/live_e2e.php                # E2E live: ruang / danmaku / mikrofon / tutup (push RTMP, pull HLS)
+cd service                            # E2E black-box di bawah perlu service berjalan (:8788/:8789) + Redis
+php tests/im_e2e.php                  # IM: kirim/terima WS dua pengguna / dibaca / ditarik / antrean offline
+php tests/voice_e2e.php               # Suara: versi API / pesan suara / pensinyalan panggilan 1v1 / ruang suara
+php tests/live_e2e.php                # Live: buka / masuk / danmaku / mikrofon naik-turun / tutup
+php tests/wallet_e2e.php              # Dompet: saldo / isi ulang / hadiah / bagi hasil streamer
+php tests/payment_e2e.php             # Pembayaran: order / verifikasi callback + kredit / idempotensi / cek nominal
+php tests/storage_e2e.php             # Penyimpanan: unggah gambar / local dan s3 / prefiks URL sesuai penyedia aktif
 
 cd media/sfu
 npm run smoke                         # Smoke test protokol SFU /signal (perlu kontainer Docker atau node lokal)

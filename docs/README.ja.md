@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-多言語ソーシャルプラットフォームのモノレポ：テキスト/画像コミュニティ + インスタントメッセージ + ライブ/ボイス + 仮想経済。
+多言語ソーシャルプラットフォームのモノレポ：テキスト/画像コミュニティ + インスタントメッセージ + ライブ/ボイス + 仮想経済；PHP + Rust の二層構成、ネイティブクライアント3種。
 
 ## プロジェクトのマスコット
 
-<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
 
-**Geist** · ヘッドホンをつけたフクロウ。昼はフィード（投稿 / コミュニティ）を見守り、夜はライブとボイスルームに寄り添い、胸の音柱はオンライン（IM）の合図、足元のコインはバーチャル経済です。
+**Bub** · メッセージの吹き出し。プラットフォームでいちばん小さな単位——投稿も、音声メッセージも、ライブの弾幕も、ギフトも、最後はひとつの吹き出しに載って届きます。笑って、手を振って、左下のしっぽがメッセージの向かう先を指しています。
 
 ベクター原版は [`diagrams/mascot.svg`](diagrams/mascot.svg)。簡略マーク [`mascot-mark.svg`](diagrams/mascot-mark.svg) は `favicon.svg` として service / admin のサイトと管理画面のインストーラーに組み込まれています。
 
@@ -16,9 +16,9 @@
 
 - **3つのネイティブクライアント**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS）。Flutter製の管理コンソールもあり
 - **ビジネスサービス**：webman v2（PHP 8.3）がRESTとWebSocketの両チャネルを提供。ライブ / ボイスルーム / 1v1 通話の状態機械は Rust に移行（infrastructure/bee-rust）、PHP コントローラは gRPC で直接接続；APIは `X-Api-Version` でバージョン管理（デフォルトv1、旧 `/api/vX` パスと互換）
-- **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席）のメディア中継
+- **自前メディア層**：mediasoup SFU + coturn TURNによる1v1音声通話・ボイスチャットルーム（8席：ホスト + マイク7）のメディア中継
 - **状態の階層化**：MySQLはビジネスの事実、Redisはセッション / IM / 通話 / ルームのリアルタイム状態を担当
-- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信；M6dは管理レポートとダッシュボード統計を納品：レポートモジュール（ユーザー/決済/出金——日付フィルタ、集計、トレンド、分布、Excelエクスポート）とトップページのプラットフォーム統計カード。v1.1は主キー統治を納品：bee_liveの3か所のMySQL書き込みがidgen_rs snowflakeの明示的な主キーを使うようになり、last_insert_id()への依存を解消、該当テーブルはAUTO_INCREMENTを廃止
+- **マイルストーン**：M0–M5を納品済み（音声メッセージ、1v1通話、ボイスチャットルーム、ライブ配信）。M6はlive/voice状態機械のRust移行を納品（PHPはgRPC経由でRustを直接呼び出し、サーキットブレーカー／デグレード／レート制限）。M6aは仮想経済を納品：ウォレット（残高/台帳、MySQLが唯一の事実源）、ギフト投げ銭と配信者分配、モバイルIAPチャージ（App Store / Google Play / Huawei）；M6bは決済チャネルを納品：チャージ入金の骨格（WeChat/Alipay/Stripeコールバック署名検証、サーバー側価格設定、冪等入金；出金と照合は納品済み）；M6cはCDNストレージを納品：プロバイダーは管理パネルから設定可能（S3互換：AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2）、画像/音声/ファイルはオブジェクトストレージ + CDN経由で配信；M6dは管理レポートとダッシュボード統計を納品：レポートモジュール（ユーザー/決済/出金——日付フィルタ、集計、トレンド、分布、Excelエクスポート）とトップページのプラットフォーム統計カード。v1.1は主キー統治を納品：bee_liveの3か所のMySQL書き込みがidgen_rs snowflakeの明示的な主キーを使うようになり、last_insert_id()への依存を解消、該当テーブルはAUTO_INCREMENTを廃止；v1.1.1–v1.1.6 はドキュメント / CI / 安定性の修正で、新機能はなし
 
 ## 機能概要
 
@@ -148,12 +148,19 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 ### テスト
 
 ```bash
-cd service
-vendor/bin/phpunit                    # 単体テスト（79 tests / 230 assertions）
+cd service && vendor/bin/phpunit      # 単体テスト（229 tests / 660 assertions；ライブと音声のケースは Rust gRPC サービス起動が必要）
+cd admin   && vendor/bin/phpunit      # 管理側の単体テスト（98 tests / 340 assertions）
+cd infrastructure && cargo test --workspace   # Rust 17 crates（204 tests）
+DB_PASS='' php tests/api/run.php      # API自動化（116ケース；admin :8791 / service :8788 の起動が必要）
+cd tests/e2e && npx playwright test   # UIエンドツーエンド（41ケース）
 
-php tests/im_e2e.php                  # IMブラックボックスE2E（:8788/:8789 起動中 + Redis が必要）
-php tests/voice_e2e.php               # 音声E2E：バージョン管理 / 音声メッセージ / 通話 / ボイスチャットルーム
-php tests/live_e2e.php                # ライブE2E：ルーム / 弾幕 / マイク / クローズ（RTMPプッシュ、HLSプル）
+cd service                            # 以下のブラックボックスE2Eは service 起動中（:8788/:8789）+ Redis が必要
+php tests/im_e2e.php                  # IM：2ユーザーのWS送受信 / 既読 / 取り消し / オフラインキュー
+php tests/voice_e2e.php               # 音声：APIバージョン管理 / 音声メッセージ / 1v1通話シグナリング / ボイスルーム
+php tests/live_e2e.php                # ライブ：開播 / 入室 / 弾幕 / マイク上下 / 閉場
+php tests/wallet_e2e.php              # ウォレット：残高 / チャージ / ギフト / 配信者分配
+php tests/payment_e2e.php             # 決済：注文 / コールバック検証入金 / 冪等性 / 金額チェック
+php tests/storage_e2e.php             # ストレージ：画像アップロード / local と s3 / URLプレフィックスと稼働中プロバイダの一致
 
 cd media/sfu
 npm run smoke                         # SFU /signal プロトコルのスモークテスト（Dockerコンテナまたはローカル node が必要）

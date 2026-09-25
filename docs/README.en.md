@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy.
+Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy; a PHP + Rust stack with three native clients.
 
 ## Project Mascot
 
-<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
 
-**Geist** · an owl with headphones. It watches the feed by day (posts / community), keeps the live and voice rooms company by night (live / voice rooms), the sound bars on its chest are its online signal (IM), and the coin it perches on is its virtual economy (wallet / gifts).
+**Bub** · a message bubble. The smallest unit of the platform: posts, voice notes, live danmaku and gifts all leave inside one bubble; it smiles, it waves, and the tail at its lower left points where the message is headed.
 
 Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark [`mascot-mark.svg`](diagrams/mascot-mark.svg) also ships as `favicon.svg` on the service / admin sites and in the admin install wizard.
 
@@ -16,9 +16,9 @@ Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark
 
 - **Three native clients**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus a Flutter admin console
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
-- **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats)
+- **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats: host + 7 mics)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT; v1.1.1–v1.1.6 are documentation / CI / stability fixes with no new features
 
 ## Feature Overview
 
@@ -148,12 +148,19 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 ### Tests
 
 ```bash
-cd service
-vendor/bin/phpunit                    # Unit tests (79 tests / 230 assertions)
+cd service && vendor/bin/phpunit      # Unit tests (229 tests / 660 assertions; live and voice cases need the Rust gRPC service running)
+cd admin   && vendor/bin/phpunit      # Admin unit tests (98 tests / 340 assertions)
+cd infrastructure && cargo test --workspace   # Rust, 17 crates (204 tests)
+DB_PASS='' php tests/api/run.php      # API automation (116 cases; admin :8791 / service :8788 must be up)
+cd tests/e2e && npx playwright test   # UI end-to-end (41 cases)
 
-php tests/im_e2e.php                  # IM black-box E2E (requires :8788/:8789 running + Redis)
-php tests/voice_e2e.php               # Voice E2E: versioned / voice messages / calls / voice chat rooms
-php tests/live_e2e.php                # Live E2E: rooms / danmaku / mic / close (RTMP push, HLS pull)
+cd service                            # the black-box E2E below need the service running (:8788/:8789) + Redis
+php tests/im_e2e.php                  # IM: two-user WS send/receive / read / recall / offline queue
+php tests/voice_e2e.php               # Voice: API versioning / voice messages / 1v1 call signalling / voice rooms
+php tests/live_e2e.php                # Live: open / join / danmaku / mic up-down / close
+php tests/wallet_e2e.php              # Wallet: balance / top-up / gifting / host revenue share
+php tests/payment_e2e.php             # Payment: order / callback verify + credit / idempotency / amount check
+php tests/storage_e2e.php             # Storage: image upload / local & s3 / URL prefix matches the active provider
 
 cd media/sfu
 npm run smoke                         # SFU /signal protocol smoke test (requires Docker container or local node)

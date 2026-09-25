@@ -247,7 +247,7 @@ class InstallController
         </head>
         <body>
             <div class="box">
-                <img class="logo" src="/favicon.svg" width="64" height="64" alt="Geist">
+                <img class="logo" src="/favicon.svg" width="64" height="64" alt="Bub">
                 <h1>开放管理后台</h1>
                 <div class="sub">安装向导 · {$title}</div>
                 {$body}

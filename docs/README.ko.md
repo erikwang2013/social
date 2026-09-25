@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-다국어 소셜 플랫폼 모노레포: 텍스트/이미지 커뮤니티 + 인스턴트 메시징 + 라이브/음성 + 가상 경제.
+다국어 소셜 플랫폼 모노레포: 텍스트/이미지 커뮤니티 + 인스턴트 메시징 + 라이브/음성 + 가상 경제; PHP + Rust 2계층, 네이티브 클라이언트 3종.
 
 ## 프로젝트 마스코트
 
-<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
 
-**Geist** · 헤드폰을 쓴 부엉이. 낮에는 피드(게시글 / 커뮤니티)를 지키고, 밤에는 라이브와 보이스방을 함께하며, 가슴의 음파 막대는 온라인(IM) 신호, 발밑의 동전은 가상 경제입니다.
+**Bub** · 메시지 말풍선. 플랫폼에서 가장 작은 단위 — 게시글, 음성 메시지, 라이브 단마쿠, 선물이 모두 하나의 말풍선에 담겨 나갑니다. 웃고 손을 흔들며, 왼쪽 아래 꼬리는 메시지가 향할 곳을 가리킵니다.
 
 벡터 원본은 [`diagrams/mascot.svg`](diagrams/mascot.svg), 단순화 마크 [`mascot-mark.svg`](diagrams/mascot-mark.svg)는 `favicon.svg`로 service / admin 사이트와 관리자 설치 마법사에 포함되어 있습니다.
 
@@ -16,9 +16,9 @@
 
 - **네이티브 클라이언트 3종**: Android(Kotlin + Compose), iOS(SwiftUI), HarmonyOS(ArkTS), Flutter 관리자 콘솔 포함
 - **비즈니스 서비스**: webman v2(PHP 8.3)가 REST와 WebSocket 양 채널을 제공. 라이브 / 음성방 / 1v1 통화 상태 머신은 Rust로 마이그레이션됨(infrastructure/bee-rust). PHP 컨트롤러는 gRPC로 직접 연결; API는 `X-Api-Version`으로 버전 관리(기본 v1, 기존 `/api/vX` 경로와 호환)
-- **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8개 마이크 슬롯) 미디어 중계
+- **자체 구축 미디어 계층**: mediasoup SFU + coturn TURN, 1v1 음성 통화 및 보이스 채팅방(8석: 방장 + 마이크 7) 미디어 중계
 - **상태 계층화**: MySQL은 비즈니스 데이터의 원천, Redis는 세션 / IM / 통화 / 룸의 실시간 상태 담당
-- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공; M6d는 관리 보고서와 대시보드 통계를 제공: 보고서 모듈(사용자/결제/출금 — 날짜 필터, 집계, 추세, 분포, Excel 내보내기)과 시작 페이지의 플랫폼 통계 카드; v1.1은 기본 키 거버넌스 제공: bee_live의 MySQL 쓰기 3곳이 idgen_rs snowflake 명시적 기본 키를 사용해 last_insert_id() 의존을 제거하고, 해당 테이블은 AUTO_INCREMENT를 제거
+- **마일스톤**: M0–M5 완료(음성 메시지, 1v1 통화, 보이스 채팅방, 라이브 스트리밍); M6a는 가상 경제 제공(지갑(잔액/원장, MySQL 단일 진실 소스), 선물 팁과 스트리머 분배, 모바일 IAP 충전(App Store / Google Play / Huawei)); M6b는 결제 채널 제공(충전 입금 골격(WeChat/Alipay/Stripe 콜백 서명 검증, 서버 측 가격 책정, 멱등 입금; 출금과 대사 제공 완료)); M6c는 CDN 스토리지 제공: 공급자를 관리자 패널에서 구성 가능(S3 호환: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), 이미지/음성/파일은 객체 스토리지 + CDN으로 제공; M6d는 관리 보고서와 대시보드 통계를 제공: 보고서 모듈(사용자/결제/출금 — 날짜 필터, 집계, 추세, 분포, Excel 내보내기)과 시작 페이지의 플랫폼 통계 카드; v1.1은 기본 키 거버넌스 제공: bee_live의 MySQL 쓰기 3곳이 idgen_rs snowflake 명시적 기본 키를 사용해 last_insert_id() 의존을 제거하고, 해당 테이블은 AUTO_INCREMENT를 제거; v1.1.1–v1.1.6는 문서 / CI / 안정성 수정이며 새 기능은 없습니다
 
 ## 기능 개요
 
@@ -148,12 +148,19 @@ docker compose up -d --build   # SFU :8790(RTC UDP 10000-10200) · coturn :3478
 ### 테스트
 
 ```bash
-cd service
-vendor/bin/phpunit                    # 단위 테스트(79 tests / 230 assertions)
+cd service && vendor/bin/phpunit      # 단위 테스트(229 tests / 660 assertions; 라이브·음성 케이스는 Rust gRPC 서비스 실행 필요)
+cd admin   && vendor/bin/phpunit      # 관리자 단위 테스트(98 tests / 340 assertions)
+cd infrastructure && cargo test --workspace   # Rust 17 crates(204 tests)
+DB_PASS='' php tests/api/run.php      # API 자동화(116 케이스; admin :8791 / service :8788 실행 필요)
+cd tests/e2e && npx playwright test   # UI 엔드투엔드(41 케이스)
 
-php tests/im_e2e.php                  # IM 블랙박스 E2E(:8788/:8789 실행 중 + Redis 필요)
-php tests/voice_e2e.php               # 음성 E2E: 버전 관리 / 음성 메시지 / 통화 / 보이스 채팅방
-php tests/live_e2e.php                # 라이브 E2E: 룸 / 단마쿠 / 마이크 / 닫기(RTMP 푸시, HLS 풀)
+cd service                            # 아래 블랙박스 E2E는 service 실행 중(:8788/:8789) + Redis 필요
+php tests/im_e2e.php                  # IM: 두 사용자 WS 송수신 / 읽음 / 회수 / 오프라인 큐
+php tests/voice_e2e.php               # 음성: API 버전 관리 / 음성 메시지 / 1v1 통화 시그널링 / 보이스룸
+php tests/live_e2e.php                # 라이브: 개설 / 입장 / 단마쿠 / 마이크 업다운 / 종료
+php tests/wallet_e2e.php              # 지갑: 잔액 / 충전 / 선물 / 방송인 분배
+php tests/payment_e2e.php             # 결제: 주문 / 콜백 검증 입금 / 멱등성 / 금액 검증
+php tests/storage_e2e.php             # 스토리지: 이미지 업로드 / local 과 s3 / URL 접두사와 활성 사업자 일치
 
 cd media/sfu
 npm run smoke                         # SFU /signal 프로토콜 스모크(Docker 컨테이너 또는 로컬 node 필요)

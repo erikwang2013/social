@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajería instantánea + directos/voz + economía virtual.
+Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajería instantánea + directos/voz + economía virtual; pila PHP + Rust, tres clientes nativos.
 
 ## Mascota del proyecto
 
-<img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
+<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
 
-**Geist** · un búho con auriculares. De día cuida el muro (publicaciones / comunidad), de noche las salas de directo y de voz; las barras de sonido del pecho son su señal de «en línea» (IM), y la moneda bajo sus garras es su economía virtual.
+**Bub** · una burbuja de mensaje. La unidad más pequeña de la plataforma: publicaciones, mensajes de voz, danmaku de directos y regalos salen todos dentro de una burbuja; sonríe, saluda, y la colita de abajo a la izquierda señala hacia dónde va el mensaje.
 
 Fuente vectorial: [`diagrams/mascot.svg`](diagrams/mascot.svg); la marca simplificada [`mascot-mark.svg`](diagrams/mascot-mark.svg) también se sirve como `favicon.svg` en los sitios service / admin y en el asistente de instalación.
 
@@ -16,9 +16,9 @@ Fuente vectorial: [`diagrams/mascot.svg`](diagrams/mascot.svg); la marca simplif
 
 - **Tres clientes nativos**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), más un panel de administración en Flutter
 - **Servicios de negocio**: webman v2 (PHP 8.3) sirve tanto REST como WebSocket; las máquinas de estado de directos/salas de voz/llamadas 1v1 se migraron a Rust (infrastructure/bee-rust); los controladores PHP se conectan directamente por gRPC; la API se versiona mediante `X-Api-Version` (v1 por defecto, compatible con rutas antiguas `/api/vX`)
-- **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos)
+- **Capa de medios propia**: mediasoup SFU + coturn TURN para el reenvío de medios en llamadas de voz 1v1 y salas de voz (8 asientos: anfitrión + 7 micrófonos)
 - **Estratificación de estado**: MySQL como fuente de verdad del negocio, Redis para el estado en tiempo real de sesión / IM / llamadas / salas
-- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN; M6d entrega informes de administración y estadísticas del panel: módulo de informes (usuarios/pagos/retiros — filtro por fechas, totales, tendencias, distribuciones, exportación Excel) y tarjetas de estadísticas de la plataforma en la página de inicio; v1.1 entrega la gobernanza de claves primarias: las tres escrituras MySQL de bee_live ahora pasan claves explícitas idgen_rs snowflake, eliminando la dependencia de last_insert_id(); las tablas correspondientes pierden AUTO_INCREMENT
+- **Hitos**: M0–M5 entregados (mensajes de voz, llamadas 1v1, salas de voz, streaming en vivo); M6a entrega la economía virtual: billetera (saldo/registro, MySQL como única fuente de verdad), propinas con regalos y reparto al streamer, y recarga IAP móvil (App Store / Google Play / Huawei); M6b entrega canales de pago: esqueleto de acreditación de recarga (verificación de firma de callback WeChat/Alipay/Stripe, precios del lado del servidor, acreditación idempotente; retiro y conciliación entregados); M6c entrega almacenamiento CDN: proveedores configurables desde el panel de administración (compatible con S3: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2); imágenes/voz/archivos servidos mediante almacenamiento de objetos + CDN; M6d entrega informes de administración y estadísticas del panel: módulo de informes (usuarios/pagos/retiros — filtro por fechas, totales, tendencias, distribuciones, exportación Excel) y tarjetas de estadísticas de la plataforma en la página de inicio; v1.1 entrega la gobernanza de claves primarias: las tres escrituras MySQL de bee_live ahora pasan claves explícitas idgen_rs snowflake, eliminando la dependencia de last_insert_id(); las tablas correspondientes pierden AUTO_INCREMENT; v1.1.1–v1.1.6 son correcciones de documentación / CI / estabilidad, sin funciones nuevas
 
 ## Resumen de funciones
 
@@ -148,12 +148,19 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 ### Pruebas
 
 ```bash
-cd service
-vendor/bin/phpunit                    # Pruebas unitarias (79 tests / 230 assertions)
+cd service && vendor/bin/phpunit      # Pruebas unitarias (229 tests / 660 assertions; los casos de directo y voz requieren el servicio Rust gRPC en marcha)
+cd admin   && vendor/bin/phpunit      # Pruebas unitarias del admin (98 tests / 340 assertions)
+cd infrastructure && cargo test --workspace   # Rust, 17 crates (204 tests)
+DB_PASS='' php tests/api/run.php      # Automatización de API (116 casos; admin :8791 / service :8788 deben estar activos)
+cd tests/e2e && npx playwright test   # UI de extremo a extremo (41 casos)
 
-php tests/im_e2e.php                  # E2E de caja negra IM (requiere :8788/:8789 en ejecución + Redis)
-php tests/voice_e2e.php               # E2E de voz: versionado / mensajes de voz / llamadas / salas de voz
-php tests/live_e2e.php                # E2E en vivo: salas / danmaku / micrófonos / cierre (push RTMP, pull HLS)
+cd service                            # los E2E de caja negra de abajo requieren el servicio activo (:8788/:8789) + Redis
+php tests/im_e2e.php                  # IM: envío/recepción WS entre dos usuarios / leído / retirado / cola sin conexión
+php tests/voice_e2e.php               # Voz: versionado de la API / mensajes de voz / señalización de llamadas 1v1 / salas de voz
+php tests/live_e2e.php                # Directo: apertura / entrada / danmaku / micrófonos / cierre
+php tests/wallet_e2e.php              # Cartera: saldo / recarga / regalos / reparto al streamer
+php tests/payment_e2e.php             # Pago: orden / verificación del callback + abono / idempotencia / comprobación de importe
+php tests/storage_e2e.php             # Almacenamiento: subida de imágenes / local y s3 / prefijo de URL acorde al proveedor activo
 
 cd media/sfu
 npm run smoke                         # Smoke test del protocolo SFU /signal (requiere contenedor Docker o node local)

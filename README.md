@@ -2,13 +2,13 @@
 
 **语言 / Languages:** [中文](README.md) · [English](docs/README.en.md) · [한국어](docs/README.ko.md) · [Русский](docs/README.ru.md) · [Deutsch](docs/README.de.md) · [Français](docs/README.fr.md) · [Español](docs/README.es.md) · [Português](docs/README.pt.md) · [हिन्दी](docs/README.hi.md) · [العربية](docs/README.ar.md) · [বাংলা](docs/README.bn.md) · [Bahasa Indonesia](docs/README.id.md) · [日本語](docs/README.ja.md)
 
-多语言社交平台 monorepo：图文社区 + 即时消息 + 直播/语音 + 虚拟经济。
+多语言社交平台 monorepo：图文社区 + 即时消息 + 直播/语音 + 虚拟经济；PHP + Rust 双栈，三端原生客户端。
 
 ## 项目宠物
 
-<img src="docs/diagrams/mascot.svg" width="140" alt="Geist — 项目宠物">
+<img src="docs/diagrams/mascot.svg" width="140" alt="Bub — 项目宠物">
 
-**Geist** · 戴耳机的猫头鹰 —— 白天看图文社区，夜里守直播与语聊房，胸前声波是在线（IM）信号，栖于金币之上，那是它的虚拟经济。
+**Bub** · 消息气泡 —— 平台上最小的单位：图文、语音、直播弹幕、礼物打赏，最后都装进一只气泡里送出去；它会笑、会招手，左下那条尾巴指着消息要去的地方。
 
 矢量源文件 [`docs/diagrams/mascot.svg`](docs/diagrams/mascot.svg)；简化标记 [`mascot-mark.svg`](docs/diagrams/mascot-mark.svg) 另作 `favicon.svg`，已嵌入 service / admin 站点与管理后台安装向导。
 
@@ -16,9 +16,9 @@
 
 - **三端原生客户端**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS），另有 Flutter 管理后台
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
-- **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 麦位）媒体转发
+- **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 席：房主 + 7 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT；v1.1.1–v1.1.6 为文档 / CI / 稳定性修复，无新功能
 
 ## 功能总览
 
@@ -150,14 +150,19 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 ### 测试
 
 ```bash
-cd service && vendor/bin/phpunit      # service 单元测试（159 tests / 408 assertions，含直播模块）
-cd admin   && vendor/bin/phpunit      # admin 单元测试（67 tests / 180 assertions）
-cd infrastructure && cargo test --workspace   # Rust 16 crates（183 tests）
+cd service && vendor/bin/phpunit      # service 单元测试（229 tests / 660 assertions；直播与语音用例需 Rust gRPC 服务在跑）
+cd admin   && vendor/bin/phpunit      # admin 单元测试（98 tests / 340 assertions）
+cd infrastructure && cargo test --workspace   # Rust 17 crates（204 tests）
 DB_PASS='' php tests/api/run.php      # API 自动化（116 用例，需先起 admin :8791 / service :8788）
 cd tests/e2e && npx playwright test   # UI 端到端（41 用例）
 
-php tests/im_e2e.php                  # IM 黑盒 E2E（需 :8788/:8789 运行中 + Redis）
-php tests/voice_e2e.php               # 语音 E2E：版本化 / 语音消息 / 通话 / 语聊房
+cd service                            # 以下黑盒 E2E 需 service 运行中（:8788/:8789）+ Redis
+php tests/im_e2e.php                  # IM：双用户 WS 收发 / 已读 / 撤回 / 离线队列
+php tests/voice_e2e.php               # 语音：API 版本化 / 语音消息 / 1v1 通话信令 / 语聊房
+php tests/live_e2e.php                # 直播：开播 / 进房 / 弹幕 / 上下麦 / 关播
+php tests/wallet_e2e.php              # 钱包：余额 / 充值 / 送礼 / 主播分成
+php tests/payment_e2e.php             # 支付：建单 / 回调验签入账 / 幂等 / 金额校验
+php tests/storage_e2e.php             # 存储：图片上传 / local 与 s3 / URL 前缀与活动服务商匹配
 
 cd media/sfu
 npm run smoke                         # SFU /signal 协议冒烟（需 Docker 容器或本地 node）

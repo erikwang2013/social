@@ -1,57 +1,33 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" role="img" aria-labelledby="mascotTitle">
-  <title id="mascotTitle">Geist — Social Platform 项目宠物（戴耳机的猫头鹰）</title>
+  <title id="mascotTitle">Bub — Social Platform 项目宠物（消息气泡）</title>
   <style>
-    .head  { fill: #2563eb; stroke: #0f172a; stroke-width: 5 }
-    .body  { fill: #2563eb; stroke: #0f172a; stroke-width: 5 }
-    .wing  { fill: #2563eb; stroke: #0f172a; stroke-width: 4.5 }
-    .disc  { fill: #eff6ff; stroke: #0f172a; stroke-width: 4.5 }
-    .pupil { fill: #0f172a }
-    .glint { fill: #ffffff }
-    .beak  { fill: #d97706; stroke: #0f172a; stroke-width: 4; stroke-linejoin: round }
-    .band  { fill: none; stroke: #0f172a; stroke-width: 9; stroke-linecap: round }
-    .cup   { fill: #0f172a }
-    .wave  { fill: #16a34a }
-    .coin  { fill: #fbbf24; stroke: #0f172a; stroke-width: 4 }
-    .ring  { fill: none; stroke: #0f172a; stroke-width: 3.5 }
+    .body { fill: #2563eb; stroke: #0f172a; stroke-width: 6; stroke-linejoin: round }
+    .arm  { fill: #2563eb; stroke: #0f172a; stroke-width: 5; stroke-linejoin: round }
+    .ink  { fill: #0f172a }
+    .eye  { fill: #ffffff }
+    .pupil{ fill: #0f172a }
+    .blush{ fill: #fda4af }
+    .mouth{ fill: none; stroke: #0f172a; stroke-width: 4; stroke-linecap: round }
   </style>
 
-  <g transform="translate(0,-6)">
-    <!-- 耳机头梁：先画，压在头后 -->
-    <path class="band" d="M 60 98 C 60 10 180 10 180 98"/>
+  <g transform="rotate(-5 120 130)">
+    <!-- 手臂：压在气泡后 -->
+    <path class="arm" d="M 58 114 C 36 108 20 118 22 132 C 24 145 44 146 58 136 Z"/>
+    <path class="arm" d="M 182 114 C 204 108 220 118 218 132 C 216 145 196 146 182 136 Z"/>
 
-    <!-- 金币底座：虚拟经济。先画，身体压其上 → 猫头鹰栖于金币 -->
-    <ellipse class="coin" cx="120" cy="230" rx="36" ry="13"/>
-    <ellipse class="ring" cx="120" cy="230" rx="22" ry="7"/>
+    <!-- 气泡：本体就是一条消息，左下尾巴兼作脚 -->
+    <path class="body" d="M 96 56 L 144 56 C 173 56 194 77 194 106 L 194 128 C 194 157 173 178 144 178 L 118 178 L 76 212 C 70 217 60 213 62 204 L 70 178 C 55 172 46 155 46 132 L 46 106 C 46 77 67 56 96 56 Z"/>
 
-    <!-- 身体：压在头下 -->
-    <ellipse class="body" cx="120" cy="178" rx="52" ry="46"/>
-
-    <!-- 收拢的双翼：与身体同色仅留轮廓，使下半身读作鸟身而非雪球 -->
-    <ellipse class="wing" cx="80" cy="186" rx="13" ry="28" transform="rotate(10 80 186)"/>
-    <ellipse class="wing" cx="160" cy="186" rx="13" ry="28" transform="rotate(-10 160 186)"/>
-
-    <!-- 胸前声波：在线 / IM 信号 -->
-    <rect class="wave" x="104" y="166" width="7" height="16" rx="3.5"/>
-    <rect class="wave" x="114" y="158" width="7" height="32" rx="3.5"/>
-    <rect class="wave" x="124" y="166" width="7" height="16" rx="3.5"/>
-
-    <!-- 头：最后画，盖住身体的顶边 -->
-    <circle class="head" cx="120" cy="94" r="52"/>
-
-    <!-- 面盘与眼：双目相连、占据整个头宽 —— 猫头鹰的核心识别特征 -->
-    <circle class="disc" cx="98" cy="92" r="22"/>
-    <circle class="disc" cx="142" cy="92" r="22"/>
-    <circle class="pupil" cx="98" cy="93" r="9.5"/>
-    <circle class="pupil" cx="142" cy="93" r="9.5"/>
-    <circle class="glint" cx="94.5" cy="88" r="3.4"/>
-    <circle class="glint" cx="138.5" cy="88" r="3.4"/>
-
-    <!-- 喙：短而下勾，位于两眼之间 -->
-    <path class="beak" d="M 112 106 L 128 106 L 120 126 Z"/>
-
-    <!-- 耳罩：明显外凸于头部轮廓，与头区分开 -->
-    <rect class="cup" x="46" y="76" width="28" height="42" rx="14"/>
-    <rect class="cup" x="166" y="76" width="28" height="42" rx="14"/>
+    <!-- 面部 -->
+    <circle class="eye" cx="97" cy="104" r="17"/>
+    <circle class="eye" cx="145" cy="104" r="17"/>
+    <circle class="pupil" cx="97" cy="107" r="9"/>
+    <circle class="eye" cx="94" cy="103" r="3.4"/>
+    <circle class="pupil" cx="145" cy="107" r="9"/>
+    <circle class="eye" cx="142" cy="103" r="3.4"/>
+    <ellipse class="blush" cx="72" cy="136" rx="12" ry="7.5"/>
+    <ellipse class="blush" cx="170" cy="136" rx="12" ry="7.5"/>
+    <path class="mouth" d="M 108 132 C 113 141 129 141 134 132"/>
   </g>
 </svg>
