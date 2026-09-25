@@ -8,7 +8,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · a carrier dove with headphones. The dove carries the messages (IM / push), the headphones take the call (voice calls / voice rooms / live), and the sound bars on its chest are its online signal.
+**Geist** · an owl with headphones. It watches the feed by day (posts / community), keeps the live and voice rooms company by night (live / voice rooms), the sound bars on its chest are its online signal (IM), and the coin it perches on is its virtual economy (wallet / gifts).
 
 Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark [`mascot-mark.svg`](diagrams/mascot-mark.svg) also ships as `favicon.svg` on the service / admin sites and in the admin install wizard.
 

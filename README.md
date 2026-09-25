@@ -8,7 +8,7 @@
 
 <img src="docs/diagrams/mascot.svg" width="140" alt="Geist — 项目宠物">
 
-**Geist** · 戴耳机的信鸽 —— 信鸽传书（IM / 消息推送），耳机接听（语音通话 / 语聊房 / 直播），胸前声波是它的在线信号。
+**Geist** · 戴耳机的猫头鹰 —— 白天看图文社区，夜里守直播与语聊房，胸前声波是在线（IM）信号，栖于金币之上，那是它的虚拟经济。
 
 矢量源文件 [`docs/diagrams/mascot.svg`](docs/diagrams/mascot.svg)；简化标记 [`mascot-mark.svg`](docs/diagrams/mascot-mark.svg) 另作 `favicon.svg`，已嵌入 service / admin 站点与管理后台安装向导。
 

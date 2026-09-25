@@ -8,7 +8,7 @@ Monorepo platform sosial multibahasa: komunitas teks/gambar + pesan instan + liv
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · merpati pos berkepala headphone. Merpati mengantar pesan (IM / push), headphone menjawab panggilan (panggilan suara / ruang suara / live), dan bar suara di dadanya adalah sinyal «online»-nya.
+**Geist** · burung hantu berkepala headphone. Siang menjaga feed (postingan / komunitas), malam menemani live dan ruang suara; bar suara di dadanya adalah sinyal «online»-nya (IM), dan koin di bawah cakarnya adalah ekonomi virtualnya.
 
 Sumber vektor: [`diagrams/mascot.svg`](diagrams/mascot.svg); marka sederhana [`mascot-mark.svg`](diagrams/mascot-mark.svg) juga disajikan sebagai `favicon.svg` di situs service / admin dan wizard instalasi admin.
 

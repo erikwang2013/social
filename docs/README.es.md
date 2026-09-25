@@ -8,7 +8,7 @@ Monorepo de plataforma social multilingüe: comunidad de texto/imagen + mensajer
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · una paloma mensajera con auriculares. La paloma lleva los mensajes (IM / notificaciones push), los auriculares atienden la llamada (llamadas de voz / salas de voz / directos) y las barras de sonido del pecho son su señal de «en línea».
+**Geist** · un búho con auriculares. De día cuida el muro (publicaciones / comunidad), de noche las salas de directo y de voz; las barras de sonido del pecho son su señal de «en línea» (IM), y la moneda bajo sus garras es su economía virtual.
 
 Fuente vectorial: [`diagrams/mascot.svg`](diagrams/mascot.svg); la marca simplificada [`mascot-mark.svg`](diagrams/mascot-mark.svg) también se sirve como `favicon.svg` en los sitios service / admin y en el asistente de instalación.
 

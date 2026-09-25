@@ -8,7 +8,7 @@ Monorepo einer mehrsprachigen Social-Plattform: Bild/Text-Community + Instant Me
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · eine Brieftaube mit Kopfhörern. Die Taube trägt die Nachrichten (IM / Push), die Kopfhörer nehmen den Anruf an (Sprachanrufe / Sprachräume / Live), und die Klangbalken auf der Brust sind ihr Online-Signal.
+**Geist** · eine Eule mit Kopfhörern. Tagsüber hütet sie den Feed (Beiträge / Community), nachts die Live- und Sprachräume, die Klangbalken auf der Brust sind ihr Online-Signal (IM), und die Münze unter ihren Füßen ist die virtuelle Wirtschaft.
 
 Vektorquelle: [`diagrams/mascot.svg`](diagrams/mascot.svg); die vereinfachte Marke [`mascot-mark.svg`](diagrams/mascot-mark.svg) wird zusätzlich als `favicon.svg` auf den service-/admin-Seiten und im Installationsassistenten ausgeliefert.
 

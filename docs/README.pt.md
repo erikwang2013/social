@@ -8,7 +8,7 @@ Monorepo de plataforma social multilíngue: comunidade de texto/imagem + mensage
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · uma pomba-correio com fones de ouvido. A pomba leva as mensagens (IM / push), os fones atendem a chamada (chamadas de voz / salas de voz / lives) e as barras de som no peito são o seu sinal de «online».
+**Geist** · uma coruja com fones de ouvido. De dia cuida do feed (publicações / comunidade), de noite das lives e salas de voz; as barras de som no peito são o seu sinal «online» (IM), e a moeda sob suas garras é a economia virtual.
 
 Fonte vetorial: [`diagrams/mascot.svg`](diagrams/mascot.svg); a marca simplificada [`mascot-mark.svg`](diagrams/mascot-mark.svg) também é servida como `favicon.svg` nos sites service / admin e no assistente de instalação.
 

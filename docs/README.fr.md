@@ -8,7 +8,7 @@ Monorepo de plateforme sociale multilingue : communauté texte/image + messageri
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · un pigeon voyageur à casque. Le pigeon porte les messages (IM / notifications push), le casque prend l'appel (appels vocaux / salons vocaux / live), et les barres sonores sur son poitrail sont son signal « en ligne ».
+**Geist** · un hibou à casque. Le jour, il veille sur le fil (publications / communauté), la nuit, sur les lives et les salons vocaux ; les barres sonores sur son poitrail sont son signal « en ligne » (IM), et la pièce sous ses serres est son économie virtuelle.
 
 Source vectorielle : [`diagrams/mascot.svg`](diagrams/mascot.svg) ; la marque simplifiée [`mascot-mark.svg`](diagrams/mascot-mark.svg) sert aussi de `favicon.svg` sur les sites service / admin et dans l'assistant d'installation.
 

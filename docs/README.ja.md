@@ -8,7 +8,7 @@
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · ヘッドホンをつけた伝書鳩。鳩がメッセージを運び（IM / プッシュ通知）、ヘッドホンが通話を引き受け（音声通話 / ボイスルーム / ライブ）、胸の音柱はオンラインの合図です。
+**Geist** · ヘッドホンをつけたフクロウ。昼はフィード（投稿 / コミュニティ）を見守り、夜はライブとボイスルームに寄り添い、胸の音柱はオンライン（IM）の合図、足元のコインはバーチャル経済です。
 
 ベクター原版は [`diagrams/mascot.svg`](diagrams/mascot.svg)。簡略マーク [`mascot-mark.svg`](diagrams/mascot-mark.svg) は `favicon.svg` として service / admin のサイトと管理画面のインストーラーに組み込まれています。
 

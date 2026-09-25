@@ -8,7 +8,7 @@
 
 <img src="diagrams/mascot.svg" width="140" alt="Geist — mascot">
 
-**Geist** · 헤드폰을 쓴 전서구. 비둘기가 메시지를 나르고(IM / 푸시), 헤드폰이 통화를 받으며(음성 통화 / 보이스방 / 라이브), 가슴의 음파 막대는 온라인 신호입니다.
+**Geist** · 헤드폰을 쓴 부엉이. 낮에는 피드(게시글 / 커뮤니티)를 지키고, 밤에는 라이브와 보이스방을 함께하며, 가슴의 음파 막대는 온라인(IM) 신호, 발밑의 동전은 가상 경제입니다.
 
 벡터 원본은 [`diagrams/mascot.svg`](diagrams/mascot.svg), 단순화 마크 [`mascot-mark.svg`](diagrams/mascot-mark.svg)는 `favicon.svg`로 service / admin 사이트와 관리자 설치 마법사에 포함되어 있습니다.
 

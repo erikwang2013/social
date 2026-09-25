@@ -4,19 +4,22 @@
   <title id="markTitle">Geist</title>
   <style>
     .bg    { fill: #2563eb }
-    .head  { fill: #ffffff }
-    .eye   { fill: #0f172a }
-    .beak  { fill: #16a34a }
-    .band  { fill: none; stroke: #0f172a; stroke-width: 7; stroke-linecap: round }
+    .head  { fill: #ffffff; stroke: #0f172a; stroke-width: 3 }
+    .disc  { fill: #ffffff; stroke: #0f172a; stroke-width: 3.2 }
+    .pupil { fill: #0f172a }
+    .beak  { fill: #d97706; stroke: #0f172a; stroke-width: 2.2; stroke-linejoin: round }
+    .band  { fill: none; stroke: #0f172a; stroke-width: 4; stroke-linecap: round }
     .cup   { fill: #0f172a }
   </style>
 
   <rect class="bg" x="2" y="2" width="60" height="60" rx="14"/>
-  <path class="band" d="M 16.5 24 C 16.5 9 47.5 9 47.5 24"/>
-  <rect class="cup" x="10" y="20" width="13" height="23" rx="6.5"/>
-  <rect class="cup" x="41" y="20" width="13" height="23" rx="6.5"/>
-  <circle class="head" cx="32" cy="32" r="16"/>
-  <path class="beak" d="M 28 35 L 36 35 L 32 42 Z"/>
-  <circle class="eye" cx="26" cy="29" r="2.8"/>
-  <circle class="eye" cx="38" cy="29" r="2.8"/>
+  <path class="band" d="M 13 30 C 13 5 51 5 51 30"/>
+  <rect class="cup" x="5" y="24" width="10" height="21" rx="5"/>
+  <rect class="cup" x="49" y="24" width="10" height="21" rx="5"/>
+  <circle class="head" cx="32" cy="36" r="22"/>
+  <circle class="disc" cx="25" cy="35" r="8.5"/>
+  <circle class="disc" cx="39" cy="35" r="8.5"/>
+  <circle class="pupil" cx="25" cy="35" r="3.6"/>
+  <circle class="pupil" cx="39" cy="35" r="3.6"/>
+  <path class="beak" d="M 29 42 L 35 42 L 32 48.5 Z"/>
 </svg>
