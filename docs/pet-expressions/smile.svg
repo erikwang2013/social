@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 240 240" width="240" height="240" role="img" aria-label="Bub · 笑 Smile"><title>Bub · 笑 Smile</title><desc>Bub 的 笑 表情形态 · animated expression form</desc><style>
+.ex-motion { animation: ex-bob 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+.ex-anim-tear { animation: ex-tear 1.8s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-sweat { animation: ex-tear 1.5s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-heart { animation: ex-heart 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-spark { animation: ex-spark 1.9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-rain { animation: ex-rain 1.4s linear infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-confetti { animation: ex-confetti 2.4s linear infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-pulse { animation: ex-pulse 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-knock { animation: ex-knock 0.55s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-knockline { animation: ex-knockline 0.55s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-palm { animation: ex-palm 0.9s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-steam { animation: ex-steam 1.8s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-shock { animation: ex-shock 0.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-please { animation: ex-please 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ex-anim-drift { animation: ex-drift 4.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ex-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5.44px); } }
+@keyframes ex-tear { 0% { transform: translateY(0); opacity: 0; } 18% { opacity: 1; } 100% { transform: translateY(18.7px); opacity: 0; } }
+@keyframes ex-heart { 0% { transform: translateY(0) scale(.65); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-30.6px) scale(1.15); opacity: 0; } }
+@keyframes ex-spark { 0%,100% { transform: scale(.6) rotate(0deg); opacity: .3; } 50% { transform: scale(1.15) rotate(25deg); opacity: 1; } }
+@keyframes ex-rain { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(20.4px); opacity: 0; } }
+@keyframes ex-confetti { 0% { transform: translateY(-5.95px) rotate(0deg); opacity: 1; } 100% { transform: translateY(27.2px) rotate(200deg); opacity: 0; } }
+@keyframes ex-pulse { 0%,100% { transform: scale(1); opacity: .35; } 50% { transform: scale(1.18); opacity: .7; } }
+@keyframes ex-knock { 0%,100% { transform: translateX(7.65px); } 35% { transform: translateX(0); } }
+@keyframes ex-knockline { 0%,100% { transform: scaleX(.6); opacity: .35; } 35% { transform: scaleX(1); opacity: 1; } }
+@keyframes ex-palm { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2.04px) rotate(-4deg); } }
+@keyframes ex-steam { 0% { transform: translateY(0); opacity: .7; } 100% { transform: translateY(-15.3px); opacity: 0; } }
+@keyframes ex-shock { 0%,100% { transform: scaleX(.7); opacity: .4; } 50% { transform: scaleX(1.25); opacity: 1; } }
+@keyframes ex-please { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3.06px); } }
+@keyframes ex-drift { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3.4px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ex-motion, [class*="ex-anim-"] { animation: none !important; }
+}
+</style><g class="ex-motion ex-smile"><g class="ex-base"><style>.body { fill: #2563eb; stroke: #0f172a; stroke-width: 6; stroke-linejoin: round }
+    .arm  { fill: #2563eb; stroke: #0f172a; stroke-width: 5; stroke-linejoin: round }
+    .ink  { fill: #0f172a }
+    .eye  { fill: #ffffff }
+    .pupil{ fill: #0f172a }
+    .blush{ fill: #fda4af }
+    .mouth{ fill: none; stroke: #0f172a; stroke-width: 4; stroke-linecap: round }</style>
+
+  <g transform="rotate(-5 120 130)">
+    
+    <path class="arm" d="M 58 114 C 36 108 20 118 22 132 C 24 145 44 146 58 136 Z"/>
+    <path class="arm" d="M 182 114 C 204 108 220 118 218 132 C 216 145 196 146 182 136 Z"/>
+
+    
+    <path class="body" d="M 96 56 L 144 56 C 173 56 194 77 194 106 L 194 128 C 194 157 173 178 144 178 L 118 178 L 76 212 C 70 217 60 213 62 204 L 70 178 C 55 172 46 155 46 132 L 46 106 C 46 77 67 56 96 56 Z"/>
+
+    
+    <circle class="eye" cx="97" cy="104" r="17"/>
+    <circle class="eye" cx="145" cy="104" r="17"/>
+    <circle class="pupil" cx="97" cy="107" r="9"/>
+    <circle class="eye" cx="94" cy="103" r="3.4"/>
+    <circle class="pupil" cx="145" cy="107" r="9"/>
+    <circle class="eye" cx="142" cy="103" r="3.4"/>
+    <ellipse class="blush" cx="72" cy="136" rx="12" ry="7.5"/>
+    <ellipse class="blush" cx="170" cy="136" rx="12" ry="7.5"/>
+    <path class="mouth" d="M 108 132 C 113 141 129 141 134 132"/>
+  </g></g><g class="ex-face"><ellipse cx="120" cy="120" rx="55" ry="42" fill="#2563EB"/><path d="M 80.85,108.76 Q 97,84.45 113.15,108.76" fill="none" stroke="#0F172A" stroke-width="3.4" stroke-linecap="round"/><path d="M 128.85,108.76 Q 145,84.45 161.15,108.76" fill="none" stroke="#0F172A" stroke-width="3.4" stroke-linecap="round"/><path d="M 101.45,141.4 Q 121,159.76 140.55,141.4" fill="none" stroke="#0F172A" stroke-width="2.72" stroke-linecap="round"/><ellipse cx="84.25" cy="126.95" rx="13.26" ry="7.14" fill="#FF8FB3" opacity="0.5"/><ellipse cx="157.75" cy="126.95" rx="13.26" ry="7.14" fill="#FF8FB3" opacity="0.5"/><path class="ex-anim-spark" style="animation-delay:0.0s" d="M 63.84,62.38 L 66.45,69.11 L 73.19,71.73 L 66.45,74.35 L 63.84,81.08 L 61.22,74.35 L 54.49,71.73 L 61.22,69.11 Z" fill="#FFD166"/><path class="ex-anim-spark" style="animation-delay:0.5s" d="M 174.48,52.6 L 176.48,57.74 L 181.62,59.74 L 176.48,61.74 L 174.48,66.88 L 172.48,61.74 L 167.34,59.74 L 172.48,57.74 Z" fill="#FFD166"/></g></g></svg>
