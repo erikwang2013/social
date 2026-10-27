@@ -38,7 +38,7 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 
 ## 项目介绍
 
-- **三端原生客户端**：Android（Kotlin + Compose）、iOS（SwiftUI）、HarmonyOS（ArkTS），另有 Flutter 管理后台
+- **原生客户端**：Android（Kotlin + Compose），另有 Flutter 管理后台
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 席：房主 + 7 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
@@ -168,8 +168,6 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 | 端 | 打开 / 构建方式 | 平台要求 |
 |----|----------------|----------|
 | Android | `cd apps/android && ./gradlew assembleDebug` | Linux / macOS 可构建 |
-| iOS | Xcode 打开 `apps/ios/SocialApp` | 需 macOS |
-| HarmonyOS | DevEco Studio 打开 `apps/harmonyos` | 需 DevEco Studio |
 
 ### 测试
 

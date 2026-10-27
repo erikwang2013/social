@@ -32,7 +32,6 @@
 | 数据库 | MySQL 8.0+ | 表前缀 `erik_`，BIGINT 非自增主键 |
 | 搜索引擎 | Elasticsearch | 通过 `webman-scout` 同步与查询 |
 | 管理端前端 | Flutter 3.x | Web 端为 PC 管理后台风格（`apps/flutter/`） |
-| 移动端 | HarmonyOS ArkTS | 鸿蒙原生客户端（`apps/harmonyos/`），支持手机/平板/2in1 |
 
 ## 核心依赖
 
@@ -91,7 +90,6 @@ open-admin/
 │   │       ├── pages/          # 5 个完整页面（仪表盘/用户/角色/配置/日志/个人中心）
 │   │       ├── services/       # ApiService（JWT 拦截器）+ AuthService（Token 持久化）
 │   │       └── layouts/        # 响应式管理后台布局（侧边栏+顶栏+内容区）
-│   └── harmonyos/              # HarmonyOS 原生客户端（Token 无感刷新）
 ├── config/                     # 配置文件（含中文注释）
 │   ├── route.php               # 路由 + API 版本策略
 │   ├── middleware.php           # 全局中间件注册
@@ -177,10 +175,6 @@ flutter run -d chrome    # 开发调试（PC 管理后台风格）
 flutter build web        # 构建生产产物（build/web/）
 ```
 
-**HarmonyOS 客户端（手机端）:**
-
-使用 DevEco Studio 打开 `apps/harmonyos/` 目录，连接真机或模拟器运行。
-
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
 项目提供完整的 Docker 编排方案，包含 5 个服务：Nginx、PHP (webman app)、MySQL、Redis、Elasticsearch。
@@ -238,12 +232,6 @@ cd apps/flutter && flutter analyze   # Flutter 静态分析（CI 同款）
 - **导出**: Excel/PDF 导出，PDF 含不可移除版权信息
 - **批量操作**: 多选批量删除、批量启用/禁用
 - **主题**: Material 3 浅色/深色双主题
-
-### HarmonyOS 移动端
-
-- **页面**: 登录、仪表盘、用户列表/详情、个人中心
-- **认证**: JWT Bearer + 401 自动无感刷新 Token，刷新失败自动重定向登录页
-- **存储**: Token 通过 AppStorage 管理
 
 ## 开发规范
 

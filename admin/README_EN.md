@@ -39,7 +39,6 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | Database | MySQL 8.0+ | Table prefix `erik_`, BIGINT non-auto-increment PKs |
 | Search | Elasticsearch | Synced via `webman-scout` |
 | Admin Frontend | Flutter 3.x | Web renders as desktop admin panel (`apps/flutter/`) |
-| Mobile | HarmonyOS ArkTS | Native HarmonyOS client (`apps/harmonyos/`), supports phone/tablet/2in1 |
 
 ## Core Packages
 
@@ -88,8 +87,7 @@ open-admin/
 │   │   └── OperationLog.php    # Auto operation logging (with source detection)
 │   └── model/                  # Eloquent models
 ├── apps/
-│   ├── flutter/                # Flutter Web admin panel
-│   └── harmonyos/              # HarmonyOS client (auto token refresh)
+│   └── flutter/                # Flutter Web admin panel
 ├── config/                     # Config files
 ├── database/migrations/        # SQL migrations (incl. permission seeds)
 └── vendor/                     # Composer dependencies
@@ -167,10 +165,6 @@ flutter pub get
 flutter run -d chrome    # Dev (desktop admin panel style)
 flutter build web        # Production build (build/web/)
 ```
-
-**HarmonyOS client (Mobile):**
-
-Open `apps/harmonyos/` in DevEco Studio and run on a device or emulator.
 
 ### 6. Docker Compose (Recommended for Production)
 
@@ -412,12 +406,6 @@ Authorization: Bearer <token>
 - **Export**: Excel/PDF with non-removable copyright info
 - **Batch Ops**: Multi-select batch delete, batch enable/disable
 - **Theme**: Material 3 light/dark dual theme
-
-### HarmonyOS Mobile Client
-
-- **Pages**: Login, Dashboard, User List/Detail, Profile
-- **Auth**: JWT Bearer + silent token refresh on 401, auto-redirect to login on refresh failure
-- **Storage**: Token managed via AppStorage
 
 ## Development Rules
 

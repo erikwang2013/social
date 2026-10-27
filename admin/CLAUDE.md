@@ -41,7 +41,6 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 - Flutter 3.x，源码目录 `apps/flutter/`
 - Web 端按 PC 管理后台风格设计（非移动端 App 风格）
 - 支持客户端和管理员端
-- HarmonyOS ArkTS，源码目录 `apps/harmonyos/`
 
 ## 项目结构
 
@@ -96,7 +95,6 @@ open-admin/
 │   │       ├── services/       # ApiService + AuthService
 │   │       ├── layouts/        # 响应式布局
 │   │       └── theme/          # Material 3 主题
-│   └── harmonyos/              # HarmonyOS 客户端
 ├── config/                     # 配置文件
 │   ├── route.php               # 路由 + API 版本策略
 │   └── middleware.php           # 全局中间件注册
@@ -201,11 +199,6 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - **DataTable 必须包裹 `SingleChildScrollView(scrollDirection: Axis.horizontal)`** 防止列溢出
 - 独立页面（如 ProfilePage）必须包含 `Scaffold`，否则 `TextField` 等 Material 组件会报 "No Material widget found"
 - 侧边栏展开/收起时用 `_showCollapsedContent` 延迟切换内容，避免动画期间 RenderFlex 溢出
-
-### HarmonyOS
-- 使用 `@ohos.net.http` 原生 HTTP 客户端
-- Token 无感刷新：401 时自动调用 `/api/auth/refresh`
-- 刷新失败自动重定向登录页
 
 ## 部署
 
