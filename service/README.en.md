@@ -2,7 +2,7 @@
 
 **Language / Languages:** [中文](README.md) · [English](README.en.md)
 
-<img src="../docs/diagrams/mascot.svg" width="90" alt="Bub — project mascot">
+![Bub — project mascot](../docs/diagrams/mascot.svg)
 
 webman v2 (PHP 8.3) user-facing business service: REST :8788 + WebSocket :8789 dual channel; live / voice chat room / 1v1 call state machines migrated to Rust (infrastructure/bee-rust), PHP controllers connect via gRPC.
 

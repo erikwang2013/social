@@ -6,7 +6,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 
 ## Project Mascot
 
-<img src="diagrams/mascot.svg" width="140" alt="Bub — mascot">
+![Bub — mascot](diagrams/mascot.svg)
 
 **Bub** · a message bubble. The smallest unit of the platform: posts, voice notes, live danmaku and gifts all leave inside one bubble; it smiles, it waves, and the tail at its lower left points where the message is headed.
 
@@ -170,12 +170,12 @@ If this project helps you, scan the QR code to support us, thank you!
 
 **WeChat Pay**
 
-<img src="weixinpay.png" width="160" height="175" alt="WeChat Pay">
+![WeChat Pay](weixinpay.png)
 
 
 **Alipay**
 
-<img src="alipay.png" width="160" height="175" alt="Alipay">
+![Alipay](alipay.png)
 
 ## Documentation
 

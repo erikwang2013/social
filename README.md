@@ -6,25 +6,30 @@
 
 ## 项目宠物
 
-<img src="docs/diagrams/mascot.svg" width="140" alt="Bub — 项目宠物">
+![Bub — 项目宠物](docs/diagrams/mascot.svg)
 
 **Bub** · 消息气泡 —— 平台上最小的单位：图文、语音、直播弹幕、礼物打赏，最后都装进一只气泡里送出去；它会笑、会招手，左下那条尾巴指着消息要去的地方。
 
 矢量源文件 [`docs/diagrams/mascot.svg`](docs/diagrams/mascot.svg)；简化标记 [`mascot-mark.svg`](docs/diagrams/mascot-mark.svg) 另作 `favicon.svg`，已嵌入 service / admin 站点与管理后台安装向导。
 
 
-<!-- pet-expressions:start -->
 ## 项目宠物表情形态 · Bub
 
-<table align="center">
-<tr><td align="center"><img src="docs/pet-expressions/smile.svg" width="88" alt="笑"><br><b>笑</b><br><code>:emoji-smile:</code></td><td align="center"><img src="docs/pet-expressions/joy.svg" width="88" alt="欢乐"><br><b>欢乐</b><br><code>:emoji-joy:</code></td><td align="center"><img src="docs/pet-expressions/cry.svg" width="88" alt="哭"><br><b>哭</b><br><code>:emoji-cry:</code></td><td align="center"><img src="docs/pet-expressions/depressed.svg" width="88" alt="沮丧"><br><b>沮丧</b><br><code>:emoji-depressed:</code></td><td align="center"><img src="docs/pet-expressions/terrified.svg" width="88" alt="惊恐"><br><b>惊恐</b><br><code>:emoji-terrified:</code></td><td align="center"><img src="docs/pet-expressions/angry.svg" width="88" alt="愤怒"><br><b>愤怒</b><br><code>:emoji-angry:</code></td></tr>
-<tr><td align="center"><img src="docs/pet-expressions/coquettish.svg" width="88" alt="撒娇"><br><b>撒娇</b><br><code>:emoji-coquettish:</code></td><td align="center"><img src="docs/pet-expressions/cute.svg" width="88" alt="卖萌"><br><b>卖萌</b><br><code>:emoji-cute:</code></td><td align="center"><img src="docs/pet-expressions/pleasing.svg" width="88" alt="讨好"><br><b>讨好</b><br><code>:emoji-pleasing:</code></td><td align="center"><img src="docs/pet-expressions/knocking.svg" width="88" alt="敲打"><br><b>敲打</b><br><code>:emoji-knocking:</code></td><td align="center"><img src="docs/pet-expressions/facepalm.svg" width="88" alt="捂脸"><br><b>捂脸</b><br><code>:emoji-facepalm:</code></td><td align="center"><img src="docs/pet-expressions/tongue.svg" width="88" alt="吐舌头"><br><b>吐舌头</b><br><code>:emoji-tongue:</code></td></tr>
-</table>
+- ![笑](docs/pet-expressions/smile.svg) **笑** `:emoji-smile:`
+- ![欢乐](docs/pet-expressions/joy.svg) **欢乐** `:emoji-joy:`
+- ![哭](docs/pet-expressions/cry.svg) **哭** `:emoji-cry:`
+- ![沮丧](docs/pet-expressions/depressed.svg) **沮丧** `:emoji-depressed:`
+- ![惊恐](docs/pet-expressions/terrified.svg) **惊恐** `:emoji-terrified:`
+- ![愤怒](docs/pet-expressions/angry.svg) **愤怒** `:emoji-angry:`
+- ![撒娇](docs/pet-expressions/coquettish.svg) **撒娇** `:emoji-coquettish:`
+- ![卖萌](docs/pet-expressions/cute.svg) **卖萌** `:emoji-cute:`
+- ![讨好](docs/pet-expressions/pleasing.svg) **讨好** `:emoji-pleasing:`
+- ![敲打](docs/pet-expressions/knocking.svg) **敲打** `:emoji-knocking:`
+- ![捂脸](docs/pet-expressions/facepalm.svg) **捂脸** `:emoji-facepalm:`
+- ![吐舌头](docs/pet-expressions/tongue.svg) **吐舌头** `:emoji-tongue:`
 
 > 12 种彩色动态形态：笑 / 欢乐 / 哭 / 沮丧 / 惊恐 / 愤怒 / 撒娇 / 卖萌 / 讨好 / 敲打 / 捂脸 / 吐舌头。每个 SVG 自带表情、情绪特效与整体动效，并遵循 `prefers-reduced-motion`。
-<!-- pet-expressions:end -->
 
-<!-- assets-license:start -->
 ## 视觉资产授权 / Visual Assets License
 
 本项目的项目宠物、图片、图标、表情（包括 `docs/pet-expressions/` 等目录下的
@@ -33,7 +38,6 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 [ASSETS-LICENSE.md](ASSETS-LICENSE.md)。
 
 > 代码部分仍遵循仓库原有 `LICENSE`；第三方素材（如明确标注的 Go Gopher 等）仍遵循其原许可证。
-<!-- assets-license:end -->
 
 
 ## 项目介绍
@@ -206,11 +210,11 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 
 **微信支付**
 
-<img src="docs/weixinpay.png" width="160" height="175" alt="微信支付">
+![微信支付](docs/weixinpay.png)
 
 **支付宝**
 
-<img src="docs/alipay.png" width="160" height="175" alt="支付宝">
+![支付宝](docs/alipay.png)
 
 
 ## 开源版 vs 商业版
@@ -274,7 +278,7 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 
 ## 项目授权 / Project License
 
-Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 - 本项目仅供个人学习、研究使用。
 - 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
