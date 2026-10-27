@@ -228,6 +228,36 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 | 搜索 | MySQL LIKE | Elasticsearch（帖子/用户搜索 + 同步队列 + webman-scout） |
 | Rust 框架源码 | 仅 `social_grpc` + `bee_live` | 完整 bee-rust 17 crate（含 `bee_search` / `bee_graph` / `bee_orm` / `bee_router` / `bee_kv` / `bee_cache` 等） |
 
+### 多维度对比
+
+| 维度 | 开源版 | 商业版 |
+|---|---|---|
+| 功能覆盖 | 40 个控制器、32 张表、2 个 Rust crate；图文社区、IM、直播/语音/1v1、礼物钱包、Android + Flutter 管理端 | 42 个控制器、32 张表、17 个 Rust crate；在开源版全部功能上增加 iOS、HarmonyOS 客户端与 HarmonyOS 管理端、Elasticsearch、完整 bee-rust 框架 |
+| 安全防护 | JWT + RBAC + 限流 + SecurityFilter + 操作审计；`config/{middleware,security,jwt}.php` 与商业版逐文件一致 | 与开源版同一套中间件链和安全配置，未增加独立安全模块 |
+| 性能与规模 | webman 多进程 HTTP + WebSocket + Rust gRPC + Redis + Media SFU/coturn | 架构与进程配置相同；额外引入 Elasticsearch 检索栈，客户端数量更多 |
+| 数据与检索 | 32 张表；帖子/用户搜索走 MySQL LIKE | 32 张表（同构）；Elasticsearch 帖子/用户搜索 + 同步队列 + webman-scout |
+| 测试与质量 | HEAD 中 54 个测试文件；CI：php-service / php-admin / rust-infra | HEAD 中 1 个测试文件；CI job 相同；两版工作区均有大量测试处于已删除状态，不能仅按测试文件数判断覆盖率 |
+| 部署与运维 | `install.sh` 一键安装；media/sfu compose（sfu + coturn）；健康检查接口 | 安装与媒体栈相同；额外需要 iOS/HarmonyOS 构建工具链 |
+| 多端与国际化 | Android 客户端 + Flutter 管理端；无独立 l10n 资源目录 | 增加 iOS、HarmonyOS 客户端与 HarmonyOS 管理端；国际化资源形态与开源版一致 |
+| 扩展性与二次开发 | 2 个 Rust crate；contracts：common/infra/live；apidoc 约 17MB | 17 个 Rust crate（含 search/graph/orm/router/kv/cache）；contracts 增加 admin/user/search；三端 OpenAPI 配置 |
+| 授权与商业支持 | 个人学习/研究；商业使用需书面授权 | 同一条款；商业授权、交付与支持联系 erik@erik.xyz |
+| 适用场景 | 个人学习、研究、小规模自建核心社区 | 商业部署、多端交付、需要搜索与完整 Rust 框架源码的团队 |
+
+**English — multi-dimensional comparison:**
+
+| Dimension | Open Source | Commercial |
+|---|---|---|
+| Feature scope | 40 controllers, 32 tables, 2 Rust crates; feed, IM, live/voice/1v1, gifts/wallet, Android + Flutter admin | 42 controllers, 32 tables, 17 Rust crates; all open features plus iOS/HarmonyOS clients, HarmonyOS admin, Elasticsearch, full bee-rust framework |
+| Security | JWT + RBAC + rate limiting + SecurityFilter + audit; `config/{middleware,security,jwt}.php` identical to commercial | Same middleware chain and security config; no separate security module added |
+| Performance & scale | webman multi-process HTTP + WebSocket + Rust gRPC + Redis + Media SFU/coturn | Same architecture and process config; adds an Elasticsearch stack and more clients |
+| Data & search | 32 tables; post/user search via MySQL LIKE | Same 32-table schema; Elasticsearch post/user search + sync queue + webman-scout |
+| Tests & quality | 54 test files in HEAD; CI: php-service / php-admin / rust-infra | 1 test file in HEAD; same CI jobs; both working trees have many tests deleted, so file counts alone do not prove coverage |
+| Deployment & ops | `install.sh`; media/sfu compose (sfu + coturn); health endpoints | Same install/media stack; extra iOS/HarmonyOS build toolchains required |
+| Clients & i18n | Android client + Flutter admin; no standalone l10n resource tree | Adds iOS/HarmonyOS clients and HarmonyOS admin; i18n resource shape matches open |
+| Extensibility | 2 Rust crates; contracts common/infra/live; ~17MB apidoc | 17 Rust crates (search/graph/orm/router/kv/cache); contracts add admin/user/search; OpenAPI configs for three clients |
+| License & support | Personal study/research; commercial use requires written authorization | Same terms; commercial licensing, delivery and support: erik@erik.xyz |
+| Best for | Personal learning, research, small self-hosted community | Commercial deployment, multi-client delivery, teams needing search and the full Rust framework source |
+
 **商业版独有能力：**
 
 - iOS 原生客户端（5 个 Swift 源文件）与 HarmonyOS 原生客户端（5 个 ArkTS 页面）。
