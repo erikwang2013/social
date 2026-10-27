@@ -215,7 +215,7 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 
 ## 开源版 vs 商业版
 
-`open-project/social` 为商业版。两版共用同一套 32 张表、Android 客户端、Flutter 管理后台与直播/语音/IM 核心；商业版补齐原生多端、全量搜索与完整 Rust 框架源码。
+商业版由作者单独提供。两版共用同一套 32 张表、Android 客户端、Flutter 管理后台与直播/语音/IM 核心；商业版补齐原生多端、全量搜索与完整 Rust 框架源码。
 
 | 维度 | 开源版 | 商业版 |
 |---|---|---|
@@ -240,7 +240,7 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 
 **商业版授权与交付条款请联系：erik@erik.xyz**
 
-**English:** The commercial edition (`open-project/social`) shares the same 32-table schema, Android client, Flutter admin and live/voice/IM core, and adds native iOS/HarmonyOS clients, a HarmonyOS admin, Elasticsearch search (posts/users + sync queue + webman-scout), and the full 17-crate bee-rust framework source. The open edition keeps the core platform with MySQL LIKE search plus the Android and Flutter admin clients. For commercial licensing and delivery terms, contact erik@erik.xyz.
+**English:** The commercial edition (available separately) shares the same 32-table schema, Android client, Flutter admin and live/voice/IM core, and adds native iOS/HarmonyOS clients, a HarmonyOS admin, Elasticsearch search (posts/users + sync queue + webman-scout), and the full 17-crate bee-rust framework source. The open edition keeps the core platform with MySQL LIKE search plus the Android and Flutter admin clients. For commercial licensing and delivery terms, contact erik@erik.xyz.
 
 ## 项目授权 / Project License
 
