@@ -2,7 +2,7 @@
 
 **语言 / Languages:** [中文](README.md) · [English](docs/README.en.md) · [한국어](docs/README.ko.md) · [Русский](docs/README.ru.md) · [Deutsch](docs/README.de.md) · [Français](docs/README.fr.md) · [Español](docs/README.es.md) · [Português](docs/README.pt.md) · [हिन्दी](docs/README.hi.md) · [العربية](docs/README.ar.md) · [বাংলা](docs/README.bn.md) · [Bahasa Indonesia](docs/README.id.md) · [日本語](docs/README.ja.md)
 
-多语言社交平台 monorepo：图文社区 + 即时消息 + 直播/语音 + 虚拟经济；PHP + Rust 双栈，三端原生客户端。
+多语言社交平台 monorepo：图文社区 + 即时消息 + 直播/语音 + 虚拟经济；PHP + Rust 双栈，Android 原生客户端 + Flutter 管理后台。
 
 ## 项目宠物
 
@@ -77,7 +77,7 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 | admin/ | 管理后台（open-admin 改造） | webman v2 + Flutter |
 | infrastructure/ | 高吞吐计算层（live/voice gRPC 服务） | bee-rust (tonic) |
 | media/sfu/ | 自建媒体层（mediasoup SFU :8790 + coturn :3478） | Node.js（M4 启用） |
-| apps/ | 三端原生客户端 | SwiftUI / Kotlin+Compose / ArkTS |
+| apps/ | Android 原生客户端 | Kotlin + Compose |
 
 service 内部结构：
 
