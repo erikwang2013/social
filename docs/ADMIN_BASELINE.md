@@ -37,7 +37,7 @@ open-admin（webman v2 + Flutter 管理后台）基线状态与改造入口。
 ## gRPC 就绪状态（T3）
 
 - Composer 包已装：`grpc/grpc 1.82.0`、`google/protobuf 5.35`（`--no-plugins` 绕过 security-php 插件重复加载 bug）
-- PHP 桩已生成：`admin/generated/`（`Social/Admin/V1/AdminServiceClient.php` 等，含 infra/user 三套契约）
+- PHP 桩已生成：`admin/generated/`（仅 `Social/Infra/V1/InfraServiceClient.php` 探活契约；admin/user 的 Ping 桩已移除）
 - **grpc PHP 扩展未装**：pecl 无写权限且 sudo 需密码；需 `sudo pecl install grpc` 后方可跑 gRPC 客户端
 
 ## 改造入口（设计文档 §3.4 八项新增）
@@ -51,6 +51,6 @@ open-admin（webman v2 + Flutter 管理后台）基线状态与改造入口。
 7. 直播 provider 配置（选路策略、切换顺序）
 8. 提现申请审核
 
-**gRPC 接入点**：admin 侧契约桩在 `admin/generated/`（复用 `Social/Admin/V1` 探活 + 后续业务消息），
-对 service 的调用走 `Social\User\V1\UserServiceClient`、对 infrastructure 走 `Social\Infra\V1\InfraServiceClient`；
+**gRPC 接入点**：admin 侧契约桩在 `admin/generated/`（仅 `Social/Infra/V1` 探活；admin/user 桩已移除），
+对 infrastructure 的探活走 `Social\Infra\V1\InfraServiceClient`；
 与 service/infrastructure 的探活链路见 `service/README.grpcs.md` 与 T10 集成探活。
