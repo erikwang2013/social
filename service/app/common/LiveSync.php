@@ -11,7 +11,7 @@ use support\Response;
 use Workerman\Timer;
 
 /**
- * M6: PHP live/voice 控制器 → Rust social_grpc 的 gRPC 桥（对齐 SearchSync 模式）。
+ * M6: PHP live/voice 控制器 → Rust social_grpc 的 gRPC 桥。
  * 两个服务（LiveService/VoiceService）任一不健康即整体降级 503。
  */
 class LiveSync

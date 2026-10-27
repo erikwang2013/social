@@ -8,7 +8,6 @@ members = [
     "crates/bee_cache",
     "crates/bee_template",
     "crates/bee_kv",
-    "crates/bee_search",
     "crates/bee_graph",
     "crates/bee_tsdb",
     "crates/bee_orm",

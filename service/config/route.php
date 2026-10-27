@@ -53,8 +53,6 @@ Route::group('/api/v1', function () {
         Route::get('/notifications/unread-count', [app\controller\NotificationController::class, 'unreadCount']);
         Route::post('/notifications/{id}/read', [app\controller\NotificationController::class, 'read']);
         Route::post('/notifications/read-all', [app\controller\NotificationController::class, 'readAll']);
-        Route::get('/search/posts', [app\controller\SearchController::class, 'posts']);
-        Route::get('/search/users', [app\controller\SearchController::class, 'users']);
         Route::get('/wallet/balance', [app\controller\WalletController::class, 'balance']);
         Route::get('/wallet/transactions', [app\controller\WalletController::class, 'transactions']);
         Route::post('/wallet/withdraw', [app\controller\WalletController::class, 'withdraw']);

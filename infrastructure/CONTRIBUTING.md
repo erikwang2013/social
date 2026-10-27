@@ -26,7 +26,6 @@ crates/
   bee_router/       # Routing + Controller + Context + Filter chain
   bee_orm/          # ORM — Model trait + QuerySet + Migration
   bee_kv/           # KV/Cache unified abstraction
-  bee_search/       # Search/Analytics engine
   bee_graph/        # Graph database
   bee_tsdb/         # Time series database
   bee_config/       # Config management + hot-reload

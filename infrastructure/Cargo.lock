@@ -428,23 +428,9 @@ dependencies = [
  "bee_logs",
  "bee_orm",
  "bee_router",
- "bee_search",
  "bee_session",
  "bee_template",
  "bee_tsdb",
-]
-
-[[package]]
-name = "bee_search"
-version = "1.1.0"
-dependencies = [
- "async-trait",
- "axum 0.8.9",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror 2.0.19",
- "tokio",
 ]
 
 [[package]]
@@ -3493,7 +3479,6 @@ name = "social_grpc"
 version = "0.1.0"
 dependencies = [
  "bee_live",
- "bee_search",
  "mysql_async",
  "prost",
  "serde_json",

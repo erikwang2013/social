@@ -3,7 +3,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &[
             "../../../contracts/infra/infra_service.proto",
             "../../../contracts/common/types.proto",
-            "../../../contracts/search/search_service.proto",
             "../../../contracts/live/live_service.proto",
         ],
         &["../../../contracts"],

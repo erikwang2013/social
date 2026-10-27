@@ -13,8 +13,6 @@ pub use bee_logs;
 pub use bee_orm;
 #[cfg(feature = "router")]
 pub use bee_router;
-#[cfg(feature = "search")]
-pub use bee_search;
 #[cfg(feature = "session")]
 pub use bee_session;
 #[cfg(feature = "template")]
