@@ -30,6 +30,7 @@ flowchart TB
 
     subgraph "存储层"
         D1[("MySQL 8.0<br/>主存储<br/>表前缀 erik_")]
+        D2[("Elasticsearch<br/>全文检索<br/>索引前缀 erik_")]
         D3[("Redis<br/>Session / 缓存<br/>Captcha 存储")]
     end
 
@@ -47,6 +48,8 @@ flowchart TB
     C4 --> C5
     C3 --> D1
     C4 --> D1
+    C3 --> D2
+    C4 --> D2
     C1 --> D3
 
     style A1 fill:#1677FF,color:#fff
@@ -58,6 +61,7 @@ flowchart TB
     style C4 fill:#52C41A,color:#fff
     style C5 fill:#52C41A,color:#fff
     style D1 fill:#1890FF,color:#fff
+    style D2 fill:#1890FF,color:#fff
     style D3 fill:#1890FF,color:#fff
 ```
 
@@ -106,6 +110,7 @@ flowchart TD
 
     subgraph "驱动层 Driver Layer"
         D1["MySQL PDO"]
+        D2["Elasticsearch HTTP"]
         D3["Redis"]
     end
 
@@ -118,6 +123,7 @@ flowchart TD
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> S1 & S2 & S3
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> MD1 & MD2 & MD3 & MD4 & MD5
     MD1 & MD2 & MD3 & MD4 & MD5 --> D1
+    MD1 --> D2
     CT7 --> D3
 
     style R1 fill:#722ED1,color:#fff
@@ -629,6 +635,7 @@ flowchart TB
 
     subgraph "数据层"
         MYSQL["MySQL 8.0<br/>主从复制<br/>erik_ 前缀"]
+        ES["Elasticsearch 8.x<br/>3 节点集群<br/>erik_ 前缀"]
         REDIS["Redis 7.x<br/>哨兵模式<br/>poster:captcha:*"]
     end
 
@@ -640,6 +647,7 @@ flowchart TB
     NGX --> STA
     NGX --> WM1 & WM2 & WM3
     WM1 & WM2 & WM3 --> MYSQL
+    WM1 & WM2 & WM3 --> ES
     WM1 & WM2 & WM3 --> REDIS
     WM1 & WM2 & WM3 --> MON
 
@@ -648,5 +656,6 @@ flowchart TB
     style WM2 fill:#1677FF,color:#fff
     style WM3 fill:#1677FF,color:#fff
     style MYSQL fill:#1890FF,color:#fff
+    style ES fill:#1890FF,color:#fff
     style REDIS fill:#1890FF,color:#fff
 ```

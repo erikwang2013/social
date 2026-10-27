@@ -45,10 +45,10 @@
 │                             │                                  │
 │  ┌──────────────────────────┼───────────────────────────┐    │
 │  │              数据存储层                                │    │
-│  │  ┌──────────┐  ┌──────────┐                           │    │
-│  │  │  MySQL   │  │  Redis   │                           │    │
-│  │  │ (primary) │  │ (cache)  │                           │    │
-│  │  └──────────┘  └──────────┘                           │    │
+│  │  ┌──────────┐  ┌──────────────┐  ┌──────────┐        │    │
+│  │  │  MySQL   │  │ Elasticsearch│  │  Redis   │        │    │
+│  │  │ (primary) │  │ (full-text)  │  │ (cache)  │        │    │
+│  │  └──────────┘  └──────────────┘  └──────────┘        │    │
 │  └──────────────────────────────────────────────────────┘    │
 │                       webman v2                               │
 └──────────────────────────────────────────────────────────────┘
@@ -424,6 +424,7 @@ The `docker-compose.yml` at the project root orchestrates all services of the ab
 | `app` | Built from local `Dockerfile` | 8787 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | Primary database, data volume persistence |
 | `redis` | redis:7-alpine | 6379 | Cache / rate limiting / captcha |
+| `elasticsearch` | elasticsearch:8.x | 9200 | Full-text search |
 
 Before starting, replace keys such as `JWT_SECRET`, `HASHIDS_SALT`, `ENCRYPTION_KEY` in `docker-compose.yml` with random strings.
 
@@ -454,6 +455,7 @@ The `GET /metrics` endpoint (`MetricsController`) exposes 5 gauge metrics in Pro
 |------|---------|---------|
 | PHP | 8.3+ | 8.3+ OPcache enabled |
 | MySQL | 8.0+ | 8.0+ master-slave replication |
+| Elasticsearch | 7.x | 8.x 3-node cluster |
 | Redis | 6.x | 7.x sentinel mode |
 | Nginx | 1.20+ | Reverse proxy + gzip + SSL |
 | Flutter SDK | 3.41+ | Latest stable version |

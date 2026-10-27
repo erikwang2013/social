@@ -37,6 +37,7 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | Backend | webman v2 (workerman) | High-performance PHP daemon framework |
 | PHP | 8.3+ | |
 | Database | MySQL 8.0+ | Table prefix `erik_`, BIGINT non-auto-increment PKs |
+| Search | Elasticsearch | Synced via `webman-scout` |
 | Admin Frontend | Flutter 3.x | Web renders as desktop admin panel (`apps/flutter/`) |
 
 ## Core Packages
@@ -48,6 +49,7 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | `erikwang2013/jwt-webman` | JWT token issuance and verification |
 | `erikwang2013/encryption` | Transport-layer sensitive data encryption |
 | `erikwang2013/encryptable` | Database-layer sensitive field auto encryption |
+| `erikwang2013/webman-scout` | Elasticsearch sync and full-text search |
 | `erikwang2013/season` | Country flag data |
 | `erikwang2013/poster-php` | Click captcha generation/verification + poster generation |
 | `phpoffice/phpspreadsheet` | Excel export |
@@ -97,6 +99,7 @@ open-admin/
 - Composer 2.x
 - MySQL >= 8.0
 - Flutter >= 3.41 (frontend development only)
+- Elasticsearch >= 7.x (optional, for search)
 
 ## Quick Start
 
@@ -165,7 +168,7 @@ flutter build web        # Production build (build/web/)
 
 ### 6. Docker Compose (Recommended for Production)
 
-Full Docker orchestration with 4 services: Nginx, PHP (webman app), MySQL, Redis.
+Full Docker orchestration with 5 services: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Configure Docker environment variables
@@ -423,6 +426,7 @@ Authorization: Bearer <token>
 | `app` | Local `Dockerfile` build | 8787 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
+| `elasticsearch` | elasticsearch:8.x | 9200 |
 
 The PHP image is built from `Dockerfile`, based on `php:8.3-cli` with OPcache enabled.
 

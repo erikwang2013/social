@@ -38,6 +38,7 @@ flowchart TD
 
     subgraph driver["驱动层"]
         d1["MySQL PDO"]
+        d2["Elasticsearch HTTP"]
         d3["Redis"]
     end
 
@@ -48,6 +49,7 @@ flowchart TD
     user & role & perm & dash & export & captcha & auth --> s1 & s2 & s3
     user & role & perm & dash & export & captcha & auth --> md1 & md2 & md3 & md4 & md5
     md1 & md2 & md3 & md4 & md5 --> d1
+    md1 --> d2
     captcha --> d3
 
     style r1 fill:#722ED1,color:#fff

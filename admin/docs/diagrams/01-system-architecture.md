@@ -20,6 +20,7 @@ flowchart TB
 
     subgraph storage["存储层"]
         mysql[("MySQL 8.0<br/>主存储 - erik_前缀")]
+        es[("Elasticsearch<br/>全文检索 - erik_前缀")]
         redis[("Redis<br/>Session/缓存/Captcha")]
     end
 
@@ -32,6 +33,8 @@ flowchart TB
     public --> common
     admin --> mysql
     public --> mysql
+    admin --> es
+    public --> es
     auth --> redis
     public --> redis
 
@@ -41,5 +44,6 @@ flowchart TB
     style perm fill:#FA8C16,color:#fff
     style common fill:#52C41A,color:#fff
     style mysql fill:#1890FF,color:#fff
+    style es fill:#1890FF,color:#fff
     style redis fill:#1890FF,color:#fff
 ```

@@ -65,12 +65,13 @@ GET /health
     "php": "8.3.0",
     "database": "ok",
     "redis": "ok",
+    "elasticsearch": "ok",
     "timestamp": 1716249600
   }
 }
 ```
 
-Values of `database` and `redis`: `"ok"` | `"unavailable"`.
+Values of `database`, `redis`, `elasticsearch`: `"ok"` | `"unavailable"`. `elasticsearch` returns `"unavailable"` when ES is unreachable; when the cluster health status is not green/yellow, the actual status value is returned (e.g. `"red"`).
 
 ### 3.2 API documentation
 
@@ -1758,7 +1759,7 @@ The complete authentication sequence:
 
 ### Docker Compose
 
-The project root provides `docker-compose.yml` orchestrating 4 services (Nginx, webman app, MySQL, Redis). PHP is built via `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
+The project root provides `docker-compose.yml` orchestrating 5 services (Nginx, webman app, MySQL, Redis, Elasticsearch). PHP is built via `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
 
 ```bash
 cp .env.docker .env

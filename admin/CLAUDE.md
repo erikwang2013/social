@@ -34,6 +34,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 - JWT 认证: `erikwang2013/jwt-webman`
 - API 敏感数据加解密: `erikwang2013/encryption`
 - 数据库敏感字段加解密: `erikwang2013/encryptable`
+- ES 同步与查询: `erikwang2013/webman-scout`
 - 国家旗帜: `erikwang2013/season`
 
 ### 前端
@@ -203,7 +204,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 
 ### Docker Compose（推荐生产环境）
 
-项目根目录 `docker-compose.yml` 编排 4 个服务：
+项目根目录 `docker-compose.yml` 编排 5 个服务：
 
 | 服务 | 说明 |
 |------|------|
@@ -211,6 +212,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 | `app` | webman PHP 8.3 应用，`Dockerfile` 构建（含 OPcache） |
 | `mysql` | MySQL 8.0，数据卷持久化 |
 | `redis` | Redis 7 Alpine，缓存/限流/Session |
+| `elasticsearch` | Elasticsearch 8.x，全文检索 |
 
 ```bash
 cp .env.docker .env
