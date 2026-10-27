@@ -1,6 +1,6 @@
 # Social Platform
 
-**语言 / Languages:** [中文](../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+**语言 / Languages:** [中文](../README.md) · [English](README.en.md)
 
 Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy; a PHP + Rust stack with three native clients.
 
@@ -14,7 +14,7 @@ Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark
 
 ## Introduction
 
-- **Three native clients**: Android (Kotlin + Compose), iOS (SwiftUI), HarmonyOS (ArkTS), plus a Flutter admin console
+- **Native client**: Android (Kotlin + Compose), plus a Flutter admin console
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats: host + 7 mics)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
@@ -142,8 +142,6 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 | Platform | How to open / build | Platform requirements |
 |----|----------------|----------|
 | Android | `cd apps/android && ./gradlew assembleDebug` | Buildable on Linux / macOS |
-| iOS | Open `apps/ios/SocialApp` in Xcode | Requires macOS |
-| HarmonyOS | Open `apps/harmonyos` in DevEco Studio | Requires DevEco Studio |
 
 ### Tests
 
@@ -178,70 +176,6 @@ If this project helps you, scan the QR code to support us, thank you!
 **Alipay**
 
 <img src="alipay.png" width="160" height="175" alt="Alipay">
-
-**Global Transfer (Bank Transfer)**
-
-
-
-
-If you find this project helpful, you are welcome to support development via global bank transfer.
-
-**Payee Information**
-
-| Item | Details |
-|------|------|
-| Payee Name | WANG KEXUN |
-| Payee Account Number | 881015918251 |
-
-**Receiving Bank — ZA Bank**
-
-| Item | Details |
-|------|------|
-| SWIFT Code | AABLHKHHXXX |
-| Bank Name | ZA Bank Limited |
-| Bank Code | 387 |
-| Bank Address | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
-
-**Correspondent Bank for Cross-Border Remittance (if needed)**
-
-> The following is the correspondent (intermediary) bank information for cross-border remittance, not the receiving bank. Please check with your remitting bank whether correspondent bank information is required.
-
-The correspondent bank for remittances in Hong Kong dollars, renminbi, and US dollars is **Citibank**:
-
-| Item | Details |
-|------|------|
-| Bank Name | Citibank N.A. Hong Kong |
-| SWIFT Code | CITIHKHXXXX |
-| Bank Code | 006 |
-| Branch Name | Hong Kong Branch |
-| Branch Code | 391 |
-| Bank Address | Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong |
-
-The correspondent bank for remittances in other currencies is **BNY Mellon**:
-
-| Item | Details |
-|------|------|
-| Bank Name | THE BANK OF NEW YORK MELLON |
-| SWIFT Code | IRVTUS3NXXX |
-| Bank Address | THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States |
-
-### Crypto Donation
-
-If this project helps you, scan the QR code to donate, thank you!
-
-| Network | QR Code | Wallet Address |
-|---|---|---|
-| BNB Smart Chain (BEP20) | [<img src="coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Tron (TRC20) | [<img src="coin/2.jpg" width="150" alt="Tron (TRC20)">](coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
-| Ethereum (ERC20) | [<img src="coin/3.jpg" width="150" alt="Ethereum (ERC20)">](coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Aptos | [<img src="coin/4.jpg" width="150" alt="Aptos">](coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
-| Plasma | [<img src="coin/5.jpg" width="150" alt="Plasma">](coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Polygon POS | [<img src="coin/6.jpg" width="150" alt="Polygon POS">](coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Solana | [<img src="coin/7.jpg" width="150" alt="Solana">](coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
-| The Open Network (TON) | [<img src="coin/8.jpg" width="150" alt="The Open Network (TON)">](coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
-| Arbitrum One | [<img src="coin/9.jpg" width="150" alt="Arbitrum One">](coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| AVAX C-Chain | [<img src="coin/10.jpg" width="150" alt="AVAX C-Chain">](coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-
 
 ## Documentation
 

@@ -1,5 +1,5 @@
 # 全量测试汇总报告
-**语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md) · [한국어](SUMMARY.ko.md) · [Русский](SUMMARY.ru.md) · [Deutsch](SUMMARY.de.md) · [Français](SUMMARY.fr.md) · [Español](SUMMARY.es.md) · [Português](SUMMARY.pt.md) · [हिन्दी](SUMMARY.hi.md) · [العربية](SUMMARY.ar.md) · [বাংলা](SUMMARY.bn.md) · [Bahasa Indonesia](SUMMARY.id.md) · [日本語](SUMMARY.ja.md)
+**语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md)
 
 - 日期: 2026-08-27（第二轮全量回归）
 - 测试团队: PHP 单元测试 / Rust 单元测试 / API 自动化 / UI 端到端(GO 角色见文末说明)

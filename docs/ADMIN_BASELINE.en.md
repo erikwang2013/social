@@ -1,6 +1,6 @@
 # Admin Baseline Acceptance (M0, 2026-08-17)
 
-**语言 / Languages:** [中文](ADMIN_BASELINE.md) · [English](ADMIN_BASELINE.en.md) · [한국어](ADMIN_BASELINE.ko.md) · [Русский](ADMIN_BASELINE.ru.md) · [Deutsch](ADMIN_BASELINE.de.md) · [Français](ADMIN_BASELINE.fr.md) · [Español](ADMIN_BASELINE.es.md) · [Português](ADMIN_BASELINE.pt.md) · [हिन्दी](ADMIN_BASELINE.hi.md) · [العربية](ADMIN_BASELINE.ar.md) · [বাংলা](ADMIN_BASELINE.bn.md) · [Bahasa Indonesia](ADMIN_BASELINE.id.md) · [日本語](ADMIN_BASELINE.ja.md)
+**语言 / Languages:** [中文](ADMIN_BASELINE.md) · [English](ADMIN_BASELINE.en.md)
 
 Baseline status and transformation entry points for open-admin (webman v2 + Flutter admin console).
 
@@ -37,7 +37,7 @@ Local steps to restore all-green: create `.env` according to the config keys in 
 ## gRPC readiness (T3)
 
 - Composer packages installed: `grpc/grpc 1.82.0`, `google/protobuf 5.35` (`--no-plugins` works around the security-php plugin duplicate-loading bug)
-- PHP stubs generated: `admin/generated/` (`Social/Admin/V1/AdminServiceClient.php` etc., including the three contract sets: infra/user)
+- PHP stubs generated: `admin/generated/` (`Social/Infra/V1/InfraServiceClient.php`; the admin/user Ping contracts were removed)
 - **grpc PHP extension not installed**: pecl has no write permission and sudo requires a password; `sudo pecl install grpc` is required before running the gRPC client
 
 ## Transformation entry points (design doc §3.4, eight new items)
@@ -45,8 +45,8 @@ Local steps to restore all-green: create `.env` according to the config keys in 
 1. Content moderation workbench: bilingual side-by-side review of posts/comments/images, multilingual rejection-reason templates, user penalties
 2. Report handling queue
 3. GDPR request desk (export/delete tickets)
-4. Data dashboard integration with bee_tsdb
-5. i18n entry management (shared CRUD across four clients)
+4. Data dashboard integration with existing business/report data (no bee_tsdb dependency)
+5. i18n entry management (shared CRUD across the Android client and Flutter admin)
 6. Gift library management (SKU, price, effects, multilingual names)
 7. Live-streaming provider configuration (routing strategy, switch order)
 8. Withdrawal request review

@@ -199,7 +199,6 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 | `app` | webman PHP 8.3 应用，`Dockerfile` 构建（含 OPcache） |
 | `mysql` | MySQL 8.0，数据卷持久化 |
 | `redis` | Redis 7 Alpine，缓存/限流/Session |
-| `elasticsearch` | Elasticsearch 8.x，全文检索 |
 
 ```bash
 cp .env.docker .env

@@ -1,5 +1,5 @@
 # API Automated Testing Report
-**语言 / Languages:** [中文](api-test-report.md) · [English](api-test-report.en.md) · [한국어](api-test-report.ko.md) · [Русский](api-test-report.ru.md) · [Deutsch](api-test-report.de.md) · [Français](api-test-report.fr.md) · [Español](api-test-report.es.md) · [Português](api-test-report.pt.md) · [हिन्दी](api-test-report.hi.md) · [العربية](api-test-report.ar.md) · [বাংলা](api-test-report.bn.md) · [Bahasa Indonesia](api-test-report.id.md) · [日本語](api-test-report.ja.md)
+**语言 / Languages:** [中文](api-test-report.md) · [English](api-test-report.en.md)
 
 - Date: 2026-08-27
 - Execution: `tests/api/run.php` (curl assertion script), results in `tests/api/results.json`

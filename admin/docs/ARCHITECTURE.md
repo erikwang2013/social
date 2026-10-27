@@ -1,5 +1,5 @@
 # 架构设计图与业务逻辑图
-**语言 / Languages:** [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국어](ARCHITECTURE.ko.md) · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)
+**语言 / Languages:** [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -13,7 +13,6 @@
 flowchart TB
     subgraph "客户端层"
         A1["Flutter Web<br/>PC 管理后台<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>手机/平板客户端"]
     end
 
     subgraph "网关/边缘层 (Nginx Edge)"
@@ -31,17 +30,14 @@ flowchart TB
 
     subgraph "存储层"
         D1[("MySQL 8.0<br/>主存储<br/>表前缀 erik_")]
-        D2[("Elasticsearch<br/>全文检索<br/>索引前缀 erik_")]
         D3[("Redis<br/>Session / 缓存<br/>Captcha 存储")]
     end
 
     subgraph "外部"
-        E1["DevEco Studio<br/>HarmonyOS 构建"]
         E2["Flutter SDK<br/>Web 构建"]
     end
 
     A1 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
-    A2 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
     B1 --> C0
     C0 --> C1
     C1 --> C2
@@ -51,12 +47,9 @@ flowchart TB
     C4 --> C5
     C3 --> D1
     C4 --> D1
-    C3 --> D2
-    C4 --> D2
     C1 --> D3
 
     style A1 fill:#1677FF,color:#fff
-    style A2 fill:#1677FF,color:#fff
     style B1 fill:#722ED1,color:#fff
     style C0 fill:#EB2F96,color:#fff
     style C1 fill:#FA8C16,color:#fff
@@ -65,7 +58,6 @@ flowchart TB
     style C4 fill:#52C41A,color:#fff
     style C5 fill:#52C41A,color:#fff
     style D1 fill:#1890FF,color:#fff
-    style D2 fill:#1890FF,color:#fff
     style D3 fill:#1890FF,color:#fff
 ```
 
@@ -114,7 +106,6 @@ flowchart TD
 
     subgraph "驱动层 Driver Layer"
         D1["MySQL PDO"]
-        D2["Elasticsearch HTTP"]
         D3["Redis"]
     end
 
@@ -127,7 +118,6 @@ flowchart TD
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> S1 & S2 & S3
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> MD1 & MD2 & MD3 & MD4 & MD5
     MD1 & MD2 & MD3 & MD4 & MD5 --> D1
-    MD1 --> D2
     CT7 --> D3
 
     style R1 fill:#722ED1,color:#fff
@@ -572,34 +562,6 @@ flowchart TD
 
 ---
 
-## 11. HarmonyOS 页面路由
-
-```mermaid
-flowchart LR
-    EA["EntryAbility<br/>启动"]
-    EA -->|"无 Token"| LP["LoginPage<br/>登录页"]
-    EA -->|"有 Token"| DP["DashboardPage<br/>仪表盘"]
-
-    LP -->|"登录成功<br/>replaceUrl"| DP
-
-    DP -->|"pushUrl"| ULP["UserListPage<br/>用户列表"]
-    DP -->|"pushUrl"| PP["ProfilePage<br/>个人中心"]
-
-    ULP -->|"pushUrl"| UDP["UserDetailPage<br/>用户详情/新增/编辑"]
-    ULP -->|"router.back"| DP
-    UDP -->|"router.back"| ULP
-
-    PP -->|"退出登录<br/>replaceUrl"| LP
-    PP -->|"router.back"| DP
-
-    style LP fill:#1677FF,color:#fff
-    style DP fill:#52C41A,color:#fff
-    style ULP fill:#FA8C16,color:#fff
-    style UDP fill:#FA8C16,color:#fff
-    style PP fill:#722ED1,color:#fff
-```
-
----
 
 ## 12. 安全纵深防御全景
 
@@ -667,7 +629,6 @@ flowchart TB
 
     subgraph "数据层"
         MYSQL["MySQL 8.0<br/>主从复制<br/>erik_ 前缀"]
-        ES["Elasticsearch 8.x<br/>3 节点集群<br/>erik_ 前缀"]
         REDIS["Redis 7.x<br/>哨兵模式<br/>poster:captcha:*"]
     end
 
@@ -679,7 +640,6 @@ flowchart TB
     NGX --> STA
     NGX --> WM1 & WM2 & WM3
     WM1 & WM2 & WM3 --> MYSQL
-    WM1 & WM2 & WM3 --> ES
     WM1 & WM2 & WM3 --> REDIS
     WM1 & WM2 & WM3 --> MON
 
@@ -688,6 +648,5 @@ flowchart TB
     style WM2 fill:#1677FF,color:#fff
     style WM3 fill:#1677FF,color:#fff
     style MYSQL fill:#1890FF,color:#fff
-    style ES fill:#1890FF,color:#fff
     style REDIS fill:#1890FF,color:#fff
 ```

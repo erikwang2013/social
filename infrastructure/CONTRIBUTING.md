@@ -1,6 +1,6 @@
 # Contributing
 
-**语言 / Languages:** [中文](CONTRIBUTING.md) · [English](CONTRIBUTING.en.md) · [한국어](CONTRIBUTING.ko.md) · [Русский](CONTRIBUTING.ru.md) · [Deutsch](CONTRIBUTING.de.md) · [Français](CONTRIBUTING.fr.md) · [Español](CONTRIBUTING.es.md) · [Português](CONTRIBUTING.pt.md) · [हिन्दी](CONTRIBUTING.hi.md) · [العربية](CONTRIBUTING.ar.md) · [বাংলা](CONTRIBUTING.bn.md) · [Bahasa Indonesia](CONTRIBUTING.id.md) · [日本語](CONTRIBUTING.ja.md)
+**语言 / Languages:** [中文](CONTRIBUTING.md)
 
 ## Setup
 
@@ -22,18 +22,8 @@ cargo test --workspace
 
 ```
 crates/
-  bee_rust/         # Meta crate, re-export + feature flags
-  bee_router/       # Routing + Controller + Context + Filter chain
-  bee_orm/          # ORM — Model trait + QuerySet + Migration
-  bee_kv/           # KV/Cache unified abstraction
-  bee_graph/        # Graph database
-  bee_tsdb/         # Time series database
-  bee_config/       # Config management + hot-reload
-  bee_cache/        # Cache abstraction
-  bee_session/      # Session management
-  bee_logs/         # Logging
-  bee_template/     # Template rendering
-  bee_cli/          # CLI tooling
+  social_grpc/      # gRPC service entry (InfraService + live/voice bridge)
+  bee_live/         # Live / voice-room / 1v1 call state machines + voice upload
 ```
 
 ## License

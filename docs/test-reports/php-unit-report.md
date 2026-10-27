@@ -1,5 +1,5 @@
 # PHP 单元测试报告
-**语言 / Languages:** [中文](php-unit-report.md) · [English](php-unit-report.en.md) · [한국어](php-unit-report.ko.md) · [Русский](php-unit-report.ru.md) · [Deutsch](php-unit-report.de.md) · [Français](php-unit-report.fr.md) · [Español](php-unit-report.es.md) · [Português](php-unit-report.pt.md) · [हिन्दी](php-unit-report.hi.md) · [العربية](php-unit-report.ar.md) · [বাংলা](php-unit-report.bn.md) · [Bahasa Indonesia](php-unit-report.id.md) · [日本語](php-unit-report.ja.md)
+**语言 / Languages:** [中文](php-unit-report.md) · [English](php-unit-report.en.md)
 
 - 日期: 2026-08-27
 - 执行: `vendor/bin/phpunit`(PHPUnit 10.5.64, PHP 8.3.7)

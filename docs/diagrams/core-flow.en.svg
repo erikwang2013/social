@@ -16,7 +16,7 @@
     .edge { stroke: #64748b; stroke-width: 1.5; fill: none; marker-end: url(#arr) }
   </style>
 
-  <text class="lbl" x="24" y="36">Client (Android / iOS / HarmonyOS)</text>
+  <text class="lbl" x="24" y="36">Client (Android)</text>
   <rect class="lane" x="20" y="48" width="920" height="118"/>
   <rect class="b1" x="44" y="76" width="180" height="64"/>
   <text class="t" x="134" y="100">Register / Login</text>

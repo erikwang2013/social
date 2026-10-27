@@ -1,5 +1,5 @@
 # API Reference Documentation
-**语言 / Languages:** [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+**语言 / Languages:** [中文](API.md) · [English](API.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -65,13 +65,12 @@ GET /health
     "php": "8.3.0",
     "database": "ok",
     "redis": "ok",
-    "elasticsearch": "ok",
     "timestamp": 1716249600
   }
 }
 ```
 
-Values of `database`, `redis`, `elasticsearch`: `"ok"` | `"unavailable"`. `elasticsearch` returns `"unavailable"` when ES is unreachable; when the cluster health status is not green/yellow, the actual status value is returned (e.g. `"red"`).
+Values of `database` and `redis`: `"ok"` | `"unavailable"`.
 
 ### 3.2 API documentation
 
@@ -1759,7 +1758,7 @@ The complete authentication sequence:
 
 ### Docker Compose
 
-The project root provides `docker-compose.yml` orchestrating 5 services (Nginx, webman app, MySQL, Redis, Elasticsearch). PHP is built via `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
+The project root provides `docker-compose.yml` orchestrating 4 services (Nginx, webman app, MySQL, Redis). PHP is built via `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
 
 ```bash
 cp .env.docker .env

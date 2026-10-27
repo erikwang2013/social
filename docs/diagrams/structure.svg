@@ -27,10 +27,7 @@
   <!-- ① 契约层 -->
   <rect class="layer" x="20" y="76" width="920" height="92"/>
   <text class="lt" x="36" y="100">① 契约层 · contracts/　（protobuf / buf，buf.gen.yaml 生成入口）</text>
-  <rect class="boxg" x="40" y="112" width="140" height="40"/><text class="t" x="110" y="137">admin_service.proto</text>
-  <rect class="boxg" x="190" y="112" width="140" height="40"/><text class="t" x="260" y="137">user_service.proto</text>
   <rect class="boxg" x="340" y="112" width="140" height="40"/><text class="t" x="410" y="137">live_service.proto</text>
-  <rect class="boxg" x="490" y="112" width="150" height="40"/><text class="t" x="565" y="137">search_service.proto</text>
   <rect class="boxg" x="650" y="112" width="130" height="40"/><text class="t" x="715" y="137">infra_service.proto</text>
   <rect class="boxg" x="790" y="112" width="130" height="40"/><text class="t" x="855" y="137">common/types.proto</text>
 
@@ -68,7 +65,7 @@
   <rect class="box" x="336" y="362" width="280" height="86"/>
   <text class="tl" x="352" y="388">infrastructure/</text>
   <text class="tls" x="352" y="408">高吞吐计算层 · bee-rust (tonic)</text>
-  <text class="tls" x="352" y="428">bee_live · social_grpc · bee_orm</text>
+  <text class="tls" x="352" y="428">bee_live · social_grpc</text>
 
   <rect class="boxg" x="632" y="362" width="288" height="86"/>
   <text class="tl" x="648" y="388">media/sfu/</text>
@@ -79,13 +76,9 @@
 
   <!-- ③ 客户端层 -->
   <rect class="layer" x="20" y="484" width="920" height="100"/>
-  <text class="lt" x="36" y="508">③ 客户端层 · apps/　（三端原生 + Flutter 管理台）</text>
+  <text class="lt" x="36" y="508">③ 客户端层 · apps/（Android 原生 + Flutter 管理台）</text>
   <rect class="box" x="40" y="520" width="215" height="50"/>
   <text class="t" x="147" y="542">apps/android</text><text class="ts" x="147" y="560">Kotlin + Compose</text>
-  <rect class="box" x="265" y="520" width="215" height="50"/>
-  <text class="t" x="372" y="542">apps/ios</text><text class="ts" x="372" y="560">SwiftUI</text>
-  <rect class="box" x="490" y="520" width="215" height="50"/>
-  <text class="t" x="597" y="542">apps/harmonyos</text><text class="ts" x="597" y="560">ArkTS</text>
   <rect class="box" x="715" y="520" width="215" height="50"/>
   <text class="t" x="822" y="542">admin/apps/flutter</text><text class="ts" x="822" y="560">Flutter Web 管理台</text>
 

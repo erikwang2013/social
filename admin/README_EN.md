@@ -37,7 +37,6 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | Backend | webman v2 (workerman) | High-performance PHP daemon framework |
 | PHP | 8.3+ | |
 | Database | MySQL 8.0+ | Table prefix `erik_`, BIGINT non-auto-increment PKs |
-| Search | Elasticsearch | Synced via `webman-scout` |
 | Admin Frontend | Flutter 3.x | Web renders as desktop admin panel (`apps/flutter/`) |
 
 ## Core Packages
@@ -49,7 +48,6 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | `erikwang2013/jwt-webman` | JWT token issuance and verification |
 | `erikwang2013/encryption` | Transport-layer sensitive data encryption |
 | `erikwang2013/encryptable` | Database-layer sensitive field auto encryption |
-| `erikwang2013/webman-scout` | Elasticsearch sync and full-text search |
 | `erikwang2013/season` | Country flag data |
 | `erikwang2013/poster-php` | Click captcha generation/verification + poster generation |
 | `phpoffice/phpspreadsheet` | Excel export |
@@ -99,7 +97,6 @@ open-admin/
 - Composer 2.x
 - MySQL >= 8.0
 - Flutter >= 3.41 (frontend development only)
-- Elasticsearch >= 7.x (optional, for search)
 
 ## Quick Start
 
@@ -168,7 +165,7 @@ flutter build web        # Production build (build/web/)
 
 ### 6. Docker Compose (Recommended for Production)
 
-Full Docker orchestration with 5 services: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch.
+Full Docker orchestration with 4 services: Nginx, PHP (webman app), MySQL, Redis.
 
 ```bash
 # 1. Configure Docker environment variables
@@ -293,9 +290,7 @@ The OperationLog middleware auto-detects the client platform and records it in t
 | `macos` | UA contains Macintosh / Mac OS |
 | `windows` | UA contains Windows |
 | `linux` | UA contains Linux (non-Android) |
-| `ios` | UA contains iPhone / iOS / CFNetwork |
 | `android` | UA contains Android |
-| `harmonyos` | UA contains HarmonyOS / OpenHarmony, or `X-Client-Platform` header |
 | `web` | Default (no platform matched) |
 
 > Two-tier detection: `X-Client-Platform` header (native app declaration) → User-Agent inference (fallback). Query `GET /admin/log` — the `source` field shows the detected platform.
@@ -428,7 +423,6 @@ Authorization: Bearer <token>
 | `app` | Local `Dockerfile` build | 8787 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
-| `elasticsearch` | elasticsearch:8.x | 9200 |
 
 The PHP image is built from `Dockerfile`, based on `php:8.3-cli` with OPcache enabled.
 
@@ -464,8 +458,14 @@ See `docs/nginx-security.conf` for production reverse-proxy security hardening.
 
 ---
 
-## License
-
-MIT
+## 项目授权 / Project License
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+- 本项目仅供个人学习、研究使用。
+- 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
+- 商业授权请联系 **erik@erik.xyz**。
+- 未经授权的商业使用，作者将在全球范围内依法追究法律责任，并保留终身追责的权利。
+- 第三方组件仍遵循其各自原有的许可证；视觉资产适用仓库内的 ASSETS-LICENSE.md（如适用）。
+
+**English:** This project is provided for personal study and research only. Commercial use of any kind requires prior written authorization from the author (erik@erik.xyz). Unauthorized commercial use will be pursued for legal liability worldwide, and the author reserves the right to pursue such liability for life. Third-party components remain under their original licenses; visual assets are governed by ASSETS-LICENSE.md where applicable.

@@ -1,6 +1,6 @@
 # Security Architecture Design Document
 
-**语言 / Languages:** [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
+**语言 / Languages:** [中文](SECURITY.md) · [English](SECURITY.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -312,9 +312,7 @@ The OperationLog middleware automatically records operation logs for POST / PUT 
 | macOS | `Macintosh`, `Mac OS` |
 | Windows | `Windows` |
 | Linux | `Linux` |
-| iOS | `iPhone`, `iOS`, `CFNetwork` |
 | Android | `Android` |
-| HarmonyOS | `HarmonyOS`, `OpenHarmony` |
 | Web | Fallback default |
 
 **Fault tolerance**: log write exceptions do not block business requests (`catch (\Throwable)` silently swallowed).

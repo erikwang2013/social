@@ -1,5 +1,5 @@
 # Rust Workspace Unit Test Report
-**语言 / Languages:** [中文](rust-unit-report.md) · [English](rust-unit-report.en.md) · [한국어](rust-unit-report.ko.md) · [Русский](rust-unit-report.ru.md) · [Deutsch](rust-unit-report.de.md) · [Français](rust-unit-report.fr.md) · [Español](rust-unit-report.es.md) · [Português](rust-unit-report.pt.md) · [हिन्दी](rust-unit-report.hi.md) · [العربية](rust-unit-report.ar.md) · [বাংলা](rust-unit-report.bn.md) · [Bahasa Indonesia](rust-unit-report.id.md) · [日本語](rust-unit-report.ja.md)
+**语言 / Languages:** [中文](rust-unit-report.md) · [English](rust-unit-report.en.md)
 
 - Date: 2026-08-27
 - Location: `/home/wwwroot/social/infrastructure`

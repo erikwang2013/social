@@ -1,6 +1,6 @@
 # Open Admin Console — Design Document
 
-**语言 / Languages:** [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
+**语言 / Languages:** [中文](DESIGN.md) · [English](DESIGN.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -13,12 +13,11 @@
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        客户端层                               │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐  │
-│  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
-│  │  管理后台 (桌面风格)   │  │  客户端 (手机/平板/2in1)      │  │
-│  └──────────┬───────────┘  └──────────────┬───────────────┘  │
-└─────────────┼──────────────────────────────┼─────────────────┘
-              │        HTTPS / JSON          │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Flutter Web Admin (PC / desktop style)              │  │
+│  └──────────────────────────┬───────────────────────────┘  │
+└─────────────────────────────┼──────────────────────────────┘
+                              │        HTTPS / JSON
               │   Authorization: Bearer JWT  │
 ┌─────────────┼──────────────────────────────┼─────────────────┐
 │             ▼                              ▼                  │
@@ -46,10 +45,10 @@
 │                             │                                  │
 │  ┌──────────────────────────┼───────────────────────────┐    │
 │  │              数据存储层                                │    │
-│  │  ┌──────────┐  ┌──────────────┐  ┌──────────┐        │    │
-│  │  │  MySQL   │  │ Elasticsearch│  │  Redis   │        │    │
-│  │  │ (主存储)  │  │ (全文检索)    │  │ (缓存)   │        │    │
-│  │  └──────────┘  └──────────────┘  └──────────┘        │    │
+│  │  ┌──────────┐  ┌──────────┐                           │    │
+│  │  │  MySQL   │  │  Redis   │                           │    │
+│  │  │ (primary) │  │ (cache)  │                           │    │
+│  │  └──────────┘  └──────────┘                           │    │
 │  └──────────────────────────────────────────────────────┘    │
 │                       webman v2                               │
 └──────────────────────────────────────────────────────────────┘
@@ -340,19 +339,6 @@ The frontend pops up a confirmation dialog before triggering delete operations, 
 
 Features: collapsible sidebar, Material 3 dual themes, high-density data tables, Dialog popups, mouse hover interactions
 
-### 5.2 HarmonyOS Mobile Client
-
-Page routes:
-
-| Page | Route | Description |
-|------|------|------|
-| LoginPage | `pages/LoginPage` | Username/password + click captcha login |
-| DashboardPage | `pages/DashboardPage` | Statistic cards + recent operations |
-| UserListPage | `pages/UserListPage` | User list, search + pull-to-refresh + scroll-up load |
-| UserDetailPage | `pages/UserDetailPage` | Create/edit/view/delete (AlertDialog confirmation) |
-| ProfilePage | `pages/ProfilePage` | Profile center, logout (AlertDialog confirmation) |
-
-Data flow: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
 ## 6. Security Design
 
@@ -438,7 +424,6 @@ The `docker-compose.yml` at the project root orchestrates all services of the ab
 | `app` | Built from local `Dockerfile` | 8787 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | Primary database, data volume persistence |
 | `redis` | redis:7-alpine | 6379 | Cache / rate limiting / captcha |
-| `elasticsearch` | elasticsearch:8.x | 9200 | Full-text search |
 
 Before starting, replace keys such as `JWT_SECRET`, `HASHIDS_SALT`, `ENCRYPTION_KEY` in `docker-compose.yml` with random strings.
 
@@ -469,8 +454,6 @@ The `GET /metrics` endpoint (`MetricsController`) exposes 5 gauge metrics in Pro
 |------|---------|---------|
 | PHP | 8.3+ | 8.3+ OPcache enabled |
 | MySQL | 8.0+ | 8.0+ master-slave replication |
-| Elasticsearch | 7.x | 8.x 3-node cluster |
 | Redis | 6.x | 7.x sentinel mode |
 | Nginx | 1.20+ | Reverse proxy + gzip + SSL |
 | Flutter SDK | 3.41+ | Latest stable version |
-| HarmonyOS | API 12 | DevEco Studio 5.x |

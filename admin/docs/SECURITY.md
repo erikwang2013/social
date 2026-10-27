@@ -1,6 +1,6 @@
 # 安全架构设计文档
 
-**语言 / Languages:** [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
+**语言 / Languages:** [中文](SECURITY.md) · [English](SECURITY.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -312,9 +312,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | macOS | `Macintosh`, `Mac OS` |
 | Windows | `Windows` |
 | Linux | `Linux` |
-| iOS | `iPhone`, `iOS`, `CFNetwork` |
 | Android | `Android` |
-| HarmonyOS | `HarmonyOS`, `OpenHarmony` |
 | Web | 兜底默认值 |
 
 **容错**：日志写入异常不阻塞业务请求（`catch (\Throwable)` 静默吞掉）。

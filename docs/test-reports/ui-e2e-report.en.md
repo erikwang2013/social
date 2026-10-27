@@ -1,5 +1,5 @@
 # Page End-to-End (E2E) Test Report
-**语言 / Languages:** [中文](ui-e2e-report.md) · [English](ui-e2e-report.en.md) · [한국어](ui-e2e-report.ko.md) · [Русский](ui-e2e-report.ru.md) · [Deutsch](ui-e2e-report.de.md) · [Français](ui-e2e-report.fr.md) · [Español](ui-e2e-report.es.md) · [Português](ui-e2e-report.pt.md) · [हिन्दी](ui-e2e-report.hi.md) · [العربية](ui-e2e-report.ar.md) · [বাংলা](ui-e2e-report.bn.md) · [Bahasa Indonesia](ui-e2e-report.id.md) · [日本語](ui-e2e-report.ja.md)
+**语言 / Languages:** [中文](ui-e2e-report.md) · [English](ui-e2e-report.en.md)
 
 - Date: 2026-08-27
 - Environment: local machine (Linux), real browser (Playwright 1.62 / Chromium) + real service processes

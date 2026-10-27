@@ -1,6 +1,6 @@
 # 开放管理后台 — 设计文档
 
-**语言 / Languages:** [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
+**语言 / Languages:** [中文](DESIGN.md) · [English](DESIGN.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -13,12 +13,11 @@
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                        客户端层                               │
-│  ┌──────────────────────┐  ┌──────────────────────────────┐  │
-│  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
-│  │  管理后台 (桌面风格)   │  │  客户端 (手机/平板/2in1)      │  │
-│  └──────────┬───────────┘  └──────────────┬───────────────┘  │
-└─────────────┼──────────────────────────────┼─────────────────┘
-              │        HTTPS / JSON          │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │  Flutter Web 管理后台 (PC / 桌面风格)                 │  │
+│  └──────────────────────────┬───────────────────────────┘  │
+└─────────────────────────────┼──────────────────────────────┘
+                              │        HTTPS / JSON
               │   Authorization: Bearer JWT  │
 ┌─────────────┼──────────────────────────────┼─────────────────┐
 │             ▼                              ▼                  │
@@ -46,10 +45,10 @@
 │                             │                                  │
 │  ┌──────────────────────────┼───────────────────────────┐    │
 │  │              数据存储层                                │    │
-│  │  ┌──────────┐  ┌──────────────┐  ┌──────────┐        │    │
-│  │  │  MySQL   │  │ Elasticsearch│  │  Redis   │        │    │
-│  │  │ (主存储)  │  │ (全文检索)    │  │ (缓存)   │        │    │
-│  │  └──────────┘  └──────────────┘  └──────────┘        │    │
+│  │  ┌──────────┐  ┌──────────┐                           │    │
+│  │  │  MySQL   │  │  Redis   │                           │    │
+│  │  │ (主存储)  │  │ (缓存)   │                           │    │
+│  │  └──────────┘  └──────────┘                           │    │
 │  └──────────────────────────────────────────────────────┘    │
 │                       webman v2                               │
 └──────────────────────────────────────────────────────────────┘
@@ -340,19 +339,6 @@ curl /api/auth/login
 
 特性: 侧边栏可折叠、Material 3 双主题、数据表格高密度、弹窗 Dialog、鼠标悬停交互
 
-### 5.2 HarmonyOS 移动端
-
-页面路由:
-
-| 页面 | 路由 | 说明 |
-|------|------|------|
-| LoginPage | `pages/LoginPage` | 用户名密码 + 点击验证码登录 |
-| DashboardPage | `pages/DashboardPage` | 统计卡片 + 最近操作 |
-| UserListPage | `pages/UserListPage` | 用户列表，搜索 + 下拉刷新 + 上滑加载 |
-| UserDetailPage | `pages/UserDetailPage` | 新增/编辑/查看/删除（AlertDialog 确认） |
-| ProfilePage | `pages/ProfilePage` | 个人中心，退出登录（AlertDialog 确认） |
-
-数据流: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
 ## 6. 安全设计
 
@@ -438,7 +424,6 @@ Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
 | `app` | 本地 `Dockerfile` 构建 | 8787 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | 主数据库，数据卷持久化 |
 | `redis` | redis:7-alpine | 6379 | 缓存 / 限流 / 验证码 |
-| `elasticsearch` | elasticsearch:8.x | 9200 | 全文检索 |
 
 启动前将 `docker-compose.yml` 中的 `JWT_SECRET`、`HASHIDS_SALT`、`ENCRYPTION_KEY` 等密钥替换为随机字符串。
 
@@ -469,8 +454,6 @@ GitHub Actions 持续集成定义在 `.github/workflows/ci.yml`：
 |------|---------|---------|
 | PHP | 8.3+ | 8.3+ OPcache enabled |
 | MySQL | 8.0+ | 8.0+ 主从复制 |
-| Elasticsearch | 7.x | 8.x 3节点集群 |
 | Redis | 6.x | 7.x 哨兵模式 |
 | Nginx | 1.20+ | 反向代理 + gzip + SSL |
 | Flutter SDK | 3.41+ | 最新稳定版 |
-| HarmonyOS | API 12 | DevEco Studio 5.x |

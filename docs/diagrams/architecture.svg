@@ -28,10 +28,6 @@
     <text class="lt" x="36" y="44">客户端层</text>
     <rect class="box" x="40" y="56" width="200" height="38"/>
     <text class="t" x="140" y="79">Android · Kotlin + Compose</text>
-    <rect class="box" x="260" y="56" width="200" height="38"/>
-    <text class="t" x="360" y="79">iOS · SwiftUI</text>
-    <rect class="box" x="480" y="56" width="200" height="38"/>
-    <text class="t" x="580" y="79">HarmonyOS · ArkTS</text>
     <rect class="box" x="700" y="56" width="220" height="38"/>
     <text class="t" x="810" y="79">Admin 管理后台 · Flutter</text>
   </g>

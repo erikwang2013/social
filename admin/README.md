@@ -1,5 +1,5 @@
 # 开放管理后台 (open-admin)
-**语言 / Languages:** [中文](README.md) · [English](README.en.md) 
+**语言 / Languages:** [中文](README.md) · [English](README_EN.md)
 
 基于 webman v2 + Flutter 的全栈管理后台系统。
 
@@ -30,7 +30,6 @@
 | 后端框架 | webman v2 (workerman) | 超高性能 PHP 常驻进程框架 |
 | PHP 版本 | 8.3+ | |
 | 数据库 | MySQL 8.0+ | 表前缀 `erik_`，BIGINT 非自增主键 |
-| 搜索引擎 | Elasticsearch | 通过 `webman-scout` 同步与查询 |
 | 管理端前端 | Flutter 3.x | Web 端为 PC 管理后台风格（`apps/flutter/`） |
 
 ## 核心依赖
@@ -42,7 +41,6 @@
 | `erikwang2013/jwt-webman` | JWT 认证令牌签发与校验 |
 | `erikwang2013/encryption` | 接口传输层敏感数据加解密 |
 | `erikwang2013/encryptable` | 数据库存储层敏感字段自动加解密 |
-| `erikwang2013/webman-scout` | Elasticsearch 数据同步与全文检索 |
 | `erikwang2013/season` | 国家旗帜数据 |
 | `erikwang2013/poster-php` | 点击验证码生成与校验 + 海报生成 |
 | `phpoffice/phpspreadsheet` | Excel 导出 |
@@ -106,7 +104,6 @@ open-admin/
 - Composer 2.x
 - MySQL >= 8.0
 - Flutter >= 3.41（仅前端开发需要）
-- Elasticsearch >= 7.x（可选，搜索功能需要）
 
 ## 快速开始
 
@@ -177,7 +174,7 @@ flutter build web        # 构建生产产物（build/web/）
 
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
-项目提供完整的 Docker 编排方案，包含 5 个服务：Nginx、PHP (webman app)、MySQL、Redis、Elasticsearch。
+项目提供完整的 Docker 编排方案，包含 4 个服务：Nginx、PHP (webman app)、MySQL、Redis。
 
 ```bash
 # 1. 配置 Docker 环境变量
@@ -254,7 +251,6 @@ cd apps/flutter && flutter analyze   # Flutter 静态分析（CI 同款）
 | `app` | 本地 `Dockerfile` 构建 | 8787 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
-| `elasticsearch` | elasticsearch:8.x | 9200 |
 
 PHP 镜像通过 `Dockerfile` 构建，基础镜像 `php:8.3-cli`，启用 OPcache。
 
@@ -290,8 +286,14 @@ GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
 ---
 
-## License
-
-MIT
+## 项目授权 / Project License
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+- 本项目仅供个人学习、研究使用。
+- 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
+- 商业授权请联系 **erik@erik.xyz**。
+- 未经授权的商业使用，作者将在全球范围内依法追究法律责任，并保留终身追责的权利。
+- 第三方组件仍遵循其各自原有的许可证；视觉资产适用仓库内的 ASSETS-LICENSE.md（如适用）。
+
+**English:** This project is provided for personal study and research only. Commercial use of any kind requires prior written authorization from the author (erik@erik.xyz). Unauthorized commercial use will be pursued for legal liability worldwide, and the author reserves the right to pursue such liability for life. Third-party components remain under their original licenses; visual assets are governed by ASSETS-LICENSE.md where applicable.

@@ -1,5 +1,5 @@
 # Full Test Summary Report
-**语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md) · [한국어](SUMMARY.ko.md) · [Русский](SUMMARY.ru.md) · [Deutsch](SUMMARY.de.md) · [Français](SUMMARY.fr.md) · [Español](SUMMARY.es.md) · [Português](SUMMARY.pt.md) · [हिन्दी](SUMMARY.hi.md) · [العربية](SUMMARY.ar.md) · [বাংলা](SUMMARY.bn.md) · [Bahasa Indonesia](SUMMARY.id.md) · [日本語](SUMMARY.ja.md)
+**语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md)
 
 - Date: 2026-08-27 (second full regression)
 - Test team: PHP unit tests / Rust unit tests / API automation / UI end-to-end (see note on the GO role at the end)

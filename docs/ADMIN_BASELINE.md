@@ -1,6 +1,6 @@
 # Admin 基线验收（M0，2026-08-17）
 
-**语言 / Languages:** [中文](ADMIN_BASELINE.md) · [English](ADMIN_BASELINE.en.md) · [한국어](ADMIN_BASELINE.ko.md) · [Русский](ADMIN_BASELINE.ru.md) · [Deutsch](ADMIN_BASELINE.de.md) · [Français](ADMIN_BASELINE.fr.md) · [Español](ADMIN_BASELINE.es.md) · [Português](ADMIN_BASELINE.pt.md) · [हिन्दी](ADMIN_BASELINE.hi.md) · [العربية](ADMIN_BASELINE.ar.md) · [বাংলা](ADMIN_BASELINE.bn.md) · [Bahasa Indonesia](ADMIN_BASELINE.id.md) · [日本語](ADMIN_BASELINE.ja.md)
+**语言 / Languages:** [中文](ADMIN_BASELINE.md) · [English](ADMIN_BASELINE.en.md)
 
 open-admin（webman v2 + Flutter 管理后台）基线状态与改造入口。
 
@@ -45,8 +45,8 @@ open-admin（webman v2 + Flutter 管理后台）基线状态与改造入口。
 1. 内容审核工作台：动态/评论/图片双语对照审核、驳回原因多语言模板、用户处罚
 2. 举报处理队列
 3. GDPR 请求台（导出/删除工单）
-4. 数据看板对接 bee_tsdb
-5. i18n 词条管理（四端共用词条 CRUD）
+4. 数据看板对接现有业务/报表数据（已无 bee_tsdb 依赖）
+5. i18n 词条管理（Android 客户端与 Flutter 管理台共用）
 6. 礼物库管理（SKU、价格、特效、多语言名称）
 7. 直播 provider 配置（选路策略、切换顺序）
 8. 提现申请审核
