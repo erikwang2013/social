@@ -2,23 +2,8 @@
 [workspace]
 resolver = "2"
 members = [
-    "crates/bee_config",
-    "crates/bee_config_macro",
-    "crates/bee_logs",
-    "crates/bee_cache",
-    "crates/bee_template",
-    "crates/bee_kv",
-    "crates/bee_graph",
-    "crates/bee_tsdb",
-    "crates/bee_orm",
-    "crates/bee_orm_macro",
-    "crates/bee_session",
-    "crates/bee_router",
-    "crates/bee_cli",
-    "crates/bee_rust",
     "crates/social_grpc",
     "crates/bee_live",
-    "examples/hello",
 ]
 
 [workspace.package]
