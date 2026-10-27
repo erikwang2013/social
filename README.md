@@ -213,6 +213,35 @@ npm run smoke                         # SFU /signal 协议冒烟（需 Docker �
 <img src="docs/alipay.png" width="160" height="175" alt="支付宝">
 
 
+## 开源版 vs 商业版
+
+`open-project/social` 为商业版。两版共用同一套 32 张表、Android 客户端、Flutter 管理后台与直播/语音/IM 核心；商业版补齐原生多端、全量搜索与完整 Rust 框架源码。
+
+| 维度 | 开源版 | 商业版 |
+|---|---|---|
+| 源码文件（不含依赖/构建产物） | 316 | 404 |
+| PHP 文件 / 控制器 | 248 / 40 | 277 / 42 |
+| Rust 文件 / crate | 13 / 2 | 50 / 17 |
+| 路由 | 120 | 123 |
+| 数据表 | 32 | 32 |
+| 客户端 | Android + Flutter 管理端 | Android + iOS + HarmonyOS 客户端 + Flutter 管理端 + HarmonyOS 管理端 |
+| 搜索 | MySQL LIKE | Elasticsearch（帖子/用户搜索 + 同步队列 + webman-scout） |
+| Rust 框架源码 | 仅 `social_grpc` + `bee_live` | 完整 bee-rust 17 crate（含 `bee_search` / `bee_graph` / `bee_orm` / `bee_router` / `bee_kv` / `bee_cache` 等） |
+
+**商业版独有能力：**
+
+- iOS 原生客户端（5 个 Swift 源文件）与 HarmonyOS 原生客户端（5 个 ArkTS 页面）。
+- HarmonyOS 管理端（12 个 ArkTS 文件：登录/仪表盘/用户/详情/我的）。
+- Elasticsearch 全文搜索：`/api/v1/search/posts|users`、搜索同步队列、webman-scout 插件。
+- 完整 bee-rust 框架源码，便于二次开发与私有化交付。
+- 保留 demo 首页、`VoiceStorage` 与 Ping 契约等演示/脚手架文件（开源版已清理）。
+
+**开源版保留：** 图文社区、IM、直播/语音/1v1、礼物与钱包、Android 客户端、Flutter 管理后台、32 张表与核心 API。
+
+**商业版授权与交付条款请联系：erik@erik.xyz**
+
+**English:** The commercial edition (`open-project/social`) shares the same 32-table schema, Android client, Flutter admin and live/voice/IM core, and adds native iOS/HarmonyOS clients, a HarmonyOS admin, Elasticsearch search (posts/users + sync queue + webman-scout), and the full 17-crate bee-rust framework source. The open edition keeps the core platform with MySQL LIKE search plus the Android and Flutter admin clients. For commercial licensing and delivery terms, contact erik@erik.xyz.
+
 ## 项目授权 / Project License
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
