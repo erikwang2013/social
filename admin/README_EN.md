@@ -194,9 +194,11 @@ docker-compose up -d
 ## Tests
 
 ```bash
-vendor/bin/phpunit      # PHPUnit unit tests
-cd apps/flutter && flutter analyze   # Flutter static analysis (same as CI)
+cd apps/flutter && flutter analyze   # Flutter static analysis
+cd apps/flutter && flutter test      # Flutter widget tests
 ```
+
+The open-source edition does not include the admin PHPUnit suite.
 
 ## Database Conventions
 
@@ -439,9 +441,8 @@ docker-compose up -d
 
 GitHub Actions CI pipeline: `.github/workflows/ci.yml`
 
-- PHP syntax check (`php -l`)
-- PHPUnit tests
-- Flutter static analysis (`flutter analyze`)
+- PHP dependency check (`composer install` for `service/` and `admin/`)
+- Rust workspace build + unit tests (`cd infrastructure && cargo build --workspace && cargo test --workspace`)
 
 ### Database Backup
 

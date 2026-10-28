@@ -2,6 +2,9 @@
 **语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md)
 
 - Date: 2026-08-27 (second full regression)
+
+> Historical snapshot: the PHP / API / E2E test scripts referenced by these reports are not included in the open-source edition; the Rust tests remain.
+
 - Test team: PHP unit tests / Rust unit tests / API automation / UI end-to-end (see note on the GO role at the end)
 - The four sub-reports plus this summary are all stored locally under `docs/test-reports/`
 
@@ -46,13 +49,9 @@ The repository contains **no Go code at all** (no go.mod, no .go files); this ro
 
 ## Reproduction
 
+The PHP / API / E2E commands from the original regression are not included in the open-source edition. The remaining tests:
+
 ```bash
-# Unit tests
-cd service && vendor/bin/phpunit
-cd admin && vendor/bin/phpunit
-cd infrastructure && cargo test --workspace
-# API automation (requires starting admin :8791 and service :8788 first, with ENCRYPTABLE_KEY/ENCRYPTION_KEY injected; local root empty password needs DB_PASS='')
-DB_PASS='' php tests/api/run.php
-# UI E2E
-cd tests/e2e && npx playwright test
+cd infrastructure && cargo test --workspace   # Rust unit tests
+cd admin/apps/flutter && flutter test         # Flutter widget tests
 ```

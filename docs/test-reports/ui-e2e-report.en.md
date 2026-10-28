@@ -1,4 +1,7 @@
 # Page End-to-End (E2E) Test Report
+
+> Historical snapshot: the test scripts referenced by this report are not included in the open-source edition; the data reflects the 2026-08-27 regression only.
+
 **语言 / Languages:** [中文](ui-e2e-report.md) · [English](ui-e2e-report.en.md)
 
 - Date: 2026-08-27

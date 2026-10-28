@@ -2,7 +2,7 @@
 
 **语言 / Languages:** [中文](../README.md) · [English](README.en.md)
 
-Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy; a PHP + Rust stack with three native clients.
+Multilingual social platform monorepo: image/text community + instant messaging + live/voice + virtual economy; a PHP + Rust stack with an Android native client and a Flutter admin console.
 
 ## Project Mascot
 
@@ -11,6 +11,29 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 **Bub** · a message bubble. The smallest unit of the platform: posts, voice notes, live danmaku and gifts all leave inside one bubble; it smiles, it waves, and the tail at its lower left points where the message is headed.
 
 Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark [`mascot-mark.svg`](diagrams/mascot-mark.svg) also ships as `favicon.svg` on the service / admin sites and in the admin install wizard.
+
+## Mascot Expressions · Bub
+
+- ![Smile](pet-expressions/smile.svg) **Smile** `:emoji-smile:`
+- ![Joy](pet-expressions/joy.svg) **Joy** `:emoji-joy:`
+- ![Cry](pet-expressions/cry.svg) **Cry** `:emoji-cry:`
+- ![Depressed](pet-expressions/depressed.svg) **Depressed** `:emoji-depressed:`
+- ![Terrified](pet-expressions/terrified.svg) **Terrified** `:emoji-terrified:`
+- ![Angry](pet-expressions/angry.svg) **Angry** `:emoji-angry:`
+- ![Coquettish](pet-expressions/coquettish.svg) **Coquettish** `:emoji-coquettish:`
+- ![Cute](pet-expressions/cute.svg) **Cute** `:emoji-cute:`
+- ![Pleasing](pet-expressions/pleasing.svg) **Pleasing** `:emoji-pleasing:`
+- ![Knocking](pet-expressions/knocking.svg) **Knocking** `:emoji-knocking:`
+- ![Facepalm](pet-expressions/facepalm.svg) **Facepalm** `:emoji-facepalm:`
+- ![Tongue](pet-expressions/tongue.svg) **Tongue** `:emoji-tongue:`
+
+> 12 colorful animated expressions: Smile / Joy / Cry / Depressed / Terrified / Angry / Coquettish / Cute / Pleasing / Knocking / Facepalm / Tongue. Each SVG carries its own expression, emotional effects and overall animation, and honors `prefers-reduced-motion`.
+
+## Visual Assets License
+
+The project mascot, images, icons and expressions (including the SVG / PNG files under `pet-expressions/` and similar directories) are **not open-source assets** and remain the copyright of the author. They may not be copied, modified, redistributed or used commercially without written permission; commercial use requires a commercial license — contact **erik@erik.xyz**. See [ASSETS-LICENSE.md](../ASSETS-LICENSE.md) for details.
+
+> Code remains under the repository's `LICENSE`; third-party assets remain under their own licenses where explicitly marked.
 
 ## Introduction
 
@@ -51,7 +74,7 @@ Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark
 | admin/ | Admin console (built on open-admin) | webman v2 + Flutter |
 | infrastructure/ | High-throughput compute layer (live/voice gRPC services) | bee-rust (tonic) |
 | media/sfu/ | In-house media layer (mediasoup SFU :8790 + coturn :3478) | Node.js (enabled in M4) |
-| apps/ | Three native clients | SwiftUI / Kotlin+Compose / ArkTS |
+| apps/ | Android native client | Kotlin + Compose |
 
 Internal structure of service:
 
@@ -67,8 +90,7 @@ service/
 │   ├── model/        # Data models
 │   ├── process/      # Custom Http / WsServer processes
 │   └── storage/      # Voice file storage (m4a; carried by Rust VoiceStorage since M6)
-├── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789) · payment.php (channel keys/pricing)
-└── tests/            # phpunit unit tests (incl. PaymentServiceTest) + im_e2e.php / voice_e2e.php / live_e2e.php / wallet_e2e.php / payment_e2e.php black-box E2E
+└── config/           # route.php (/api/v1 route group) · process.php (:8788/:8789) · payment.php (channel keys/pricing)
 ```
 
 ## One-Click Install
@@ -146,23 +168,12 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 ### Tests
 
 ```bash
-cd service && vendor/bin/phpunit      # Unit tests (229 tests / 660 assertions; live and voice cases need the Rust gRPC service running)
-cd admin   && vendor/bin/phpunit      # Admin unit tests (98 tests / 340 assertions)
-cd infrastructure && cargo test --workspace   # Rust, 17 crates (204 tests)
-DB_PASS='' php tests/api/run.php      # API automation (116 cases; admin :8791 / service :8788 must be up)
-cd tests/e2e && npx playwright test   # UI end-to-end (41 cases)
-
-cd service                            # the black-box E2E below need the service running (:8788/:8789) + Redis
-php tests/im_e2e.php                  # IM: two-user WS send/receive / read / recall / offline queue
-php tests/voice_e2e.php               # Voice: API versioning / voice messages / 1v1 call signalling / voice rooms
-php tests/live_e2e.php                # Live: open / join / danmaku / mic up-down / close
-php tests/wallet_e2e.php              # Wallet: balance / top-up / gifting / host revenue share
-php tests/payment_e2e.php             # Payment: order / callback verify + credit / idempotency / amount check
-php tests/storage_e2e.php             # Storage: image upload / local & s3 / URL prefix matches the active provider
-
-cd media/sfu
-npm run smoke                         # SFU /signal protocol smoke test (requires Docker container or local node)
+cd infrastructure && cargo test --workspace   # Rust unit tests (state machine / ID generation)
+cd admin/apps/flutter && flutter test         # Flutter widget tests
+cd media/sfu && npm run smoke                 # SFU /signal protocol smoke test (requires Docker container or local node)
 ```
+
+The open-source edition does not include PHP unit tests or black-box E2E scripts; CI only checks dependency installation for PHP and runs the Rust workspace tests.
 
 ## Welcome Support
 

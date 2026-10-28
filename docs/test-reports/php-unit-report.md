@@ -1,4 +1,7 @@
 # PHP 单元测试报告
+
+> 历史快照：本报告对应的测试脚本未随开源版提供；数据仅反映 2026-08-27 的回归结果。
+
 **语言 / Languages:** [中文](php-unit-report.md) · [English](php-unit-report.en.md)
 
 - 日期: 2026-08-27

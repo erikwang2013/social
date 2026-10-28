@@ -13,7 +13,7 @@ Baseline status and transformation entry points for open-admin (webman v2 + Flut
 | Dependencies | `composer install` succeeded, 69 packages |
 | .env | **Does not exist** (the repository has no `.env` or `.env.example`; create one locally per MySQL/Redis) |
 | Migration entry | None (`think`/`artisan` not available; webman has no built-in migration, M0 has no migration tasks) |
-| Tests | `vendor/bin/phpunit`: 60 tests / 136 assertions, **4 errors / 7 failures / 6 warnings / 1 risky — not all green** |
+| Tests | The open-source edition does not include the PHPUnit suite (historical snapshot: 60 tests / 136 assertions, 4 errors / 7 failures / 6 warnings / 1 risky) |
 
 ## Enabled modules (confirmed in README)
 

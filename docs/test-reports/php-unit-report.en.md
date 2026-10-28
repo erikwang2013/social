@@ -1,4 +1,7 @@
 # PHP Unit Test Report
+
+> Historical snapshot: the test scripts referenced by this report are not included in the open-source edition; the data reflects the 2026-08-27 regression only.
+
 **语言 / Languages:** [中文](php-unit-report.md) · [English](php-unit-report.en.md)
 
 - Date: 2026-08-27

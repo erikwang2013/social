@@ -61,15 +61,6 @@ php start.php start -d      # HTTP :8788 · WS :8789
 
 ### 测试
 
-```bash
-vendor/bin/phpunit      # 单元测试（含 PaymentServiceTest / WalletServiceTest / VoiceStorageTest 等）
-
-php tests/im_e2e.php          # IM 黑盒 E2E（需 :8788/:8789 运行中 + Redis）
-php tests/voice_e2e.php       # 语音 E2E：版本化 / 语音消息 / 通话 / 语聊房
-php tests/live_e2e.php        # 直播 E2E：房间 / 弹幕 / 上麦 / 关闭（RTMP 推流，HLS 拉流）
-php tests/wallet_e2e.php      # 钱包 E2E：余额 / 流水 / 送礼分成
-php tests/payment_e2e.php     # 支付 E2E：建单 / 回调验签 / 幂等入账
-php tests/storage_e2e.php     # 存储 E2E：上传 URL 与活动服务商匹配（local/s3）
-```
+开源版未附带 PHP 单元测试与黑盒 E2E 脚本；CI 只执行 `composer install` 依赖检查。
 
 > 媒体层（SFU / coturn）本地调试：`cd media/sfu && npm run smoke`；容器方式 `docker compose up -d --build`。

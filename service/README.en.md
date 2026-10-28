@@ -61,15 +61,6 @@ php start.php start -d      # HTTP :8788 · WS :8789
 
 ### Tests
 
-```bash
-vendor/bin/phpunit      # unit tests (incl. PaymentServiceTest / WalletServiceTest / VoiceStorageTest)
-
-php tests/im_e2e.php          # IM black-box E2E (requires :8788/:8789 running + Redis)
-php tests/voice_e2e.php       # Voice E2E: versioning / voice messages / calls / voice chat rooms
-php tests/live_e2e.php        # Live E2E: rooms / danmaku / mic / close (RTMP push, HLS pull)
-php tests/wallet_e2e.php      # Wallet E2E: balance / ledger / gift split
-php tests/payment_e2e.php     # Payment E2E: order creation / callback verification / idempotent crediting
-php tests/storage_e2e.php     # Storage E2E: upload URL matches the active provider (local/s3)
-```
+The open-source edition does not include PHP unit tests or black-box E2E scripts; CI only runs `composer install` as a dependency check.
 
 > Media layer (SFU / coturn) local debugging: `cd media/sfu && npm run smoke`; containerized: `docker compose up -d --build`.

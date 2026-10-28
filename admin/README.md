@@ -204,9 +204,11 @@ docker-compose up -d
 ## 测试
 
 ```bash
-vendor/bin/phpunit      # PHPUnit 单元测试
 cd apps/flutter && flutter analyze   # Flutter 静态分析（CI 同款）
+cd apps/flutter && flutter test      # Flutter widget 测试
 ```
+
+开源版未附带 admin 的 PHPUnit 套件。
 
 ## 数据库规范
 
@@ -267,9 +269,8 @@ docker-compose up -d
 
 GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
-- PHP 语法检查 (`php -l`)
-- PHPUnit 单元测试
-- Flutter 静态分析 (`flutter analyze`)
+- PHP 依赖检查（`service/` 与 `admin/` 各执行一次 `composer install`）
+- Rust workspace 构建 + 单元测试（`cd infrastructure && cargo build --workspace && cargo test --workspace`）
 
 ### 数据库备份
 

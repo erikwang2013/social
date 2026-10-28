@@ -13,7 +13,7 @@ open-admin（webman v2 + Flutter 管理后台）基线状态与改造入口。
 | 依赖 | `composer install` 成功，69 个包 |
 | .env | **不存在**（仓库无 `.env` 与 `.env.example`，需本地按 MySQL/Redis 自行创建） |
 | 迁移入口 | 无 `think`/`artisan`（webman 不内置迁移，M0 无迁移任务） |
-| 测试 | `vendor/bin/phpunit`：60 tests / 136 assertions，**4 errors / 7 failures / 6 warnings / 1 risky，非全绿** |
+| 测试 | 开源版未附带 PHPUnit 套件（历史快照：60 tests / 136 assertions，4 errors / 7 failures / 6 warnings / 1 risky） |
 
 ## 已启用模块（README 确认）
 

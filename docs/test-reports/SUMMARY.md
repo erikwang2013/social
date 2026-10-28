@@ -2,6 +2,9 @@
 **语言 / Languages:** [中文](SUMMARY.md) · [English](SUMMARY.en.md)
 
 - 日期: 2026-08-27（第二轮全量回归）
+
+> 历史快照：报告对应的 PHP / API / E2E 测试脚本未随开源版提供；Rust 测试仍保留。
+
 - 测试团队: PHP 单元测试 / Rust 单元测试 / API 自动化 / UI 端到端(GO 角色见文末说明)
 - 四份分报告 + 本汇总均本地存储于 `docs/test-reports/`
 
@@ -47,12 +50,7 @@
 ## 复现方式
 
 ```bash
-# 单元测试
-cd service && vendor/bin/phpunit
-cd admin && vendor/bin/phpunit
+# Rust 单元测试（PHP / API / E2E 脚本未随开源版提供）
 cd infrastructure && cargo test --workspace
-# API 自动化(需先起 admin :8791 与 service :8788,注入 ENCRYPTABLE_KEY/ENCRYPTION_KEY;本机 root 空密码需 DB_PASS='')
-DB_PASS='' php tests/api/run.php
-# UI E2E
-cd tests/e2e && npx playwright test
+cd admin/apps/flutter && flutter test
 ```

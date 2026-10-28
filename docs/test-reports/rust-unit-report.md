@@ -1,5 +1,8 @@
 # Rust Workspace 单元测试报告
 
+> 历史快照：报告覆盖 17 个 crate，为当时完整工作区；开源版仅保留 social_grpc 与 bee_live，部分命令在当前仓库不可用。数据仅反映 2026-08-27 的回归结果。
+
+
 - 日期：2026-08-27
 - 位置：`/home/wwwroot/social/infrastructure`
 - 命令：`cargo test --workspace`（默认 feature），另单独验证 feature 后端（tsdb/graph/search/kv）

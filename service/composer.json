@@ -82,6 +82,9 @@
     "allow-plugins": {
       "erikwang2013/security-php": true,
       "erikwang2013/encryptable": true
+    },
+    "platform": {
+      "php": "8.3.0"
     }
   }
 }

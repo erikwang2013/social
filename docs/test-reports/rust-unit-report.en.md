@@ -1,4 +1,7 @@
 # Rust Workspace Unit Test Report
+
+> Historical snapshot: this report covers the 17-crate workspace at the time; the open-source edition keeps only social_grpc and bee_live, so some commands are unavailable here. The data reflects the 2026-08-27 regression only.
+
 **语言 / Languages:** [中文](rust-unit-report.md) · [English](rust-unit-report.en.md)
 
 - Date: 2026-08-27
