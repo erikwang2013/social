@@ -70,6 +70,7 @@ final class PaymentVerifierTest extends TestCase
                 'id' => 'cs_test_123',
                 'amount_total' => 2500,
                 'currency' => 'usd',
+                'payment_status' => 'paid',
                 'metadata' => ['out_trade_no' => 'OUT-STRIPE-1'],
             ]],
         ];
@@ -86,12 +87,64 @@ final class PaymentVerifierTest extends TestCase
         $this->assertSame('usd', $result['currency']);
     }
 
+    public function testStripeUnpaidCheckoutReturnsNotPaid(): void
+    {
+        $secret = 'whsec_test_secret';
+        set_payment_config(['stripe' => ['webhook_secret' => $secret]]);
+
+        $payload = [
+            'type' => 'checkout.session.completed',
+            'data' => ['object' => [
+                'id' => 'cs_test_unpaid',
+                'amount_total' => 2500,
+                'currency' => 'usd',
+                'payment_status' => 'unpaid',
+                'metadata' => ['out_trade_no' => 'OUT-STRIPE-2'],
+            ]],
+        ];
+        $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $ts = (string) time();
+        $headers = ['stripe-signature' => "t={$ts},v1=" . hash_hmac('sha256', "{$ts}.{$rawBody}", $secret)];
+
+        $result = PaymentVerifier::verify('stripe', $payload, $headers, $rawBody);
+
+        $this->assertSame(422, $result['code']);
+        $this->assertSame('payment.not_paid', $result['lang_key']);
+    }
+
+    public function testStripePaymentIntentSucceededReturnsSuccess(): void
+    {
+        $secret = 'whsec_test_secret';
+        set_payment_config(['stripe' => ['webhook_secret' => $secret]]);
+
+        $payload = [
+            'type' => 'payment_intent.succeeded',
+            'data' => ['object' => [
+                'id' => 'pi_test_123',
+                'amount' => 2500,
+                'currency' => 'usd',
+                'status' => 'succeeded',
+                'metadata' => ['out_trade_no' => 'OUT-STRIPE-3'],
+            ]],
+        ];
+        $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $ts = (string) time();
+        $headers = ['stripe-signature' => "t={$ts},v1=" . hash_hmac('sha256', "{$ts}.{$rawBody}", $secret)];
+
+        $result = PaymentVerifier::verify('stripe', $payload, $headers, $rawBody);
+
+        $this->assertSame(0, $result['code']);
+        $this->assertSame('pi_test_123', $result['transaction_id']);
+        $this->assertSame('OUT-STRIPE-3', $result['out_trade_no']);
+        $this->assertSame(2500, $result['amount_cents']);
+    }
+
     public function testStripeTamperedBodyFails(): void
     {
         $secret = 'whsec_test_secret';
         set_payment_config(['stripe' => ['webhook_secret' => $secret]]);
 
-        $payload = ['type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_123', 'amount_total' => 2500]]];
+        $payload = ['type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_123', 'amount_total' => 2500, 'payment_status' => 'paid']]];
         $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
         $ts = (string) time();
         $headers = ['stripe-signature' => "t={$ts},v1=" . hash_hmac('sha256', "{$ts}.{$rawBody}", $secret)];
@@ -106,7 +159,7 @@ final class PaymentVerifierTest extends TestCase
         $secret = 'whsec_test_secret';
         set_payment_config(['stripe' => ['webhook_secret' => $secret]]);
 
-        $payload = ['type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_123', 'amount_total' => 2500]]];
+        $payload = ['type' => 'checkout.session.completed', 'data' => ['object' => ['id' => 'cs_test_123', 'amount_total' => 2500, 'payment_status' => 'paid']]];
         $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
         $ts = time();
         $v1 = hash_hmac('sha256', "{$ts}.{$rawBody}", $secret);
@@ -119,12 +172,14 @@ final class PaymentVerifierTest extends TestCase
     {
         [$certPem, $privateKey, $serial] = $this->selfSignedCert();
         $apiKey = str_repeat('k', 32);
-        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey]]);
+        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey, 'mchid' => '1900000109', 'appid' => 'wx_test_appid']]);
 
         $payload = ['resource' => $this->wechatResource([
             'trade_state' => 'SUCCESS',
             'transaction_id' => '4200001234202610301234567890',
             'out_trade_no' => 'OUT-WX-1',
+            'mchid' => '1900000109',
+            'appid' => 'wx_test_appid',
             'amount' => ['total' => 1234, 'currency' => 'CNY'],
         ], $apiKey)];
         $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
@@ -144,11 +199,13 @@ final class PaymentVerifierTest extends TestCase
     {
         [$certPem, $privateKey, $serial] = $this->selfSignedCert();
         $apiKey = str_repeat('k', 32);
-        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey]]);
+        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey, 'mchid' => '1900000109', 'appid' => 'wx_test_appid']]);
 
         $payload = ['resource' => $this->wechatResource([
             'trade_state' => 'SUCCESS',
             'transaction_id' => 'wx-tx-1',
+            'mchid' => '1900000109',
+            'appid' => 'wx_test_appid',
             'amount' => ['total' => 1, 'currency' => 'CNY'],
         ], $apiKey)];
         $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
@@ -160,6 +217,46 @@ final class PaymentVerifierTest extends TestCase
         $headers['wechatpay-signature'] = base64_encode($signature);
 
         $this->assertSame(403, PaymentVerifier::verify('wechat', $payload, $headers, $rawBody, $path)['code']);
+    }
+
+    public function testWechatWrongMchidFails(): void
+    {
+        [$certPem, $privateKey, $serial] = $this->selfSignedCert();
+        $apiKey = str_repeat('k', 32);
+        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey, 'mchid' => '1900000109', 'appid' => 'wx_test_appid']]);
+
+        $payload = ['resource' => $this->wechatResource([
+            'trade_state' => 'SUCCESS',
+            'transaction_id' => 'wx-tx-mchid',
+            'mchid' => '1900000999',
+            'appid' => 'wx_test_appid',
+            'amount' => ['total' => 1, 'currency' => 'CNY'],
+        ], $apiKey)];
+        $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $path = '/api/pay/wechat/notify';
+        $headers = $this->wechatHeaders($rawBody, $path, $privateKey, $serial);
+
+        $this->assertSame(403, PaymentVerifier::verify('wechat', $payload, $headers, $rawBody, $path)['code']);
+    }
+
+    public function testWechatMissingMchidConfigReturns503(): void
+    {
+        [$certPem, $privateKey, $serial] = $this->selfSignedCert();
+        $apiKey = str_repeat('k', 32);
+        set_payment_config(['wechat' => ['platform_cert' => $certPem, 'api_v3_key' => $apiKey, 'appid' => 'wx_test_appid']]);
+
+        $payload = ['resource' => $this->wechatResource([
+            'trade_state' => 'SUCCESS',
+            'transaction_id' => 'wx-tx-missing-mchid',
+            'mchid' => '1900000109',
+            'appid' => 'wx_test_appid',
+            'amount' => ['total' => 1, 'currency' => 'CNY'],
+        ], $apiKey)];
+        $rawBody = json_encode($payload, JSON_UNESCAPED_SLASHES);
+        $path = '/api/pay/wechat/notify';
+        $headers = $this->wechatHeaders($rawBody, $path, $privateKey, $serial);
+
+        $this->assertSame(503, PaymentVerifier::verify('wechat', $payload, $headers, $rawBody, $path)['code']);
     }
 
     public function testUnconfiguredChannelReturns503(): void

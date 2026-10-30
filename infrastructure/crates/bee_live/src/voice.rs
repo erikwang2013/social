@@ -42,6 +42,7 @@ pub trait RoomStore: Send + Sync {
     fn delete_member(&self, room_id: i64, uid: i64);
     fn delete_room_members(&self, room_id: i64);
     fn member_uids(&self, room_id: i64) -> Vec<i64>;
+    fn member_list(&self, room_id: i64) -> Vec<(i64, i32)>;
     fn role_count(&self, room_id: i64, role: i32) -> u64;
     fn sadd(&self, key: &str, member: i64);
     fn srem(&self, key: &str, member: i64);
@@ -198,14 +199,7 @@ impl<S: RoomStore> RoomCenter<S> {
 
     /// 成员列表 (uid, role)，对齐 PHP VoiceRoomMember::where(room_id)->orderByDesc('role')
     pub fn members(&self, room_id: i64) -> Vec<(i64, i32)> {
-        let mut v: Vec<(i64, i32)> = self
-            .store
-            .member_uids(room_id)
-            .into_iter()
-            .filter_map(|uid| self.store.member_role(room_id, uid).map(|role| (uid, role)))
-            .collect();
-        v.sort_by_key(|(_, role)| std::cmp::Reverse(*role)); // 房主在前
-        v
+        self.store.member_list(room_id)
     }
 
     pub fn status(&self, room_id: i64) -> i32 {
@@ -349,6 +343,19 @@ impl RoomStore for InMemoryRoomStore {
 
     fn member_uids(&self, room_id: i64) -> Vec<i64> {
         self.members.lock().unwrap().iter().filter(|((rid, _), _)| *rid == room_id).map(|((_, uid), _)| *uid).collect()
+    }
+
+    fn member_list(&self, room_id: i64) -> Vec<(i64, i32)> {
+        let mut v: Vec<(i64, i32)> = self
+            .members
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|((rid, _), _)| *rid == room_id)
+            .map(|((_, uid), role)| (*uid, *role))
+            .collect();
+        v.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+        v
     }
 
     fn role_count(&self, room_id: i64, role: i32) -> u64 {

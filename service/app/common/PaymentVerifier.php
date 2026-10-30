@@ -26,7 +26,9 @@ class PaymentVerifier
     {
         $cert = (string) config('payment.wechat.platform_cert', '');
         $key = (string) config('payment.wechat.api_v3_key', '');
-        if ($cert === '' || $key === '') {
+        $mchid = (string) config('payment.wechat.mchid', '');
+        $appid = (string) config('payment.wechat.appid', '');
+        if ($cert === '' || $key === '' || $mchid === '' || $appid === '') {
             return self::unconfigured('wechat');
         }
         $sig = (string) ($headers['wechatpay-signature'] ?? '');
@@ -58,6 +60,10 @@ class PaymentVerifier
         ), true) ?: [];
         if (($data['trade_state'] ?? '') !== 'SUCCESS') {
             return ['code' => 422, 'message' => '支付未成功', 'lang_key' => 'payment.not_paid'];
+        }
+        // 平台证书对所有商户通用，必须核对回调归属，防止跨商户重放
+        if ((string) ($data['mchid'] ?? '') !== $mchid || (string) ($data['appid'] ?? '') !== $appid) {
+            return self::verifyFailed();
         }
         $tradeNo = (string) ($data['transaction_id'] ?? '');
         return $tradeNo !== ''
@@ -129,6 +135,13 @@ class PaymentVerifier
             return ['code' => 422, 'message' => '事件类型不支持', 'lang_key' => 'payment.not_paid'];
         }
         $object = $payload['data']['object'] ?? [];
+        // checkout 事件会在延迟支付方式（SEPA 等）未到账时就发出，必须等 payment_status=paid
+        if ($type === 'checkout.session.completed' && (string) ($object['payment_status'] ?? '') !== 'paid') {
+            return ['code' => 422, 'message' => '支付未成功', 'lang_key' => 'payment.not_paid'];
+        }
+        if ($type === 'payment_intent.succeeded' && (string) ($object['status'] ?? 'succeeded') !== 'succeeded') {
+            return ['code' => 422, 'message' => '支付未成功', 'lang_key' => 'payment.not_paid'];
+        }
         $tradeNo = (string) ($object['id'] ?? '');
         return $tradeNo !== ''
             ? ['code' => 0, 'transaction_id' => $tradeNo, 'out_trade_no' => (string) ($object['metadata']['out_trade_no'] ?? $object['client_reference_id'] ?? ''),

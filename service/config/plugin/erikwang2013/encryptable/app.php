@@ -15,6 +15,6 @@
  */
 return [
     'key' => getenv('ENCRYPTABLE_KEY') ?: 'open-admin-db-encryption-key-32b',
-    'cipher' => getenv('ENCRYPTABLE_CIPHER') ?: 'aes-128-ecb',
+    'cipher' => getenv('ENCRYPTABLE_CIPHER') ?: 'aes-256-cbc',
     'previous_keys' => Erikwang2013\Encryptable\Support\PreviousKeysParser::parse(getenv('ENCRYPTION_PREVIOUS_KEYS') ?: ''),
 ];

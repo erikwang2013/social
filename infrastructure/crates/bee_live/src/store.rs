@@ -8,7 +8,7 @@
 use crate::live::{LiveStore, RoomRow};
 use crate::voice::{RoomStore, VoiceRoomRow};
 use mysql_async::prelude::Queryable;
-use mysql_async::{Conn, Opts, OptsBuilder, Params};
+use mysql_async::{Opts, OptsBuilder, Params, Pool};
 use idgen_rs::{FastIdGenerator, IGOptions};
 use redis::Commands;
 use std::sync::{Mutex, OnceLock};
@@ -151,10 +151,9 @@ impl RedisConn {
 }
 
 /// 直播存储：MySQL social_live_rooms + Redis 实时态，键名与 PHP 逐字节一致。
-/// ponytail: 同步 trait 内 block_on + 每操作新建连接（对齐 PHP-FPM 每请求连接）；
-/// 批次 3 接 axum 时改 spawn_blocking，批量接口换常驻 Pool。
+/// ponytail: 同步 trait 内 block_on（gRPC 调用方经 spawn_blocking 隔离）；连接走共享 Pool。
 pub struct MySqlLiveStore {
-    opts: Opts,
+    pool: Pool,
     rt: tokio::runtime::Runtime,
     redis: RedisConn,
 }
@@ -162,7 +161,7 @@ pub struct MySqlLiveStore {
 impl MySqlLiveStore {
     pub fn from_env() -> Option<Self> {
         Some(Self {
-            opts: mysql_opts(),
+            pool: Pool::new(mysql_opts()),
             rt: tokio::runtime::Runtime::new().ok()?,
             redis: RedisConn::from_env()?,
         })
@@ -171,11 +170,11 @@ impl MySqlLiveStore {
 
 impl LiveStore for MySqlLiveStore {
     fn create_room(&self, owner: i64, title: &str) -> i64 {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         let title = title.to_string();
         let id = id_generator().next_id();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return 0 };
+            let Ok(mut conn) = pool.get_conn().await else { return 0 };
             if conn
                 .exec_drop(
                     "INSERT INTO social_live_rooms (id, owner_id, title, status, started_at, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW(), NOW())",
@@ -191,10 +190,10 @@ impl LiveStore for MySqlLiveStore {
     }
 
     fn set_room_urls(&self, id: i64, push_url: &str, play_url: &str) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         let (push, play) = (push_url.to_string(), play_url.to_string());
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn
                 .exec_drop(
                     "UPDATE social_live_rooms SET push_url = ?, play_url = ?, updated_at = NOW() WHERE id = ?",
@@ -205,9 +204,9 @@ impl LiveStore for MySqlLiveStore {
     }
 
     fn find_room(&self, id: i64) -> Option<RoomRow> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let mut conn = Conn::new(opts).await.ok()?;
+            let mut conn = pool.get_conn().await.ok()?;
             conn.exec_first::<(i64, i64, String, i32, String, String, Option<String>, Option<String>), _, _>(
                 "SELECT id, owner_id, title, status, push_url, play_url, DATE_FORMAT(started_at, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(ended_at, '%Y-%m-%d %H:%i:%s') FROM social_live_rooms WHERE id = ?",
                 Params::from((id,)),
@@ -230,9 +229,9 @@ impl LiveStore for MySqlLiveStore {
 
     fn set_room_closed(&self, id: i64, ended_at: &str) {
         let _ = ended_at; // 真实时钟走 MySQL NOW()；占位时钟仅供 InMemory 测试
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn
                 .exec_drop(
                     "UPDATE social_live_rooms SET status = 0, ended_at = NOW(), updated_at = NOW() WHERE id = ?",
@@ -243,9 +242,9 @@ impl LiveStore for MySqlLiveStore {
     }
 
     fn list_rooms(&self, offset: u64, limit: u64) -> Vec<RoomRow> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return Vec::new() };
+            let Ok(mut conn) = pool.get_conn().await else { return Vec::new() };
             conn.exec::<(i64, i64, String, i32, String, String, Option<String>, Option<String>), _, _>(
                 "SELECT id, owner_id, title, status, push_url, play_url, DATE_FORMAT(started_at, '%Y-%m-%d %H:%i:%s'), DATE_FORMAT(ended_at, '%Y-%m-%d %H:%i:%s') FROM social_live_rooms WHERE status = 1 ORDER BY started_at DESC LIMIT ? OFFSET ?",
                 Params::from((limit, offset)),
@@ -292,7 +291,7 @@ impl LiveStore for MySqlLiveStore {
 
 /// 语聊房存储：MySQL social_voice_rooms + social_voice_room_members + Redis 在线集合。
 pub struct MySqlRoomStore {
-    opts: Opts,
+    pool: Pool,
     rt: tokio::runtime::Runtime,
     redis: RedisConn,
 }
@@ -300,7 +299,7 @@ pub struct MySqlRoomStore {
 impl MySqlRoomStore {
     pub fn from_env() -> Option<Self> {
         Some(Self {
-            opts: mysql_opts(),
+            pool: Pool::new(mysql_opts()),
             rt: tokio::runtime::Runtime::new().ok()?,
             redis: RedisConn::from_env()?,
         })
@@ -309,11 +308,11 @@ impl MySqlRoomStore {
 
 impl RoomStore for MySqlRoomStore {
     fn create_room(&self, owner: i64, name: &str) -> i64 {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         let name = name.to_string();
         let id = id_generator().next_id();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return 0 };
+            let Ok(mut conn) = pool.get_conn().await else { return 0 };
             if conn
                 .exec_drop(
                     "INSERT INTO social_voice_rooms (id, owner_id, name, status, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())",
@@ -329,9 +328,9 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn find_room(&self, id: i64) -> Option<VoiceRoomRow> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let mut conn = Conn::new(opts).await.ok()?;
+            let mut conn = pool.get_conn().await.ok()?;
             conn.exec_first::<(i64, i64, String, i32), _, _>("SELECT id, owner_id, name, status FROM social_voice_rooms WHERE id = ?", Params::from((id,)))
                 .await
                 .ok()
@@ -341,9 +340,9 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn set_room_closed(&self, id: i64) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn
                 .exec_drop("UPDATE social_voice_rooms SET status = 0, updated_at = NOW() WHERE id = ?", Params::from((id,)))
                 .await;
@@ -351,9 +350,9 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn list_rooms(&self, offset: u64, limit: u64) -> Vec<VoiceRoomRow> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return Vec::new() };
+            let Ok(mut conn) = pool.get_conn().await else { return Vec::new() };
             conn.exec::<(i64, i64, String, i32), _, _>(
                 "SELECT id, owner_id, name, status FROM social_voice_rooms WHERE status = 1 ORDER BY updated_at DESC LIMIT ? OFFSET ?",
                 Params::from((limit, offset)),
@@ -367,9 +366,9 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn member_role(&self, room_id: i64, uid: i64) -> Option<i32> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let mut conn = Conn::new(opts).await.ok()?;
+            let mut conn = pool.get_conn().await.ok()?;
             conn.exec_first::<i32, _, _>("SELECT role FROM social_voice_room_members WHERE room_id = ? AND user_id = ?", Params::from((room_id, uid)))
                 .await
                 .ok()
@@ -378,10 +377,10 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn insert_member(&self, room_id: i64, uid: i64, role: i32) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         let id = id_generator().next_id();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             // firstOrCreate 语义：唯一键冲突时保留原 role 不覆盖
             let _ = conn
                 .exec_drop(
@@ -393,9 +392,9 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn set_member_role(&self, room_id: i64, uid: i64, role: i32) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn
                 .exec_drop(
                     "UPDATE social_voice_room_members SET role = ?, updated_at = NOW() WHERE room_id = ? AND user_id = ?",
@@ -406,35 +405,48 @@ impl RoomStore for MySqlRoomStore {
     }
 
     fn delete_member(&self, room_id: i64, uid: i64) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn.exec_drop("DELETE FROM social_voice_room_members WHERE room_id = ? AND user_id = ?", Params::from((room_id, uid))).await;
         });
     }
 
     fn delete_room_members(&self, room_id: i64) {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return };
+            let Ok(mut conn) = pool.get_conn().await else { return };
             let _ = conn.exec_drop("DELETE FROM social_voice_room_members WHERE room_id = ?", Params::from((room_id,))).await;
         });
     }
 
     fn member_uids(&self, room_id: i64) -> Vec<i64> {
-        let opts = self.opts.clone();
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return Vec::new() };
+            let Ok(mut conn) = pool.get_conn().await else { return Vec::new() };
             conn.exec::<i64, _, _>("SELECT user_id FROM social_voice_room_members WHERE room_id = ?", Params::from((room_id,)))
                 .await
                 .unwrap_or_default()
         })
     }
 
-    fn role_count(&self, room_id: i64, role: i32) -> u64 {
-        let opts = self.opts.clone();
+    fn member_list(&self, room_id: i64) -> Vec<(i64, i32)> {
+        let pool = self.pool.clone();
         self.rt.block_on(async move {
-            let Ok(mut conn) = Conn::new(opts).await else { return 0 };
+            let Ok(mut conn) = pool.get_conn().await else { return Vec::new() };
+            conn.exec::<(i64, i32), _, _>(
+                "SELECT user_id, role FROM social_voice_room_members WHERE room_id = ? ORDER BY role DESC, user_id ASC",
+                Params::from((room_id,)),
+            )
+            .await
+            .unwrap_or_default()
+        })
+    }
+
+    fn role_count(&self, room_id: i64, role: i32) -> u64 {
+        let pool = self.pool.clone();
+        self.rt.block_on(async move {
+            let Ok(mut conn) = pool.get_conn().await else { return 0 };
             conn.exec_first::<u64, _, _>("SELECT COUNT(*) FROM social_voice_room_members WHERE room_id = ? AND role = ?", Params::from((room_id, role)))
                 .await
                 .ok()
@@ -498,9 +510,9 @@ mod tests {
         assert_eq!(s.find_room(id).unwrap().status, 0);
         s.del(online);
         s.del(dk);
-        let opts = s.opts.clone();
+        let opts = mysql_opts();
         s.rt.block_on(async move {
-            if let Ok(mut c) = Conn::new(opts).await {
+            if let Ok(mut c) = mysql_async::Conn::new(opts).await {
                 let _ = c.exec_drop("DELETE FROM social_live_rooms WHERE id = ?", Params::from((id,))).await;
             }
         });
@@ -534,9 +546,9 @@ mod tests {
         s.set_room_closed(room_id);
         assert_eq!(s.find_room(room_id).unwrap().status, 0);
         s.del(&online);
-        let opts = s.opts.clone();
+        let opts = mysql_opts();
         s.rt.block_on(async move {
-            if let Ok(mut c) = Conn::new(opts).await {
+            if let Ok(mut c) = mysql_async::Conn::new(opts).await {
                 let _ = c.exec_drop("DELETE FROM social_voice_rooms WHERE id = ?", Params::from((room_id,))).await;
                 let _ = c.exec_drop("DELETE FROM social_voice_room_members WHERE room_id = ?", Params::from((room_id,))).await;
             }

@@ -123,7 +123,7 @@ Controller::method()
 
 ```
 传输层 (encryption)     — AES-256-CBC，独立密钥
-存储层 (encryptable)    — AES-128-ECB，独立密钥，Model $casts 自动处理
+存储层 (encryptable)    — AES-256-CBC（32 字节密钥），独立于传输密钥，service/admin/infrastructure 共享，Model $casts 自动处理
 展示层 (mask)           — 手机号: 138****1234，邮箱: a***@example.com
 ```
 
@@ -358,7 +358,7 @@ curl /api/auth/login
 | 接口ID | Hashids 加密，外部不可逆推真实 ID |
 | 请求体 | AES-256-CBC 敏感字段加密 |
 | 数据库 | BIGINT 主键（不暴露自增量） |
-| 数据库 | AES-128-ECB 敏感字段加密存储 |
+| 数据库 | AES-256-CBC 敏感字段/存储凭证加密存储 |
 | 认证 | JWT HS256，2h 过期 + refresh token |
 | 授权 | RBAC，method.path 粒度权限控制 |
 | 审计 | OperationLog 记录所有操作（含来源端 source 自动检测） |
@@ -369,9 +369,11 @@ curl /api/auth/login
 JWT_SECRET_KEY          → 环境变量注入，64位随机字符串
 HASHIDS_SALT        → 唯一盐值，泄漏后需全局更换
 ENCRYPTION_KEY      → API 传输加密密钥，32字节
-ENCRYPTABLE_KEY     → DB 存储加密密钥，与传输密钥独立
+ENCRYPTABLE_KEY     → 存储层 AES-256-CBC 密钥（32字节），service/admin/infrastructure 共享；install.sh 生成并升级旧版 32 字节 + aes-128-ecb 配置
 SCOUT_HOSTS         → ES 地址，内网部署
 ```
+
+> 权限迁移：`admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` 提供五组运营路由的 13 条 RBAC 权限种子，`install.sh` 在导入 `open_admin` 后自动执行（`INSERT IGNORE`，可重复）。
 
 ### 6.3 敏感数据保护
 

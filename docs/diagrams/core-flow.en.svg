@@ -35,7 +35,7 @@
   <rect class="lane" x="20" y="218" width="920" height="118"/>
   <rect class="b2" x="44" y="246" width="180" height="64"/>
   <text class="t" x="134" y="270">Auth Middleware</text>
-  <text class="ts" x="134" y="288">JWT verify · session revoke · versioning</text>
+  <text class="ts" x="134" y="288">JWT · account status · rate limit · versioning</text>
   <rect class="b2" x="272" y="246" width="180" height="64"/>
   <text class="t" x="362" y="270">REST Business Logic</text>
   <text class="ts" x="362" y="288">Post / Follow / Notify</text>

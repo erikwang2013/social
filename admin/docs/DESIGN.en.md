@@ -123,7 +123,7 @@ Controller::method()
 
 ```
 传输层 (encryption)     — AES-256-CBC，独立密钥
-存储层 (encryptable)    — AES-128-ECB，独立密钥，Model $casts 自动处理
+存储层 (encryptable)    — AES-256-CBC（32 字节密钥），独立于传输密钥，service/admin/infrastructure 共享，Model $casts 自动处理
 展示层 (mask)           — 手机号: 138****1234，邮箱: a***@example.com
 ```
 
@@ -358,7 +358,7 @@ Features: collapsible sidebar, Material 3 dual themes, high-density data tables,
 | Interface ID | Hashids encryption, real IDs cannot be reverse-engineered externally |
 | Request body | AES-256-CBC sensitive field encryption |
 | Database | BIGINT primary keys (auto-increment not exposed) |
-| Database | AES-128-ECB sensitive field encrypted storage |
+| Database | AES-256-CBC sensitive field/storage-credential encrypted storage |
 | Authentication | JWT HS256, 2h expiry + refresh token |
 | Authorization | RBAC, method.path granularity permission control |
 | Audit | OperationLog records all operations (including automatic source detection) |
@@ -369,9 +369,11 @@ Features: collapsible sidebar, Material 3 dual themes, high-density data tables,
 JWT_SECRET_KEY          → 环境变量注入，64位随机字符串
 HASHIDS_SALT        → 唯一盐值，泄漏后需全局更换
 ENCRYPTION_KEY      → API 传输加密密钥，32字节
-ENCRYPTABLE_KEY     → DB 存储加密密钥，与传输密钥独立
+ENCRYPTABLE_KEY     → 存储层 AES-256-CBC 密钥（32字节），service/admin/infrastructure 共享；install.sh 生成并升级旧版 32 字节 + aes-128-ecb 配置
 SCOUT_HOSTS         → ES 地址，内网部署
 ```
+
+> Permission migration: `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` provides 13 RBAC permission seeds for the five operational route groups; `install.sh` applies it to `open_admin` after import (`INSERT IGNORE`, re-runnable).
 
 ### 6.3 Sensitive Data Protection
 

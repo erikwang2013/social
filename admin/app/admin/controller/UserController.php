@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use app\model\AdminUser;
-use app\model\SocialFollow;
 use app\common\EncryptionService;
 use support\Request;
 use support\Response;
@@ -59,8 +58,6 @@ class UserController extends BaseController
                       ->map(function ($user) {
                           $data = $user->toArray();
                           unset($data['password'], $data['id_card']);
-                          $data['follows_count'] = SocialFollow::where('follower_id', $data['id'])->count();
-                          $data['fans_count'] = SocialFollow::where('followee_id', $data['id'])->count();
                           // 脱敏处理（Encryptable cast 已自动解密，直接对明文脱敏）
                           if (!empty($data['phone'])) {
                               $data['phone'] = preg_replace('/^(\d{3})\d+(\d{4})$/', '$1****$2', $data['phone']);

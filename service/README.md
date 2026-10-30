@@ -16,10 +16,11 @@ webman v2（PHP 8.3）用户端业务服务：REST :8788 + WebSocket :8789 双�
 - **存储**：语音文件（m4a）经 Rust VoiceStorage（object_store，S3 兼容）上传分发，服务商管理端可配置
 - **虚拟经济**：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值
 - **支付渠道**：微信 / 支付宝 / Stripe 回调验签、服务端定价、幂等入账；提现与内部对账
+- **安全**：JWT 鉴权 + 服务端限流 + 禁用账号 30s 内生效 + WS 入参校验 + 微信回调商户号/AppID 校验
 
 ## 一键安装
 
-前置要求：PHP ≥ 8.3（composer）、MySQL、Redis。
+前置要求：PHP ≥ 8.3（composer + ext-gd，图片水印需 DejaVu 字体，缺失时自动跳过）、MySQL、Redis；Rust 语音转码需 ffmpeg/ffprobe。
 
 仓库根目录执行：
 
@@ -27,7 +28,7 @@ webman v2（PHP 8.3）用户端业务服务：REST :8788 + WebSocket :8789 双�
 ./install.sh
 ```
 
-脚本会对 `service/` 与 `admin/` 各执行一次 `composer install`，以根目录 `database/install.sql` 建库（幂等），生成 `service/.env` 与 `admin/.env`（不覆盖已存在文件），并打印各服务启动命令与访问地址。
+脚本会对 `service/` 与 `admin/` 各执行一次 `composer install`，以根目录 `database/install.sql` 建库（幂等），生成 `service/.env` 与 `admin/.env`（不覆盖已存在文件），三端共享 `ENCRYPTABLE_KEY` 并生成 `infrastructure/.env`，自动升级旧版 `aes-128-ecb + 32 字节密钥` 配置，应用后台权限迁移，并打印各服务启动命令与访问地址。
 
 ## 安装说明
 
@@ -39,7 +40,7 @@ cd service && composer install
 
 2. 建库：推荐在仓库根运行 `./install.sh`；手工安装需分别导入 `social` 与 `open_admin` 两段（见 `install.sh`）。
 
-3. 配置环境：推荐在仓库根运行 `./install.sh` 生成 `.env`；手工安装时创建 `.env` 并填入 DB / Redis / JWT 密钥（生产环境务必随机生成）。按需配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）、`TURN_URL` / `TURN_SECRET`（`install.sh` 生成，用于 TURN REST 临时凭证）。
+3. 配置环境：推荐在仓库根运行 `./install.sh` 生成 `.env`；手工安装时创建 `.env` 并填入 DB / Redis / JWT 密钥（生产环境务必随机生成）。按需配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）、`TURN_URL` / `TURN_SECRET`（`install.sh` 生成，用于 TURN REST 临时凭证）；启用微信支付时必填 `PAY_WECHAT_MCHID` / `PAY_WECHAT_APPID`，`APP_DEBUG` 默认关闭，`ENCRYPTABLE_KEY` 需与 admin/infrastructure 保持一致。
 
 4. 启动服务：
 
@@ -58,6 +59,6 @@ php start.php start -d      # HTTP :8788 · WS :8789
 
 ### 测试
 
-`service/tests` 下的 PHPUnit 覆盖支付验签；CI 执行 `composer install` + `vendor/bin/phpunit`。
+`service/tests` 下的 PHPUnit（20 tests / 50 assertions）覆盖支付验签、TURN 凭证、钱包幂等/扣款；CI 执行 `composer install` + `vendor/bin/phpunit`。
 
 > 媒体层（SFU / coturn）本地调试：`cd media/sfu && npm run smoke`；容器方式 `docker compose up -d --build`。

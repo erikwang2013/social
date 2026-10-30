@@ -2,10 +2,12 @@
 namespace app\controller;
 
 use support\Request;
+use support\Db;
 use app\model\User;
 use app\model\UserProfile;
 use app\common\JwtHelper;
 use app\ws\WsRedis;
+use Illuminate\Database\QueryException;
 use hg\apidoc\annotation as Apidoc;
 
 /**
@@ -40,18 +42,33 @@ class AuthController
         if (strlen($password) < 6 || strlen($password) > 32) {
             return json(['code' => 400, 'message' => '密码长度需 6-32 位', 'lang_key' => 'auth.password_length'], 400);
         }
+        if ($nickname !== '' && mb_strlen($nickname) > 32) {
+            return json(['code' => 400, 'message' => '昵称最多32字符', 'lang_key' => 'auth.nickname_length'], 400);
+        }
         if (User::where('email', $email)->exists()) {
             return json(['code' => 409, 'message' => '邮箱已注册', 'lang_key' => 'auth.email_exists'], 409);
         }
 
-        $user = User::create([
-            'email' => $email,
-            'password' => password_hash($password, PASSWORD_BCRYPT),
-        ]);
-        UserProfile::create([
-            'user_id' => $user->id,
-            'nickname' => $nickname !== '' ? $nickname : explode('@', $email)[0],
-        ]);
+        try {
+            // 用户与资料同事务：资料写入失败不能留下无法登录的半账号
+            $user = Db::transaction(function () use ($email, $password, $nickname) {
+                $user = User::create([
+                    'email' => $email,
+                    'password' => password_hash($password, PASSWORD_BCRYPT),
+                ]);
+                UserProfile::create([
+                    'user_id' => $user->id,
+                    'nickname' => $nickname !== '' ? $nickname : explode('@', $email)[0],
+                ]);
+                return $user;
+            });
+        } catch (QueryException $e) {
+            // 并发注册同一邮箱：唯一索引兜底；其他 SQL 错误继续抛给框架
+            if ((string) $e->getCode() === '23000') {
+                return json(['code' => 409, 'message' => '邮箱已注册', 'lang_key' => 'auth.email_exists'], 409);
+            }
+            throw $e;
+        }
 
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $this->tokens($user->id)]);
     }
@@ -134,8 +151,8 @@ class AuthController
             $refreshTtl = (int) config('plugin.erikwang2013.jwt.jwt.refresh_expire', 1209600);
             JwtHelper::revokeSid((string) $request->sid, $refreshTtl);
         }
-        // 通知 ws worker 踢掉该用户的已建立连接（单 ws worker 消费 social:ws:kick）
-        WsRedis::call(fn($r) => $r->rpush('social:ws:kick', (string) $request->uid));
+        // 通知 ws worker 踢掉该会话的已建立连接（uid:sid，避免误踢同用户新会话）
+        WsRedis::call(fn($r) => $r->rpush('social:ws:kick', "{$request->uid}:{$request->sid}"));
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok']);
     }
 

@@ -45,15 +45,15 @@
   <rect class="box" x="268" y="268" width="210" height="32"/>
   <text class="t" x="373" y="282">app/common/</text><text class="ts" x="373" y="296">Wallet · Gift · Payment · IAP 闸门</text>
   <rect class="box" x="488" y="268" width="210" height="32"/>
-  <text class="t" x="593" y="282">app/ws/</text><text class="ts" x="593" y="296">Envelope 帧 · Deliverer · 成员校验</text>
+  <text class="t" x="593" y="282">app/ws/</text><text class="ts" x="593" y="296">Envelope · 投递 · 成员/状态校验</text>
   <rect class="box" x="708" y="268" width="210" height="32"/>
   <text class="t" x="813" y="282">app/call · room · live/</text><text class="ts" x="813" y="296">M6 迁 Rust，PHP 留 WS 信令</text>
   <rect class="box" x="48" y="306" width="210" height="32"/>
-  <text class="t" x="153" y="320">app/model · middleware/</text><text class="ts" x="153" y="334">数据模型 · 鉴权 / 版本中间件</text>
+  <text class="t" x="153" y="320">app/model · middleware/</text><text class="ts" x="153" y="334">数据模型 · 鉴权 / 限流 / 版本中间件</text>
   <rect class="box" x="268" y="306" width="210" height="32"/>
   <text class="t" x="373" y="320">config/</text><text class="ts" x="373" y="334">route · process · payment · iap</text>
   <rect class="box" x="488" y="306" width="210" height="32"/>
-  <text class="t" x="593" y="320">tests/</text><text class="ts" x="593" y="334">phpunit 单测</text>
+  <text class="t" x="593" y="320">tests/</text><text class="ts" x="593" y="334">PHPUnit（支付 / 钱包）</text>
   <rect class="box" x="708" y="306" width="210" height="32"/>
   <text class="t" x="813" y="320">public/</text><text class="ts" x="813" y="334">apidoc · upload · favicon.svg</text>
 
@@ -92,7 +92,7 @@
   <rect class="boxy" x="250" y="644" width="200" height="44"/>
   <text class="t" x="350" y="664">docs/</text><text class="ts" x="350" y="680">设计文档 + diagrams/</text>
   <rect class="boxy" x="460" y="644" width="200" height="44"/>
-  <text class="t" x="560" y="664">tests/</text><text class="ts" x="560" y="680">api/ + e2e/（Playwright）</text>
+  <text class="t" x="560" y="664">service/tests/</text><text class="ts" x="560" y="680">PHPUnit（支付 / 钱包）</text>
   <rect class="boxy" x="670" y="644" width="260" height="44"/>
   <text class="t" x="800" y="664">scripts/ + install.sh</text><text class="ts" x="800" y="680">ci-probe.sh · gen-contracts.sh</text>
 </svg>

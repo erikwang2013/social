@@ -11,11 +11,22 @@ namespace app\common;
  */
 class WatermarkService
 {
-    private const FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+    private const FONT_PATHS = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/usr/share/fonts/dejavu/DejaVuSans.ttf',
+        '/usr/share/fonts/TTF/DejaVuSans.ttf',
+    ];
 
-    /** 就地加水印；非图片或 GD 不支持时静默跳过 */
+    /** 就地加水印；非图片、GD 或字体缺失时静默跳过 */
     public static function tile(string $path, string $text = 'https://erik.xyz'): void
     {
+        if (!function_exists('imagecreatefromjpeg') || !function_exists('imagettfbbox')) {
+            return;
+        }
+        $font = self::fontPath();
+        if ($font === null) {
+            return;
+        }
         $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
         $img = match ($ext) {
             'jpg', 'jpeg' => @imagecreatefromjpeg($path),
@@ -34,7 +45,11 @@ class WatermarkService
         }
 
         $fontSize = max(12, (int) round(min($w, $h) / 30));
-        $box = imagettfbbox($fontSize, 0, self::FONT, $text);
+        $box = @imagettfbbox($fontSize, 0, $font, $text);
+        if ($box === false) {
+            imagedestroy($img); // 字体不可读/FreeType 缺失时跳过水印
+            return;
+        }
         $tw = (int) ($box[2] - $box[0]);
         $th = (int) ($box[1] - $box[7]);
 
@@ -45,7 +60,7 @@ class WatermarkService
         $transparent = imagecolorallocatealpha($tile, 255, 255, 255, 127);
         imagefill($tile, 0, 0, $transparent);
         $white = imagecolorallocatealpha($tile, 255, 255, 255, 100);
-        imagettftext($tile, $fontSize, 0, $pad, $pad + $th, $white, self::FONT, $text);
+        imagettftext($tile, $fontSize, 0, $pad, $pad + $th, $white, $font, $text);
         $rot = imagerotate($tile, 45, $transparent);
         $rw = imagesx($rot);
         $rh = imagesy($rot);
@@ -67,5 +82,15 @@ class WatermarkService
         imagedestroy($img);
         imagedestroy($tile);
         imagedestroy($rot);
+    }
+
+    private static function fontPath(): ?string
+    {
+        foreach (self::FONT_PATHS as $path) {
+            if (is_file($path)) {
+                return $path;
+            }
+        }
+        return null;
     }
 }

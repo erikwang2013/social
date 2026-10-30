@@ -158,7 +158,11 @@ Route::group('/admin/social-user', function () {
     Route::get('', [app\admin\controller\SocialUserController::class, 'list']);
     Route::get('/{id}', [app\admin\controller\SocialUserController::class, 'detail']);
     Route::post('/{id}/status', [app\admin\controller\SocialUserController::class, 'status']);
-})->middleware([app\middleware\AdminAuth::class]);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);
 
 // ============================================================
 // 礼物目录管理（M6a 虚拟币+礼物，直查 social_gift_catalog）
@@ -168,7 +172,11 @@ Route::group('/admin/gift-catalog', function () {
     Route::post('', [app\admin\controller\GiftCatalogController::class, 'create']);
     Route::put('/{id}', [app\admin\controller\GiftCatalogController::class, 'update']);
     Route::post('/{id}/status', [app\admin\controller\GiftCatalogController::class, 'status']);
-})->middleware([app\middleware\AdminAuth::class]);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);
 
 // ============================================================
 // IAP 商品管理（M6a 阶段3，直查 social_products）
@@ -178,7 +186,11 @@ Route::group('/admin/iap-product', function () {
     Route::post('', [app\admin\controller\IapProductController::class, 'create']);
     Route::put('/{id}', [app\admin\controller\IapProductController::class, 'update']);
     Route::post('/{id}/status', [app\admin\controller\IapProductController::class, 'status']);
-})->middleware([app\middleware\AdminAuth::class]);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);
 
 // ============================================================
 // 支付订单管理（M6b4，直查 social_payments）
@@ -186,7 +198,11 @@ Route::group('/admin/iap-product', function () {
 Route::group('/admin/payment-order', function () {
     Route::get('', [app\admin\controller\PaymentOrderController::class, 'list']);
     Route::get('/{id}', [app\admin\controller\PaymentOrderController::class, 'detail']);
-})->middleware([app\middleware\AdminAuth::class]);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);
 
 // ============================================================
 // 提现单管理（M6b4，直查 social_withdrawals）
@@ -195,4 +211,8 @@ Route::group('/admin/withdrawal', function () {
     Route::get('', [app\admin\controller\WithdrawalController::class, 'list']);
     Route::get('/{id}', [app\admin\controller\WithdrawalController::class, 'detail']);
     Route::post('/{id}/status', [app\admin\controller\WithdrawalController::class, 'status']);
-})->middleware([app\middleware\AdminAuth::class]);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);

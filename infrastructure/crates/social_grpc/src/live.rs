@@ -10,7 +10,7 @@ use bee_live::store::{MySqlLiveStore, MySqlRoomStore, RedisConn, mysql_opts};
 use bee_live::upload::{MAX_BYTES, temp_upload_path, valid_file_name, VoiceStorage};
 use bee_live::voice::{RoomCenter, RoomError, sfu_http};
 use mysql_async::prelude::Queryable;
-use mysql_async::{Conn, Params};
+use mysql_async::Params;
 use serde_json::{json, Value};
 use social::live::v1::{
     CreateRoomRequest, CreateVoiceRoomRequest, GetVoiceFileRequest, IdRequest, ListRoomsRequest,
@@ -58,6 +58,11 @@ fn room_err(e: RoomError) -> LiveReply {
         RoomError::Forbidden => err_reply(403, "voice.room_forbidden", "仅房主可关房"),
         RoomError::MicFull => err_reply(422, "voice.mic_full", "麦位已满"),
     }
+}
+
+fn mysql_pool() -> &'static mysql_async::Pool {
+    static POOL: std::sync::OnceLock<mysql_async::Pool> = std::sync::OnceLock::new();
+    POOL.get_or_init(|| mysql_async::Pool::new(mysql_opts()))
 }
 
 /// 同步 store（内部 block_on，见 bee_live store.rs ponytail 注）经 spawn_blocking
@@ -286,8 +291,7 @@ impl VoiceService for VoiceSvc {
         let r = req.into_inner();
         let limit = if r.limit > 0 { r.limit as u64 } else { 20 };
         let offset = r.offset.max(0) as u64;
-        let opts = mysql_opts();
-        let Ok(mut conn) = Conn::new(opts).await else {
+        let Ok(mut conn) = mysql_pool().get_conn().await else {
             return Ok(Response::new(err_reply(500, "voice.db_error", "语音服务暂不可用")));
         };
         let rows: Vec<(i64, i64, i64, i8, Option<String>, Option<String>, Option<String>, Option<String>)> = match conn

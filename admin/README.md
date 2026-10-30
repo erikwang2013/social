@@ -20,6 +20,7 @@
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
 | 💰 提现单 | 列表/详情/标记 succeeded·failed | pending 单 failed 时原子退币并写 withdraw_refund 流水 |
+| 🧾 运营接口 | 社交用户 / 礼物 / IAP / 支付单 / 提现审核 | 五组路由 RBAC + 操作审计；超级管理员通配放行 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |
 | 🏥 运维 | 健康检查/metrics/API 文档/security.txt | Prometheus + OpenAPI 3.0 + hg/apidoc 交互文档 |
 | 🌐 国际化 | 中英文切换 | Accept-Language 头 / ?lang= 参数 |
@@ -31,7 +32,7 @@
 | 后端框架 | webman v2 (workerman) | 超高性能 PHP 常驻进程框架 |
 | PHP 版本 | 8.3+ | |
 | 数据库 | MySQL 8.0+ | 表前缀 `erik_`，BIGINT 非自增主键 |
-| 搜索引擎 | Elasticsearch | 通过 `webman-scout` 同步与查询 |
+| 搜索引擎 | Elasticsearch（可选） | 通过 `webman-scout` 同步与查询；开源社交版默认搜索走 MySQL LIKE，商业版启用 ES |
 | 管理端前端 | Flutter 3.x | Web 端为 PC 管理后台风格（`apps/flutter/`） |
 
 ## 核心依赖
@@ -134,7 +135,9 @@ cp .env.example .env
 | `JWT_SECRET_KEY` | JWT 签名密钥（至少 32 字符，必须设置） | 空（未设置时认证失败） |
 | `HASHIDS_SALT` | Hashids 盐值 | 内置默认值（install.sh 生成随机值） |
 | `ENCRYPTION_KEY` | API 传输加密密钥（32 字节） | 内置默认值（install.sh 生成随机值） |
-| `ENCRYPTABLE_KEY` | 数据库敏感字段加密密钥（32 字节） | 内置默认值（install.sh 生成随机值） |
+| `ENCRYPTABLE_KEY` | 数据库敏感字段/存储凭证加密密钥（32 字节），service/admin/infrastructure 三端共享 | 内置默认值（install.sh 生成随机值） |
+| `ENCRYPTABLE_CIPHER` | 存储层加密算法 | `aes-256-cbc` |
+| `APP_DEBUG` | 异常详情输出（生产必须为 false） | `false` |
 | `SNOWFLAKE_DATACENTER_ID` | 数据中心 ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | 工作节点 ID (0-31) | `1` |
 | `SCOUT_HOSTS` | ES 地址 | `http://localhost:9200` |
@@ -149,7 +152,7 @@ Web 安装向导已移除。在仓库根目录执行一键安装脚本（幂等�
 cd .. && ./install.sh
 ```
 
-脚本会安装依赖、创建 `social` / `open_admin` 数据库、导入 `database/install.sql`（权限种子；管理员 `erik` 的 SQL 种子为禁用占位口令，不含可用密码）、为 `service/` 与 `admin/` 生成 `.env`，并写入 `admin/runtime/install.lock`。
+脚本会安装依赖、创建 `social` / `open_admin` 数据库、导入 `database/install.sql`（权限种子；管理员 `erik` 的 SQL 种子为禁用占位口令，不含可用密码）、为 `service/` 与 `admin/` 生成 `.env`，并写入 `admin/runtime/install.lock`。脚本还会生成/共享三端 `ENCRYPTABLE_KEY`（并创建 `infrastructure/.env` 供 Rust 读取），应用 `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql`（五组运营路由的 13 条 RBAC 权限），并自动升级旧版「32 字节密钥 + aes-128-ecb」的不兼容配置。
 
 首次安装时脚本会为 `erik` 生成随机密码并启用账号，密码只在脚本输出中显示一次，请立即保存。旧安装若仍使用历史默认口令，重新执行 `./install.sh` 会自动改为随机密码并启用账号（已自定义密码的保持不变）。
 
@@ -267,8 +270,9 @@ docker-compose up -d
 
 GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
-- PHP 依赖检查（`service/` 与 `admin/` 各执行一次 `composer install`）
-- Rust workspace 构建 + 单元测试（`cd infrastructure && cargo build --workspace && cargo test --workspace`）
+- `php-service`：`composer install` + `vendor/bin/phpunit`（支付验签 / 钱包账务）
+- `php-admin`：`composer install`
+- `rust-infra`：workspace 构建 + 单元测试（`cd infrastructure && cargo build --workspace && cargo test --workspace`）
 
 ### 数据库备份
 

@@ -20,7 +20,7 @@ class ImVoiceController
         $req = new UploadVoiceRequest();
         $req->setUid((int) $request->uid);
         $req->setVoice(file_get_contents($file->getPathname()));
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->UploadVoice($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->UploadVoice($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 静态语音文件（Rust 侧白名单校验，PHP 以 audio/mp4 转发） */
@@ -28,7 +28,7 @@ class ImVoiceController
     {
         $req = new GetVoiceFileRequest();
         $req->setFile($file);
-        $r = LiveSync::voiceRpc(fn($c) => $c->GetVoiceFile($req));
+        $r = LiveSync::voiceRpc(fn($c) => $c->GetVoiceFile($req, [], ['timeout' => LiveSync::TIMEOUT_US]));
         if ($r === null || $r['code'] !== 0) {
             return LiveSync::respond($r);
         }

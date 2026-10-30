@@ -21,6 +21,8 @@ impl InfraService for InfraSvc {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 安装脚本写入的共享密钥/数据库配置；从仓库根或 infrastructure/ 启动均可加载
+    let _ = dotenvy::from_filename("infrastructure/.env").or_else(|_| dotenvy::dotenv());
     let addr = "127.0.0.1:50051".parse()?;
     println!("infra gRPC listening on {addr}");
 

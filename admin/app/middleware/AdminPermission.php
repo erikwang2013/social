@@ -63,6 +63,11 @@ class AdminPermission
         $permissions = [];
         foreach ($user->roles as $role) {
             if ($role->status === 0) continue;
+            // 超级管理员永远放行，不必为新增路由补权限种子
+            if ($role->slug === 'super_admin') {
+                $permissions = ['*'];
+                break;
+            }
             foreach ($role->permissions as $perm) {
                 $permissions[] = $perm->slug;
             }

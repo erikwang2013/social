@@ -12,6 +12,7 @@ use object_store::path::Path as ObjPath;
 use object_store::{aws::AmazonS3Builder, ObjectStore, PutPayload};
 use thiserror::Error;
 
+use crate::crypto::decrypt_encryptable;
 use crate::store::open_admin_opts;
 
 pub const MAX_BYTES: u64 = 2 * 1024 * 1024; // ≤2MB
@@ -82,6 +83,15 @@ impl VoiceStorage {
             let dir = std::env::var("VOICE_LOCAL_DIR").unwrap_or_else(|_| "storage/voice".into());
             return Self::from_local_dir(Path::new(&dir));
         }
+        // admin 端 Encryptable 加密存储；直接拿密文调 S3 会鉴权失败
+        let key = decrypt_encryptable(&key).map_err(|e| {
+            eprintln!("storage provider key 解密失败: {e}");
+            UploadError::Provider
+        })?;
+        let secret = decrypt_encryptable(&secret).map_err(|e| {
+            eprintln!("storage provider secret 解密失败: {e}");
+            UploadError::Provider
+        })?;
         let store = AmazonS3Builder::new()
             .with_endpoint(endpoint)
             .with_region(region)

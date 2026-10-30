@@ -19,6 +19,7 @@ A full-stack admin dashboard built with webman v2 + Flutter.
 | 📋 Audit | Log query + source detection | 8 platforms auto-detected |
 | 📁 Files | Upload/Excel export/PDF export | Sensitive data auto-masked |
 | 💰 Withdrawals | List/detail/mark succeeded·failed | pending → failed atomically refunds coins and writes a withdraw_refund ledger row |
+| 🧾 Operations | Social users / gifts / IAP / payment orders / withdrawal review | Five route groups with RBAC + operation audit; super-admin wildcard |
 | 🛡 Security | 18-layer defense-in-depth | XSS/SQLi/path traversal/cmd injection/CSRF/rate limit/CSP... |
 | 🏥 Ops | Health check/metrics/API docs/security.txt | Prometheus + OpenAPI 3.0 + hg/apidoc interactive docs |
 | 🌐 i18n | Chinese/English | Accept-Language header / ?lang= param |
@@ -38,7 +39,7 @@ This copyright notice is permanent, must not be modified, removed, or reversed. 
 | Backend | webman v2 (workerman) | High-performance PHP daemon framework |
 | PHP | 8.3+ | |
 | Database | MySQL 8.0+ | Table prefix `erik_`, BIGINT non-auto-increment PKs |
-| Search | Elasticsearch | Synced via `webman-scout` |
+| Search | Elasticsearch (optional) | Synced via `webman-scout`; the open-source social edition uses MySQL LIKE by default, ES is enabled in the commercial edition |
 | Admin Frontend | Flutter 3.x | Web renders as desktop admin panel (`apps/flutter/`) |
 
 ## Core Packages
@@ -125,7 +126,9 @@ Key environment variables:
 | `JWT_SECRET_KEY` | JWT signing key (at least 32 chars, required) | empty (auth fails if unset) |
 | `HASHIDS_SALT` | Hashids salt | built-in default (install.sh generates a random one) |
 | `ENCRYPTION_KEY` | API transport encryption key (32 bytes) | built-in default (install.sh generates a random one) |
-| `ENCRYPTABLE_KEY` | Database field encryption key (32 bytes) | built-in default (install.sh generates a random one) |
+| `ENCRYPTABLE_KEY` | Database field / storage-credential encryption key (32 bytes), shared by service/admin/infrastructure | built-in default (install.sh generates a random one) |
+| `ENCRYPTABLE_CIPHER` | Storage-layer cipher | `aes-256-cbc` |
+| `APP_DEBUG` | Detailed exception output (must be false in production) | `false` |
 | `SNOWFLAKE_DATACENTER_ID` | Datacenter ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | Worker ID (0-31) | `1` |
 | `SCOUT_HOSTS` | ES hosts | `http://localhost:9200` |
@@ -140,7 +143,7 @@ The web install wizard has been removed. Run the one-click installer from the re
 cd .. && ./install.sh
 ```
 
-It installs dependencies, creates the `social` / `open_admin` databases, imports `database/install.sql` (permission seeds; the SQL seed for admin `erik` is a disabled placeholder with no usable password), generates `.env` for both `service/` and `admin/`, and writes `admin/runtime/install.lock`.
+It installs dependencies, creates the `social` / `open_admin` databases, imports `database/install.sql` (permission seeds; the SQL seed for admin `erik` is a disabled placeholder with no usable password), generates `.env` for both `service/` and `admin/`, and writes `admin/runtime/install.lock`. It also generates/shares `ENCRYPTABLE_KEY` across all three runtimes (creating `infrastructure/.env` for Rust), applies `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` (13 RBAC permissions for the five operational route groups), and upgrades legacy incompatible "32-byte key + aes-128-ecb" configurations.
 
 On first install the script generates a random password for `erik`, enables the account, and prints the password once — save it immediately. On an old install that still uses the historical default password, re-running `./install.sh` rotates it to a random password and enables the account (custom passwords are kept unchanged).
 
@@ -438,8 +441,9 @@ docker-compose up -d
 
 GitHub Actions CI pipeline: `.github/workflows/ci.yml`
 
-- PHP dependency check (`composer install` for `service/` and `admin/`)
-- Rust workspace build + unit tests (`cd infrastructure && cargo build --workspace && cargo test --workspace`)
+- `php-service`: `composer install` + `vendor/bin/phpunit` (payment signatures / wallet ledger)
+- `php-admin`: `composer install`
+- `rust-infra`: workspace build + unit tests (`cd infrastructure && cargo build --workspace && cargo test --workspace`)
 
 ### Database Backup
 

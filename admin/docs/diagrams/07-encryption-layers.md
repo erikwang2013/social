@@ -31,3 +31,5 @@ flowchart TB
     style d2 fill:#FA8C16,color:#fff
     style m1 fill:#52C41A,color:#fff
 ```
+
+> 存储层默认使用 AES-256-CBC 与 32 字节 `ENCRYPTABLE_KEY`；该密钥由 service / admin / infrastructure 三端共享。Rust 语音存储在构建 S3 客户端前，使用同一密钥解密存储服务商 `key`/`secret`。

@@ -11,7 +11,7 @@ The open-admin management console is built on webman v2 and provides a RESTful J
 - **API version**: controlled via the `API-Version: v1` request header (defaults to v1 when missing)
 - **Language**: switch via the `Accept-Language` header or the `?lang=zh_CN|en` parameter (default zh_CN), auto-detected by the Locale middleware
 
-> **Endpoint overview**: Auth(5) | Dashboard(1) | Users(7) | Roles(4) | Permissions(4) | Config(4) | Logs(1) | Profile(3) | Import/Export(3) | Upload(1) | Ops(4: health/metrics/docs/security.txt) | 37 endpoints in total
+> **Endpoint overview**: Auth(5) | Dashboard(1) | Users(7) | Roles(4) | Permissions(4) | Config(4) | Logs(1) | Profile(3) | Import/Export(3) | Upload(1) | Operations/Reports(25) | Ops(4: health/metrics/docs/security.txt) | 62 endpoints in total
 - **Authentication**: `Authorization: Bearer <token>` (JWT)
 - **Response format**: `{ "code": 0, "message": "success", "data": {...} }`
 - **Docs endpoint**: `GET /api/docs` returns the OpenAPI 3.0 JSON specification
@@ -1640,7 +1640,65 @@ Files are stored in date-based directories `public/upload/{Y-m-d}/` with filenam
 - 422: File size must not exceed 10MB
 - 500: File upload failed (invalid file)
 
-## 13. Response headers
+## 13. Operations and reporting endpoints (M6a–M6d)
+
+All endpoints below require `Authorization: Bearer <token>` and RBAC; the `super_admin` role is treated as wildcard `*` in code. `POST/PUT/DELETE` requests are written to the operation log (`OperationLog`). The permission seeds for the five operational route groups live in `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` and are applied to `open_admin` by `install.sh`.
+
+### 13.1 Social users
+
+| Method | Path | Required permission | Description |
+|--------|------|---------------------|-------------|
+| GET | `/admin/social-user` | `get.admin/social-user` | Paginated list; `keyword` (email/nickname), `page`, `page_size` |
+| GET | `/admin/social-user/{id}` | `get.admin/social-user` | User detail (with profile) |
+| POST | `/admin/social-user/{id}/status` | `post.admin/social-user/status` | Enable/disable; body `{status: 0\|1}`. The service rejects disabled accounts on HTTP/WS within 30 seconds |
+
+### 13.2 Gift catalog / IAP products
+
+| Method | Path | Required permission | Description |
+|--------|------|---------------------|-------------|
+| GET | `/admin/gift-catalog` | `get.admin/gift-catalog` | Paginated list |
+| POST | `/admin/gift-catalog` | `post.admin/gift-catalog` | Create; `name` and positive `coins_price` required |
+| PUT | `/admin/gift-catalog/{id}` | `put.admin/gift-catalog` | Update name/price/effect/sort |
+| POST | `/admin/gift-catalog/{id}/status` | `post.admin/gift-catalog/status` | Publish/unpublish; body `{status: 0\|1}` |
+| GET | `/admin/iap-product` | `get.admin/iap-product` | Paginated list; optional `platform` filter |
+| POST | `/admin/iap-product` | `post.admin/iap-product` | Create; `platform` is `apple\|google\|huawei`, `sku` unique, `coins` positive |
+| PUT | `/admin/iap-product/{id}` | `put.admin/iap-product` | Update `sku`/`coins` |
+| POST | `/admin/iap-product/{id}/status` | `post.admin/iap-product/status` | Publish/unpublish |
+
+### 13.3 Payment orders / withdrawals
+
+| Method | Path | Required permission | Description |
+|--------|------|---------------------|-------------|
+| GET | `/admin/payment-order` | `get.admin/payment-order` | Paginated list; filter by `platform`/`status`/`user_id`; raw callback payload omitted |
+| GET | `/admin/payment-order/{id}` | `get.admin/payment-order` | Order detail including `payload` (for reconciliation) |
+| GET | `/admin/withdrawal` | `get.admin/withdrawal` | Paginated list; `account` masked |
+| GET | `/admin/withdrawal/{id}` | `get.admin/withdrawal` | Detail with the full payout account |
+| POST | `/admin/withdrawal/{id}/status` | `post.admin/withdrawal/status` | Review; body `{status: succeeded\|failed, reason}`. `failed` requires `reason`; coins are refunded idempotently in the same transaction and a `withdraw_refund` ledger row is written |
+
+### 13.4 Storage providers
+
+| Method | Path | Required permission | Description |
+|--------|------|---------------------|-------------|
+| GET | `/admin/storage/providers` | `get.admin/storage/providers` | List; `key`/`secret` are never returned |
+| POST | `/admin/storage/providers` | `post.admin/storage/providers` | Create; `driver=local\|s3`, s3 requires `endpoint`/`bucket`/`cdn_url` |
+| PUT | `/admin/storage/providers/{id}` | `put.admin/storage/providers` | Update configuration |
+| DELETE | `/admin/storage/providers/{id}` | `delete.admin/storage/providers` | Delete; the active provider cannot be deleted |
+| POST | `/admin/storage/providers/{id}/activate` | `post.admin/storage/providers/activate` | Activate; s3 connectivity is verified first, then the service cache is cleared |
+
+Provider credentials are encrypted with `ENCRYPTABLE_KEY`; the service and Rust voice storage decrypt them with the same key before accessing S3-compatible storage.
+
+### 13.5 Reports
+
+| Method | Path | Required permission | Description |
+|--------|------|---------------------|-------------|
+| GET | `/admin/report/users` | `get.admin/report/users` | User report: totals/new in range/active today, daily trend, status distribution |
+| GET | `/admin/report/payments` | `get.admin/report/payments` | Payment report: orders/succeeded amount, daily trend, platform/status distribution |
+| GET | `/admin/report/withdrawals` | `get.admin/report/withdrawals` | Withdrawal report: count/succeeded amount, daily trend, status distribution |
+| POST | `/admin/report/export` | `post.admin/report/export` | Export Excel; body `{type: users\|payments\|withdrawals, start?, end?}` |
+
+Report `start`/`end` use `Y-m-d`, default to the last 30 days, and the range must not exceed 366 days; amounts are in cents (withdrawals use coin units).
+
+## 14. Response headers
 
 All endpoints (injected at the global middleware layer) include the following response headers:
 
@@ -1660,7 +1718,7 @@ Rate limit details:
 - Uses Redis atomic sliding window algorithm (Lua ZSET), avoiding TOCTOU races
 - Fails open when Redis is unavailable (requests pass through, not blocked)
 
-## 14. Authentication flow
+## 15. Authentication flow
 
 The complete authentication sequence:
 
@@ -1755,7 +1813,7 @@ The complete authentication sequence:
 - Concurrent session limit: a user can hold at most 3 valid tokens; when a 4th device logs in, the oldest token is forcibly blacklisted
 - Account lockout: 5 consecutive login failures trigger a 15-minute lockout, during which 429 is returned
 
-## 15. Deployment & operations
+## 16. Deployment & operations
 
 ### Docker Compose
 

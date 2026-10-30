@@ -38,7 +38,7 @@
     <text class="lt" x="36" y="170">Access Layer · service (webman v2, PHP 8.3)</text>
     <rect class="boxb" x="60" y="182" width="400" height="52"/>
     <text class="t" x="260" y="204">HTTP REST · :8788</text>
-    <text class="ts" x="260" y="222">X-Api-Version middleware (default v1, /api/vX compat)</text>
+    <text class="ts" x="260" y="222">JWT auth · rate limit · X-Api-Version (default v1)</text>
     <rect class="boxb" x="500" y="182" width="420" height="52"/>
     <text class="t" x="710" y="204">WebSocket Signaling · :8789</text>
     <text class="ts" x="710" y="222">Envelope frames · Deliverer push · msg/call/room signaling</text>

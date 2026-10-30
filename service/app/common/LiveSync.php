@@ -16,6 +16,9 @@ use Workerman\Timer;
  */
 class LiveSync
 {
+    /** gRPC 调用超时（微秒，grpc/grpc 的 timeout 选项单位）：Rust 卡住时不能让 PHP worker 无限等待 */
+    public const TIMEOUT_US = 3_000_000;
+
     private static ?LiveServiceClient $live = null;
     private static ?VoiceServiceClient $voice = null;
     private static ?bool $healthy = null;
@@ -64,7 +67,7 @@ class LiveSync
                 $req = new HealthCheckRequest();
                 $req->setService($service);
                 $client = new HealthClient($host, ['credentials' => \Grpc\ChannelCredentials::createInsecure()]);
-                [$resp, $status] = $client->Check($req)->wait();
+                [$resp, $status] = $client->Check($req, [], ['timeout' => self::TIMEOUT_US])->wait();
                 return $status && $status->code === \Grpc\STATUS_OK
                     && $resp && $resp->getStatus() === HealthCheckResponse\ServingStatus::SERVING;
             } catch (\Throwable $e) {

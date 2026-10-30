@@ -68,8 +68,17 @@ class PaymentService
         try {
             Db::transaction(function () use ($platform, $tradeNo, $outTradeNo, $result, $payload, &$outcome, &$order, &$credit) {
                 // 先按 trade_no 查（重放幂等），查不到再按 out_trade_no=client_ref 查（首回调定位 pending 单）
-                $order = Payment::where('platform', $platform)->where('trade_no', $tradeNo)->lockForUpdate()->first()
-                    ?? ($outTradeNo !== '' ? Payment::where('platform', $platform)->where('client_ref', $outTradeNo)->lockForUpdate()->first() : null);
+                $order = Payment::where('platform', $platform)->where('trade_no', $tradeNo)->lockForUpdate()->first();
+                if ($order === null && $outTradeNo !== '') {
+                    // client_ref 仅用户内唯一，跨用户可能同名：命中多单时不猜，拒绝入账
+                    $matches = Payment::where('platform', $platform)->where('client_ref', $outTradeNo)->lockForUpdate()->get();
+                    if ($matches->count() > 1) {
+                        error_log("[payment] callback ambiguous platform={$platform} out_trade_no={$outTradeNo} matches={$matches->count()}");
+                        $outcome = 'ambiguous';
+                        return;
+                    }
+                    $order = $matches->first();
+                }
                 if ($order === null) {
                     error_log("[payment] callback not_found platform={$platform} trade_no={$tradeNo} out_trade_no={$outTradeNo}");
                     $outcome = 'not_found';
@@ -121,6 +130,7 @@ class PaymentService
             'failed' => self::err(422, '订单已失败', 'payment.order_failed'),
             'currency_mismatch' => self::err(422, '回调币种与订单不符', 'payment.currency_mismatch'),
             'amount_mismatch' => self::err(422, '回调金额与订单不符', 'payment.amount_mismatch'),
+            'ambiguous' => self::err(409, '订单不唯一', 'payment.order_ambiguous'),
             'credited' => self::ok($order, 'payment.callback_verified'),
             default => self::err(404, '订单不存在', 'payment.order_not_found'),
         };

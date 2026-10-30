@@ -43,7 +43,7 @@ class VoiceController
         $req->setUid((int) $request->uid);
         $req->setLimit(20);
         $req->setOffset(($page - 1) * 20);
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->ListCalls($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->ListCalls($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 创建语聊房：POST /api/v1/voice/rooms {name} */
@@ -56,7 +56,7 @@ class VoiceController
         $req = new CreateVoiceRoomRequest();
         $req->setUid((int) $request->uid);
         $req->setName($name);
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->CreateRoom($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->CreateRoom($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 开放房间列表：GET /api/v1/voice/rooms?page= */
@@ -67,7 +67,7 @@ class VoiceController
         $req->setUid((int) $request->uid);
         $req->setLimit(20);
         $req->setOffset(($page - 1) * 20);
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->ListRooms($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->ListRooms($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 房间详情：GET /api/v1/voice/rooms/{id} */
@@ -76,7 +76,7 @@ class VoiceController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->RoomDetail($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->RoomDetail($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 房主关房：POST /api/v1/voice/rooms/{id}/close */
@@ -85,6 +85,6 @@ class VoiceController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->CloseRoom($req)));
+        return LiveSync::respond(LiveSync::voiceRpc(fn($c) => $c->CloseRoom($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 }

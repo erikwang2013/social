@@ -352,6 +352,8 @@ flowchart TD
     style J7 fill:#FF4D4F,color:#fff
 ```
 
+> 说明：`/admin/social-user`、`/admin/gift-catalog`、`/admin/iap-product`、`/admin/payment-order`、`/admin/withdrawal` 五组运营路由同样由 `AdminPermission` 保护，并叠加 `OperationLog` 审计。13 条权限种子位于 `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql`，`install.sh` 会自动应用到 `open_admin`。`super_admin` 角色在代码中按通配 `*` 放行。
+
 ---
 
 ## 6. ID 全生命周期
@@ -367,7 +369,7 @@ flowchart LR
 
     subgraph "2. 存储"
         S1["MySQL erik_* 表<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
-        S2["敏感字段<br/>encryptable cast<br/>AES-128-ECB 加密"]
+        S2["敏感字段<br/>encryptable cast<br/>AES-256-CBC 加密"]
         G3 --> S1
         S1 --> S2
     end
@@ -425,6 +427,8 @@ flowchart TB
     style D2 fill:#FA8C16,color:#fff
     style M1 fill:#52C41A,color:#fff
 ```
+
+> 存储层默认使用 AES-256-CBC 与 32 字节 `ENCRYPTABLE_KEY`；该密钥由 service / admin / infrastructure 三端共享，存储服务商凭证由 PHP 与 Rust 语音存储使用同一密钥解密。
 
 ---
 

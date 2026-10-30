@@ -2,6 +2,7 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 namespace app\ws;
 
+use app\common\UserStatus;
 use app\model\ConversationMember;
 use app\model\Message;
 use app\model\MessageRead;
@@ -15,6 +16,10 @@ final class ActionHandler
         $type = $env['type'];
         $data = is_array($env['data'] ?? null) ? $env['data'] : [];
         $seq = isset($env['seq']) ? (int) $env['seq'] : null;
+        if ($type !== Envelope::T_PING && !UserStatus::isActive($uid)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'account disabled'], $seq);
+            return;
+        }
         switch ($type) {
             case Envelope::T_PING:
                 ConnectionRegistry::heartbeat($fd, $uid);
@@ -68,13 +73,36 @@ final class ActionHandler
     private static function doSend(int $fd, int $uid, array $data, ?int $seq): void
     {
         $cid = (int) ($data['conversation_id'] ?? 0);
-        $cmid = trim((string) ($data['client_msg_id'] ?? ''));
+        $cmidRaw = $data['client_msg_id'] ?? '';
         $content = $data['content'] ?? null;
-        $imageUrl = (string) ($data['image_url'] ?? '');
-        $voiceUrl = (string) ($data['voice_url'] ?? '');
-        $voiceDuration = (int) ($data['voice_duration'] ?? 0);
+        $imageUrl = $data['image_url'] ?? '';
+        $voiceUrl = $data['voice_url'] ?? '';
+        $voiceDuration = $data['voice_duration'] ?? 0;
+        // 数组/对象会让 (string) 转换报 warning 并抛异常，先在边界拒绝
+        if (!is_string($cmidRaw) || !is_string($imageUrl) || !is_string($voiceUrl) || !is_numeric($voiceDuration)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid send payload'], $seq);
+            return;
+        }
+        $cmid = trim($cmidRaw);
+        $voiceDuration = (int) $voiceDuration;
         if ($cid <= 0 || $cmid === '' || (($content === null || $content === '') && $imageUrl === '' && $voiceUrl === '')) {
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid send payload'], $seq);
+            return;
+        }
+        if ($content !== null && !is_string($content)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid send payload'], $seq);
+            return;
+        }
+        if (is_string($content) && mb_strlen($content) > 5000) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'content too long'], $seq);
+            return;
+        }
+        if (strlen($imageUrl) > 500) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'image url too long'], $seq);
+            return;
+        }
+        if ($voiceDuration < 0 || $voiceDuration > 60) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid voice duration'], $seq);
             return;
         }
         // 兼容旧格式 /voice/{md5}.m4a 与上传接口返回的完整路径 /api/v1/voice/{md5}.m4a
@@ -261,7 +289,12 @@ final class ActionHandler
                     $lc->leave($roomId, $uid);
                     break;
                 case Envelope::T_DANMAKU_SEND:
-                    $content = trim((string) ($data['content'] ?? ''));
+                    $rawContent = $data['content'] ?? '';
+                    if (!is_string($rawContent)) {
+                        self::send($fd, Envelope::T_ERROR, ['msg' => 'danmaku invalid'], $seq);
+                        return;
+                    }
+                    $content = trim($rawContent);
                     if ($content === '' || mb_strlen($content) > 200) {
                         self::send($fd, Envelope::T_ERROR, ['msg' => 'danmaku invalid'], $seq);
                         return;

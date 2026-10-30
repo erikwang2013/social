@@ -11,7 +11,7 @@
   <rect class="mod" x="20" y="20" width="920" height="86"/>
   <text class="tm" x="480" y="44">接入层 · service/config/process.php（Http + WsServer 双进程）</text>
   <rect class="it" x="40" y="56" width="440" height="38"/>
-  <text class="t" x="260" y="70">HTTP :8788 · 路由前 X-Api-Version 版本化</text>
+  <text class="t" x="260" y="70">HTTP :8788 · 鉴权 · 限流 · X-Api-Version</text>
   <text class="t" x="260" y="84" font-size="10" fill="#64748b">默认 v1 · v\d+ 校验 · /api/vX 兼容（Http.php）</text>
   <rect class="it" x="500" y="56" width="420" height="38"/>
   <text class="t" x="710" y="70">WS :8789 · Envelope 帧协议</text>
@@ -77,7 +77,7 @@
   <rect class="it" x="500" y="574" width="420" height="30"/>
   <text class="t" x="710" y="593">IAP 三端校验 + 全局收据闸门</text>
   <rect class="it" x="500" y="610" width="420" height="30"/>
-  <text class="t" x="710" y="629">支付渠道 微信/支付宝/Stripe 回调验签</text>
+  <text class="t" x="710" y="629">回调验签 · 商户号 / 金额核对</text>
 
   <!-- 数据与状态 -->
   <rect class="mod" x="20" y="672" width="920" height="76"/>

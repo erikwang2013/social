@@ -14,6 +14,7 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
         libpng-dev \
         libjpeg-turbo-dev \
         freetype-dev \
+        font-dejavu \
         oniguruma-dev \
         libxml2-dev \
         curl \
@@ -21,8 +22,9 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
         unzip \
     && docker-php-source extract
 
-# PHP 扩展
-RUN docker-php-ext-install -j$(nproc) \
+# PHP 扩展（gd 需显式启用 freetype/jpeg，水印与图片解码依赖）
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
         pdo pdo_mysql \
         pcntl \
         mbstring \

@@ -47,12 +47,4 @@ class AdminUser extends Model
     {
         return $this->belongsToMany(AdminRole::class, 'admin_user_role', 'user_id', 'role_id');
     }
-
-    public function toSearchableArray(): array
-    {
-        return [
-            'username'  => $this->username,
-            'real_name' => $this->real_name,
-        ];
-    }
 }

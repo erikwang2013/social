@@ -269,9 +269,11 @@ For example:
 **Authorization flow**:
 1. `$request->adminId` empty → allow (route has no authentication prerequisite configured)
 2. Get user → roles (skip disabled roles with `status=0`) → permission list
-3. Super admin (`slug = '*'`) → allow directly
+3. Super admin (role `slug = super_admin`) is treated as wildcard `*` in code and allowed directly
 4. Build `strtolower(method) . '.' . trim(path, '/')` → compare against permission list
 5. No match → 403 `{"code": 403, "message": "无权限访问"}`
+
+The five operational route groups `/admin/social-user`, `/admin/gift-catalog`, `/admin/iap-product`, `/admin/payment-order`, and `/admin/withdrawal` now also require `AdminPermission` plus `OperationLog`. Their 13 permission seeds live in `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` and are applied by `install.sh`.
 
 **Second confirmation**: BaseController provides the `confirmPassword()` method; sensitive operations (delete user, data export, etc.) additionally require entering the current password at the Controller layer, preventing unauthorized operations after session hijacking.
 
@@ -356,7 +358,7 @@ The `AdminUser` model uses the `Erikwang2013\Encryptable\Encryptable` Eloquent c
 
 Written to the database as encrypted ciphertext automatically, and decrypted back to plaintext automatically when read. The database column type is `VARCHAR(500)`, and ciphertext is stored as base64.
 
-**Key system**: uses `ENCRYPTABLE_KEY` independently from transport-layer encryption (`ENCRYPTION_KEY`); a leak of one key does not compromise the other layer.
+**Key system**: uses `ENCRYPTABLE_KEY` independently from transport-layer encryption (`ENCRYPTION_KEY`); a leak of one key does not compromise the other layer. The storage layer defaults to AES-256-CBC with a 32-byte key; the key is shared by service / admin / infrastructure so storage-provider credentials can be decrypted (Rust voice storage decrypts `key`/`secret` before building the S3 client).
 
 Key rotation: the `ENCRYPTION_PREVIOUS_KEYS` environment variable supports a list of historical keys (comma-separated). When reading old data, historical keys are tried for decryption; on write-back, the current key re-encrypts.
 
@@ -388,7 +390,8 @@ All keys are injected via `.env` environment variables; config files read them w
 | HASHIDS_SALT | ID encoding salt | erikwang2013/hashids | Random string |
 | SNOWFLAKE_DATACENTER_ID | Datacenter ID (0-31) | erikwang2013/snowflake-php | Keep default for single datacenter |
 | ENCRYPTION_KEY | API transport layer encryption key | erikwang2013/encryption | 32-byte random string |
-| ENCRYPTABLE_KEY | DB storage layer encryption key | erikwang2013/encryptable | 32-byte random string, different from the transport key |
+| ENCRYPTABLE_KEY | Storage-layer key (DB sensitive fields + storage-provider credentials) | erikwang2013/encryptable | 32-byte random string, different from the transport key; shared by service/admin/infrastructure |
+| ENCRYPTABLE_CIPHER | Storage-layer cipher | erikwang2013/encryptable | `aes-256-cbc` |
 
 **Security requirements**:
 - `.env` is in `.gitignore` and must never be committed to the repository
@@ -401,7 +404,7 @@ All keys are injected via `.env` environment variables; config files read them w
 | Layer | Config Key | Key Environment Variable |
 |----|--------|-------------|
 | Transport encryption | `config/encryption.php` → `key` | `ENCRYPTION_KEY` |
-| Storage encryption | `config/encryptable.php` → `key` | `ENCRYPTABLE_KEY` |
+| Storage encryption | `config/plugin/erikwang2013/encryptable/app.php` → `key` / `cipher` | `ENCRYPTABLE_KEY` / `ENCRYPTABLE_CIPHER` |
 | ID obfuscation | `config/hashids.php` → `connections.main.salt` | `HASHIDS_SALT` |
 | JWT signing | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET_KEY` |
 

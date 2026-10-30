@@ -2,7 +2,6 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
-import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 import 'auth_service.dart';
@@ -30,7 +29,6 @@ class ApiService {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await AuthService.getToken();
-        print('ApiService.onRequest: token=${token != null ? token.substring(0, min(20, token.length)) : "null"} url=${options.uri}');
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }

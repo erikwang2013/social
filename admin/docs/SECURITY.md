@@ -269,9 +269,11 @@ API 权限标识格式：`{method}.{path}`
 **鉴权流程**：
 1. `$request->adminId` 为空 → 放行（路由未配置认证前置）
 2. 获取用户 → 角色（跳过 `status=0` 的禁用角色）→ 权限列表
-3. 超级管理员（`slug = '*'`）→ 直接放行
+3. 超级管理员（角色 `slug = super_admin`）在代码中按通配 `*` 直接放行
 4. 构造 `strtolower(method) . '.' . trim(path, '/')` → 对比权限列表
 5. 匹配失败 → 403 `{"code": 403, "message": "无权限访问"}`
+
+五组运营路由 `/admin/social-user`、`/admin/gift-catalog`、`/admin/iap-product`、`/admin/payment-order`、`/admin/withdrawal` 现已同样要求 `AdminPermission`，并叠加 `OperationLog` 审计；13 条权限种子由 `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` 提供，`install.sh` 自动应用。
 
 **二次确认**：BaseController 提供 `confirmPassword()` 方法，敏感操作（删除用户、数据导出等）在 Controller 层额外要求输入当前密码，防止会话劫持后被未授权操作。
 
@@ -356,7 +358,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 
 写入数据库时自动加密为密文，读取时自动解密为明文。数据库存储列类型为 `VARCHAR(500)`，密文以 base64 形式存储。
 
-**密钥体系**：与传输层加密（`ENCRYPTION_KEY`）独立使用 `ENCRYPTABLE_KEY`，一个密钥泄露不会导致另一层失效。
+**密钥体系**：与传输层加密（`ENCRYPTION_KEY`）独立使用 `ENCRYPTABLE_KEY`，一个密钥泄露不会导致另一层失效。存储层默认算法为 AES-256-CBC（32 字节密钥）；该密钥由 service / admin / infrastructure 三端共享，用于解密存储服务商凭证（Rust 语音存储在构建 S3 客户端前解密 `key`/`secret`）。
 
 密钥轮换：`ENCRYPTION_PREVIOUS_KEYS` 环境变量支持历史密钥列表（逗号分隔），读取旧数据时尝试历史密钥解密，写回时使用当前密钥重新加密。
 
@@ -388,7 +390,8 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | HASHIDS_SALT | ID 编码盐值 | erikwang2013/hashids | 随机字符串 |
 | SNOWFLAKE_DATACENTER_ID | 数据中心 ID (0-31) | erikwang2013/snowflake-php | 单机房保持默认 |
 | ENCRYPTION_KEY | API 传输层加密密钥 | erikwang2013/encryption | 32 字节随机字符串 |
-| ENCRYPTABLE_KEY | DB 存储层加密密钥 | erikwang2013/encryptable | 32 字节随机字符串，与传输密钥不同 |
+| ENCRYPTABLE_KEY | 存储层加密密钥（DB 敏感字段 + 存储服务商凭证） | erikwang2013/encryptable | 32 字节随机字符串，与传输密钥不同；service/admin/infrastructure 三端共享 |
+| ENCRYPTABLE_CIPHER | 存储层加密算法 | erikwang2013/encryptable | `aes-256-cbc` |
 
 **安全要求**：
 - `.env` 文件已加入 `.gitignore`，严禁提交到版本库
@@ -401,7 +404,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | 层 | 配置键 | 密钥环境变量 |
 |----|--------|-------------|
 | 传输加密 | `config/encryption.php` → `key` | `ENCRYPTION_KEY` |
-| 存储加密 | `config/encryptable.php` → `key` | `ENCRYPTABLE_KEY` |
+| 存储加密 | `config/plugin/erikwang2013/encryptable/app.php` → `key` / `cipher` | `ENCRYPTABLE_KEY` / `ENCRYPTABLE_CIPHER` |
 | ID 混淆 | `config/hashids.php` → `connections.main.salt` | `HASHIDS_SALT` |
 | JWT 签名 | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET_KEY` |
 

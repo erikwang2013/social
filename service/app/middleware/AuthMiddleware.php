@@ -5,6 +5,7 @@ use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;
 use app\common\JwtHelper;
+use app\common\UserStatus;
 
 class AuthMiddleware implements MiddlewareInterface
 {
@@ -22,7 +23,11 @@ class AuthMiddleware implements MiddlewareInterface
             || ($sid !== '' && JwtHelper::isSidRevoked($sid))) {
             return json(['code' => 401, 'message' => '凭证无效或已过期', 'lang_key' => 'auth.token_invalid'], 401);
         }
-        $request->uid = (int) $payload->sub;
+        $uid = (int) $payload->sub;
+        if (!UserStatus::isActive($uid)) {
+            return json(['code' => 403, 'message' => '账号已被禁用', 'lang_key' => 'auth.account_disabled'], 403);
+        }
+        $request->uid = $uid;
         $request->jti = $payload->jti;
         $request->sid = $sid;
         return $handler($request);

@@ -46,7 +46,7 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
 - **自建媒体层**：mediasoup SFU（本机 :8790）+ coturn TURN（REST 临时凭证），1v1 语音通话与语聊房（8 席：房主 + 7 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT；v1.1.1–v1.1.6 为文档 / CI / 稳定性修复，无新功能；v1.1.14 为安全 / 一致性修复：默认管理员与 JWT 密钥、IAP 全局收据闸门、钱包并发锁、IM 成员校验、微信回调解密、TURN 临时凭证、安装与迁移脚本
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT；v1.1.1–v1.1.6 为文档 / CI / 稳定性修复，无新功能；v1.1.14 为安全 / 一致性修复：默认管理员与 JWT 密钥、IAP 全局收据闸门、钱包并发锁、IM 成员校验、微信回调解密、TURN 临时凭证、安装与迁移脚本；v1.1.15 为安全 / 稳定性加固：微信回调商户号与 AppID 校验、Stripe 未付款拦截、支付单歧义拒绝、服务端限流、禁用账号 30s 内生效、WS 登出踢线与入参校验、gRPC 超时、五组运营路由 RBAC、加密密钥统一并在 Rust 侧解密、Docker 图片水印依赖与测试补强
 
 ## 功能总览
 
@@ -102,13 +102,13 @@ service/
 
 ## 一键安装
 
-前置要求：PHP ≥ 8.3（composer）、MySQL、Redis（Docker 可选，用于媒体层）。
+前置要求：PHP ≥ 8.3（composer + ext-gd，图片水印需 DejaVu 字体，缺失时自动跳过水印）、MySQL、Redis、ffmpeg/ffprobe（Rust 语音转码；Docker 可选，用于媒体层）。
 
 ```bash
 ./install.sh
 ```
 
-脚本会依次：对 `service/` 与 `admin/` 各执行一次 `composer install`；以 `database/install.sql` 建库（幂等，CREATE IF NOT EXISTS）；为两个服务生成 `.env`（随机 JWT / APP 密钥，不覆盖已存在文件）；首次导入时生成随机管理员密码并只打印一次，成功后写入 `admin/runtime/install.lock`；可选启动媒体层（`docker compose up -d` 起 media/sfu 与 coturn，`--skip-media` 跳过）；最后打印各服务启动命令与访问地址。
+脚本会依次：对 `service/` 与 `admin/` 各执行一次 `composer install`；以 `database/install.sql` 建库（幂等，CREATE IF NOT EXISTS）；为两个服务生成 `.env`（随机 JWT / APP 密钥，不覆盖已存在文件），三端共享 `ENCRYPTABLE_KEY` 并生成 `infrastructure/.env`，自动升级旧版 `aes-128-ecb + 32 字节密钥` 配置；应用 `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` 权限迁移；首次导入时生成随机管理员密码并只打印一次，成功后写入 `admin/runtime/install.lock`；可选启动媒体层（`docker compose up -d` 起 media/sfu 与 coturn，`--skip-media` 跳过）；最后打印各服务启动命令与访问地址。
 
 ## 安装说明（手工安装）
 
@@ -141,6 +141,8 @@ cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ### 依赖
 
 - PHP ≥ 8.3（composer）
+- PHP ext-gd + DejaVu 字体（图片水印；缺失时自动跳过）
+- ffmpeg / ffprobe（Rust 语音转码）
 - Redis（默认 127.0.0.1:6379）
 - Node.js ≥ 18（SFU 本地调试）
 - Docker（SFU / coturn 容器）
@@ -153,7 +155,7 @@ composer install
 php start.php start -d      # HTTP :8788 · WS :8789
 ```
 
-按需在 `service/.env` 配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）。
+按需在 `service/.env` 配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）；启用微信支付时必填 `PAY_WECHAT_MCHID` / `PAY_WECHAT_APPID`，`ENCRYPTABLE_KEY` 需与 admin/infrastructure 保持一致。
 
 ### 启动媒体层
 
@@ -171,14 +173,15 @@ docker compose up -d --build   # SFU :8790（RTC UDP 10000-10200）· coturn :34
 ### 测试
 
 ```bash
-cd infrastructure && cargo test --workspace   # Rust 单元测试（状态机 / 主键生成）
+cd service && vendor/bin/phpunit              # PHPUnit：支付验签 / TURN 凭证 / 钱包账务
+cd infrastructure && cargo test --workspace   # Rust：状态机 / 主键 / 加密解密
 cd admin/apps/flutter && flutter test         # Flutter widget 测试
 cd media/sfu && npm run smoke                 # SFU /signal 协议冒烟（需 Docker 容器或本地 node）
 ```
 
-开源版未附带 PHP 单元测试与黑盒 E2E 脚本；CI 对 PHP 侧只执行依赖安装检查，Rust 侧执行构建与单元测试。
+service 附带 PHPUnit（20 tests / 50 assertions，覆盖支付验签、TURN 凭证、钱包幂等/扣款）；CI 执行 service PHPUnit、admin 依赖安装、Rust 构建与测试；开源版不提供黑盒 E2E 脚本。
 
-测试报告（2026-08-27 历史快照，中英双语）本地存储于 [`docs/test-reports/`](docs/test-reports/SUMMARY.md)；对应的 PHP / API / E2E 测试脚本未随开源版提供。
+测试报告（2026-08-27 历史快照，中英双语）本地存储于 [`docs/test-reports/`](docs/test-reports/SUMMARY.md)；该快照对应的 PHP / API / E2E 脚本未随开源版提供，当前仅保留 `service/tests` 下的 PHPUnit。
 
 ## 文档
 
@@ -221,10 +224,10 @@ cd media/sfu && npm run smoke                 # SFU /signal 协议冒烟（需 D
 | 维度 | 开源版 | 商业版 |
 |---|---|---|
 | 功能覆盖 | 40 个控制器、32 张表、2 个 Rust crate；图文社区、IM、直播/语音/1v1、礼物钱包、Android + Flutter 管理端 | 42 个控制器、32 张表、17 个 Rust crate；在开源版全部功能上增加 iOS、HarmonyOS 客户端与 HarmonyOS 管理端、Elasticsearch、完整 bee-rust 框架 |
-| 安全防护 | JWT + RBAC + 限流 + SecurityFilter + 操作审计；`config/{middleware,security,jwt}.php` 与商业版逐文件一致 | 与开源版同一套中间件链和安全配置，未增加独立安全模块 |
+| 安全防护 | JWT + RBAC + 服务端限流 + SecurityFilter + 操作审计；微信回调商户号/AppID 校验、Stripe 未付款拦截；`config/{middleware,security,jwt,payment}.php` 与商业版逐文件一致 | 与开源版同一套中间件链和安全配置，未增加独立安全模块 |
 | 性能与规模 | webman 多进程 HTTP + WebSocket + Rust gRPC + Redis + Media SFU/coturn | 架构与进程配置相同；额外引入 Elasticsearch 检索栈，客户端数量更多 |
 | 数据与检索 | 32 张表；帖子/用户搜索走 MySQL LIKE | 32 张表（同构）；Elasticsearch 帖子/用户搜索 + 同步队列 + webman-scout |
-| 测试与质量 | Rust `cargo test --workspace` + Flutter widget test；CI：php-service / php-admin / rust-infra | 同一 CI；测试范围以商业交付为准 |
+| 测试与质量 | service PHPUnit（支付验签 / 钱包账务）+ Rust `cargo test --workspace` + Flutter widget test；CI：php-service / php-admin / rust-infra | 同一 CI；测试范围以商业交付为准 |
 | 部署与运维 | `install.sh` 一键安装；media/sfu compose（sfu + coturn）；健康检查接口 | 安装与媒体栈相同；额外需要 iOS/HarmonyOS 构建工具链 |
 | 多端与国际化 | Android 客户端 + Flutter 管理端；无独立 l10n 资源目录 | 增加 iOS、HarmonyOS 客户端与 HarmonyOS 管理端；国际化资源形态与开源版一致 |
 | 扩展性与二次开发 | 2 个 Rust crate；contracts：common/infra/live；apidoc 约 17MB | 17 个 Rust crate（含 search/graph/orm/router/kv/cache）；contracts 增加 admin/user/search；三端 OpenAPI 配置 |

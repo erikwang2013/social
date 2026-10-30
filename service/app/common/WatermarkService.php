@@ -10,11 +10,28 @@ class WatermarkService
     /** 像素上限（约 40MP），GD 解码前拒绝，防大图耗尽内存 */
     public const MAX_PIXELS = 40_000_000;
 
-    private const FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
+    private const FONTS = [
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', // Debian/Ubuntu
+        '/usr/share/fonts/dejavu/DejaVuSans.ttf',          // Alpine
+        '/usr/share/fonts/TTF/DejaVuSans.ttf',             // Arch
+    ];
 
     /** 就地加水印；非图片或 GD 不支持时静默跳过 */
     public static function tile(string $path, string $text = 'https://erik.xyz'): void
     {
+        if (!function_exists('imagecreatefromjpeg')) {
+            return; // GD 未安装时跳过水印，不让上传因此失败
+        }
+        $font = null;
+        foreach (self::FONTS as $candidate) {
+            if (is_file($candidate)) {
+                $font = $candidate;
+                break;
+            }
+        }
+        if ($font === null) {
+            return; // 无可用字体时跳过水印
+        }
         $ext = strtolower((string) pathinfo($path, PATHINFO_EXTENSION));
         $img = match ($ext) {
             'jpg', 'jpeg' => @imagecreatefromjpeg($path),
@@ -33,7 +50,11 @@ class WatermarkService
         }
 
         $fontSize = max(12, (int) round(min($w, $h) / 30));
-        $box = imagettfbbox($fontSize, 0, self::FONT, $text);
+        $box = @imagettfbbox($fontSize, 0, $font, $text);
+        if ($box === false) {
+            imagedestroy($img); // 字体不可读/FreeType 缺失时跳过水印
+            return;
+        }
         $tw = (int) ($box[2] - $box[0]);
         $th = (int) ($box[1] - $box[7]);
 
@@ -44,7 +65,7 @@ class WatermarkService
         $transparent = imagecolorallocatealpha($tile, 255, 255, 255, 127);
         imagefill($tile, 0, 0, $transparent);
         $white = imagecolorallocatealpha($tile, 255, 255, 255, 100);
-        imagettftext($tile, $fontSize, 0, $pad, $pad + $th, $white, self::FONT, $text);
+        imagettftext($tile, $fontSize, 0, $pad, $pad + $th, $white, $font, $text);
         $rot = imagerotate($tile, 45, $transparent);
         $rw = imagesx($rot);
         $rh = imagesy($rot);

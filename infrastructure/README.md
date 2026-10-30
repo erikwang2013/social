@@ -21,6 +21,24 @@ cargo check -p social_grpc
 
 `cargo metadata --no-deps` 可用于快速校验 workspace 成员。
 
+## 运行
+
+`social_grpc` 通过 `dotenvy` 读取 `infrastructure/.env`（`install.sh` 生成），也可用进程环境变量覆盖：
+
+- `DB_HOST` / `DB_PORT` / `DB_USERNAME` / `DB_PASSWORD`
+- `DB_DATABASE=social`、`DB_OPEN_ADMIN_DATABASE=open_admin`
+- `REDIS_HOST` / `REDIS_PORT`
+- `ENCRYPTABLE_KEY` / `ENCRYPTABLE_CIPHER`（与 service/admin 一致；默认 `aes-256-cbc`）
+
+前置依赖：MySQL、Redis、ffmpeg/ffprobe（语音转码）。启动：
+
+```bash
+cd infrastructure
+cargo run -p social_grpc --release   # gRPC :50051
+```
+
+存储服务商的 `key/secret` 由 admin 端 `Encryptable` 加密存储，Rust 在构建 S3 客户端前用 `crypto` 模块解密（Encryptable V1，支持 AES-256-CBC / AES-128-ECB）；MySQL 访问使用共享连接池。
+
 ## 说明
 
 - 其余 bee-rust crate（router/orm/kv/search/graph/tsdb/config/session/logs/template/cli 等）已移除，不再随本仓库维护。

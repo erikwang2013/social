@@ -5,6 +5,7 @@ namespace app\ws;
 use Workerman\Connection\TcpConnection;
 use Workerman\Worker;
 use app\common\JwtHelper;
+use app\common\UserStatus;
 
 /**
  * ws worker handler（webman process handler：实例方法由 worker_bind 绑到 Worker 回调）。
@@ -100,6 +101,10 @@ class WsServer
             return;
         }
         $uid = (int) $payload->sub;
+        if (!UserStatus::isActive($uid)) {
+            $conn->close();
+            return;
+        }
         $sid = (string) ($payload->sid ?? '');
         $oldFd = ConnectionRegistry::attach($conn->id, $uid, $sid);
         if ($oldFd !== null) {

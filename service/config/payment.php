@@ -11,6 +11,9 @@ return [
         'platform_cert' => (string) (getenv('PAY_WECHAT_PLATFORM_CERT') ?: ''),
         // 微信支付 APIv3 密钥（32 字节，用于解密回调 resource）
         'api_v3_key' => (string) (getenv('PAY_WECHAT_API_V3_KEY') ?: ''),
+        // 商户号 / 公众号 AppID：回调必须核对，平台证书对所有商户通用
+        'mchid' => (string) (getenv('PAY_WECHAT_MCHID') ?: ''),
+        'appid' => (string) (getenv('PAY_WECHAT_APPID') ?: ''),
     ],
     'alipay' => [
         // 支付宝开放平台 app_id（回调中核对）

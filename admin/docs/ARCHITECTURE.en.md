@@ -352,6 +352,8 @@ flowchart TD
     style J7 fill:#FF4D4F,color:#fff
 ```
 
+> Note: the five operational route groups `/admin/social-user`, `/admin/gift-catalog`, `/admin/iap-product`, `/admin/payment-order`, and `/admin/withdrawal` are also protected by `AdminPermission` plus `OperationLog`. Their 13 permission seeds live in `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` and are applied to `open_admin` by `install.sh`. The `super_admin` role is treated as wildcard `*` in code.
+
 ---
 
 ## 6. ID Full Lifecycle
@@ -367,7 +369,7 @@ flowchart LR
 
     subgraph "2. 存储"
         S1["MySQL erik_* 表<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
-        S2["敏感字段<br/>encryptable cast<br/>AES-128-ECB 加密"]
+        S2["敏感字段<br/>encryptable cast<br/>AES-256-CBC 加密"]
         G3 --> S1
         S1 --> S2
     end
@@ -425,6 +427,8 @@ flowchart TB
     style D2 fill:#FA8C16,color:#fff
     style M1 fill:#52C41A,color:#fff
 ```
+
+> The storage layer defaults to AES-256-CBC with a 32-byte `ENCRYPTABLE_KEY`, shared by service / admin / infrastructure. Storage-provider credentials are decrypted with the same key by the PHP service and Rust voice storage.
 
 ---
 

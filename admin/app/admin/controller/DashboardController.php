@@ -34,9 +34,13 @@ class DashboardController extends BaseController
      */
     public function index(Request $request): Response
     {
-        // Redis 缓存 5 分钟，避免每次请求跑 5+ 条 SQL
+        // Redis 缓存 5 分钟，避免每次请求跑 5+ 条 SQL；Redis 故障时直接查库
         $cacheKey = 'dashboard:data';
-        $cached = Redis::get($cacheKey);
+        try {
+            $cached = Redis::get($cacheKey);
+        } catch (\Throwable) {
+            $cached = null;
+        }
         if ($cached) {
             return $this->success(json_decode($cached, true));
         }
@@ -52,7 +56,11 @@ class DashboardController extends BaseController
             'recent_logs' => $this->getRecentLogs(),
         ];
 
-        Redis::setex($cacheKey, 300, json_encode($data, JSON_UNESCAPED_UNICODE));
+        try {
+            Redis::setex($cacheKey, 300, json_encode($data, JSON_UNESCAPED_UNICODE));
+        } catch (\Throwable) {
+            // 缓存写失败不影响本次响应
+        }
 
         return $this->success($data);
     }

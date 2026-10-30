@@ -21,7 +21,7 @@ class LiveController
         $req = new CreateRoomRequest();
         $req->setUid((int) $request->uid);
         $req->setTitle($title);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->CreateRoom($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->CreateRoom($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 直播中列表：GET /api/v1/live/rooms?page= */
@@ -32,7 +32,7 @@ class LiveController
         $req->setUid((int) $request->uid);
         $req->setLimit(20);
         $req->setOffset(($page - 1) * 20);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->ListRooms($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->ListRooms($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 详情：GET /api/v1/live/rooms/{id} */
@@ -41,7 +41,7 @@ class LiveController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->RoomDetail($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->RoomDetail($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 关播（仅房主）：POST /api/v1/live/rooms/{id}/close */
@@ -50,7 +50,7 @@ class LiveController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->CloseRoom($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->CloseRoom($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 上麦：POST /api/v1/live/rooms/{id}/mic */
@@ -59,7 +59,7 @@ class LiveController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->MicUp($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->MicUp($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 
     /** 下麦：DELETE /api/v1/live/rooms/{id}/mic */
@@ -68,6 +68,6 @@ class LiveController
         $req = new IdRequest();
         $req->setUid((int) $request->uid);
         $req->setId((int) $id);
-        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->MicDown($req)));
+        return LiveSync::respond(LiveSync::liveRpc(fn($c) => $c->MicDown($req, [], ['timeout' => LiveSync::TIMEOUT_US])));
     }
 }

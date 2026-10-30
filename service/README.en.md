@@ -16,10 +16,11 @@ webman v2 (PHP 8.3) user-facing business service: REST :8788 + WebSocket :8789 d
 - **Storage**: voice files (m4a) uploaded and served by Rust VoiceStorage (object_store, S3-compatible); providers configurable from the admin panel
 - **Virtual economy**: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, mobile IAP top-up
 - **Payment channels**: WeChat / Alipay / Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and internal reconciliation
+- **Security**: JWT auth + service-side rate limiting + disabled-account enforcement within 30s + WS input validation + WeChat merchant ID/AppID verification
 
 ## One-Click Install
 
-Prerequisites: PHP ≥ 8.3 (composer), MySQL, Redis.
+Prerequisites: PHP ≥ 8.3 (composer + ext-gd; image watermarking needs the DejaVu font and is skipped when absent), MySQL, Redis; Rust voice transcoding needs ffmpeg/ffprobe.
 
 Run from the repository root:
 
@@ -27,7 +28,7 @@ Run from the repository root:
 ./install.sh
 ```
 
-The script runs `composer install` once for `service/` and once for `admin/`, creates the database from the root `database/install.sql` (idempotent), generates `service/.env` and `admin/.env` (never overwrites existing files), and prints the commands to start each service and the access URLs.
+The script runs `composer install` once for `service/` and once for `admin/`, creates the database from the root `database/install.sql` (idempotent), generates `service/.env` and `admin/.env` (never overwrites existing files), shares `ENCRYPTABLE_KEY` across service/admin/infrastructure and writes `infrastructure/.env`, upgrades legacy `aes-128-ecb + 32-byte key` configs, applies the admin permission migration, and prints the commands to start each service and the access URLs.
 
 ## Manual Install
 
@@ -39,7 +40,7 @@ cd service && composer install
 
 2. Create the database: preferably run `./install.sh` from the repository root; for a manual install, import the `social` and `open_admin` segments separately (see `install.sh`).
 
-3. Configure environment: preferably run `./install.sh` from the repository root to generate `.env`; for a manual install, create `.env` and fill in the DB / Redis / JWT keys (always random in production). Configure `REDIS`, `SFU_URL` (default 127.0.0.1:8790), and `TURN_URL` / `TURN_SECRET` (`install.sh` generates the secret) as needed.
+3. Configure environment: preferably run `./install.sh` from the repository root to generate `.env`; for a manual install, create `.env` and fill in the DB / Redis / JWT keys (always random in production). Configure `REDIS`, `SFU_URL` (default 127.0.0.1:8790), and `TURN_URL` / `TURN_SECRET` (`install.sh` generates the secret) as needed; when WeChat Pay is enabled, `PAY_WECHAT_MCHID` / `PAY_WECHAT_APPID` are required, `APP_DEBUG` defaults to off, and `ENCRYPTABLE_KEY` must match admin/infrastructure.
 
 4. Start the service:
 
@@ -58,6 +59,6 @@ php start.php start -d      # HTTP :8788 · WS :8789
 
 ### Tests
 
-PHPUnit under `service/tests` covers payment signature verification; CI runs `composer install` + `vendor/bin/phpunit`.
+PHPUnit under `service/tests` (20 tests / 50 assertions) covers payment signature verification, TURN credentials, and wallet idempotency/debit; CI runs `composer install` + `vendor/bin/phpunit`.
 
 > Media layer (SFU / coturn) local debugging: `cd media/sfu && npm run smoke`; containerized: `docker compose up -d --build`.

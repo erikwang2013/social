@@ -38,7 +38,7 @@
     <text class="lt" x="36" y="170">接入层 · service（webman v2, PHP 8.3）</text>
     <rect class="boxb" x="60" y="182" width="400" height="52"/>
     <text class="t" x="260" y="204">HTTP REST · :8788</text>
-    <text class="ts" x="260" y="222">X-Api-Version 版本化中间件（默认 v1，兼容 /api/vX）</text>
+    <text class="ts" x="260" y="222">JWT 鉴权 · 限流 · X-Api-Version 版本化（默认 v1）</text>
     <rect class="boxb" x="500" y="182" width="420" height="52"/>
     <text class="t" x="710" y="204">WebSocket 信令 · :8789</text>
     <text class="ts" x="710" y="222">Envelope 帧协议 · Deliverer 推送 · 消息/通话/语聊房信令</text>

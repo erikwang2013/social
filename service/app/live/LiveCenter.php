@@ -22,24 +22,6 @@ class LiveCenter
         $this->sendFn = $sendFn;
     }
 
-    public function create(int $owner, string $title): int
-    {
-        $room = LiveRoom::query()->create([
-            'owner_id' => $owner,
-            'title' => $title,
-            'status' => 1,
-            'push_url' => LiveStreamService::signPushUrl(0),
-            'play_url' => LiveStreamService::signPlayUrl(0),
-            'started_at' => date('Y-m-d H:i:s'),
-        ]);
-        // 先落库拿自增 id，再签真实地址回写
-        $room->update(['push_url' => LiveStreamService::signPushUrl((int) $room->id), 'play_url' => LiveStreamService::signPlayUrl((int) $room->id)]);
-        // 开播瞬间房主 WS 未连（REST 触发），join 不广播 —— 否则 live_join 入跨进程队列，
-        // 房主连上后被延迟投递成幽灵帧；房主 WS 进房时才会真正广播
-        $this->join((int) $room->id, $owner, false);
-        return (int) $room->id;
-    }
-
     public function join(int $roomId, int $uid, bool $broadcast = true): void
     {
         $room = LiveRoom::query()->find($roomId);

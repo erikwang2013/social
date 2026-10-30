@@ -26,13 +26,6 @@ class RoomCenter
         $this->sfuCall = $sfuCall ?? fn(int $roomId, string $method, array $body) => $this->sfuHttp($roomId, $method, $body);
     }
 
-    public function create(int $owner, string $name): int
-    {
-        $room = VoiceRoom::query()->create(['owner_id' => $owner, 'name' => $name, 'status' => 1]);
-        $this->join($room->id, $owner);
-        return (int) $room->id;
-    }
-
     public function join(int $roomId, int $uid): void
     {
         $room = VoiceRoom::query()->find($roomId);

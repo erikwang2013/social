@@ -41,7 +41,7 @@ The project mascot, images, icons and expressions (including the SVG / PNG files
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
 - **In-house media layer**: mediasoup SFU (loopback :8790) + coturn TURN (REST ephemeral credentials) for media forwarding in 1v1 voice calls and voice chat rooms (8 seats: host + 7 mics)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT; v1.1.1–v1.1.6 are documentation / CI / stability fixes with no new features; v1.1.14 delivers security / consistency fixes: default admin and JWT secrets, global IAP receipt gate, wallet concurrency locks, IM membership checks, WeChat callback decryption, ephemeral TURN credentials, and install/migration scripts
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT; v1.1.1–v1.1.6 are documentation / CI / stability fixes with no new features; v1.1.14 delivers security / consistency fixes: default admin and JWT secrets, global IAP receipt gate, wallet concurrency locks, IM membership checks, WeChat callback decryption, ephemeral TURN credentials, and install/migration scripts; v1.1.15 delivers security / stability hardening: WeChat merchant ID + AppID verification, Stripe unpaid-checkout rejection, ambiguous payment-order rejection, service-side rate limiting, disabled-account enforcement within 30s, WS logout kicking and input validation, gRPC deadlines, RBAC for five business route groups, shared encryption keys with Rust-side decryption, Docker watermark dependencies, and expanded tests
 
 ## Feature Overview
 
@@ -95,13 +95,13 @@ service/
 
 ## One-Click Install
 
-Prerequisites: PHP ≥ 8.3 (composer), MySQL, Redis (Docker optional, for the media layer).
+Prerequisites: PHP ≥ 8.3 (composer + ext-gd; image watermarking needs the DejaVu font and is skipped when absent), MySQL, Redis, ffmpeg/ffprobe (Rust voice transcoding; Docker optional, for the media layer).
 
 ```bash
 ./install.sh
 ```
 
-The script: runs `composer install` once for each of `service/` and `admin/`; creates the database from `database/install.sql` (idempotent, CREATE IF NOT EXISTS); generates `.env` for both services (random JWT / APP keys, never overwrites existing files); on first import, generates a random admin password and prints it once, then writes `admin/runtime/install.lock`; optionally starts the media layer (`docker compose up -d` for media/sfu and coturn, `--skip-media` to skip); finally prints the commands to start each service and the access URLs.
+The script: runs `composer install` once for each of `service/` and `admin/`; creates the database from `database/install.sql` (idempotent, CREATE IF NOT EXISTS); generates `.env` for both services (random JWT / APP keys, never overwrites existing files), shares `ENCRYPTABLE_KEY` across service/admin/infrastructure and writes `infrastructure/.env`, and upgrades legacy `aes-128-ecb + 32-byte key` configs; applies the admin permission migration `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql`; on first import, generates a random admin password and prints it once, then writes `admin/runtime/install.lock`; optionally starts the media layer (`docker compose up -d` for media/sfu and coturn, `--skip-media` to skip); finally prints the commands to start each service and the access URLs.
 
 ## Manual Install
 
@@ -134,6 +134,8 @@ cd media/sfu && docker compose up -d --build   # SFU :8790 · coturn :3478
 ### Dependencies
 
 - PHP ≥ 8.3 (composer)
+- PHP ext-gd + DejaVu font (image watermarking; skipped when absent)
+- ffmpeg / ffprobe (Rust voice transcoding)
 - Redis (default 127.0.0.1:6379)
 - Node.js ≥ 18 (local SFU debugging)
 - Docker (SFU / coturn containers)
@@ -146,7 +148,7 @@ composer install
 php start.php start -d      # HTTP :8788 · WS :8789
 ```
 
-Configure `REDIS` and `SFU_URL` (default 127.0.0.1:8790) in `service/.env` as needed.
+Configure `REDIS` and `SFU_URL` (default 127.0.0.1:8790) in `service/.env` as needed; when WeChat Pay is enabled, `PAY_WECHAT_MCHID` / `PAY_WECHAT_APPID` are required, and `ENCRYPTABLE_KEY` must match admin/infrastructure.
 
 ### Start the media layer
 
@@ -164,12 +166,13 @@ docker compose up -d --build   # SFU :8790 (RTC UDP 10000-10200) · coturn :3478
 ### Tests
 
 ```bash
-cd infrastructure && cargo test --workspace   # Rust unit tests (state machine / ID generation)
+cd service && vendor/bin/phpunit              # PHPUnit: payment verify / TURN credential / wallet ledger
+cd infrastructure && cargo test --workspace   # Rust: state machines / ID generation / crypto
 cd admin/apps/flutter && flutter test         # Flutter widget tests
 cd media/sfu && npm run smoke                 # SFU /signal protocol smoke test (requires Docker container or local node)
 ```
 
-The open-source edition does not include PHP unit tests or black-box E2E scripts; CI only checks dependency installation for PHP and runs the Rust workspace tests.
+The service ships PHPUnit coverage (20 tests / 50 assertions: payment verification, TURN credentials, wallet idempotency/debit); CI runs service PHPUnit, admin dependency install, and Rust build + tests. The open-source edition does not provide black-box E2E scripts.
 
 ## Welcome Support
 

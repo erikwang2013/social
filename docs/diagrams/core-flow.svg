@@ -35,7 +35,7 @@
   <rect class="lane" x="20" y="218" width="920" height="118"/>
   <rect class="b2" x="44" y="246" width="180" height="64"/>
   <text class="t" x="134" y="270">鉴权中间件</text>
-  <text class="ts" x="134" y="288">JWT 校验 · 会话撤销 · 版本化</text>
+  <text class="ts" x="134" y="288">JWT · 账号状态 · 限流 · 版本化</text>
   <rect class="b2" x="272" y="246" width="180" height="64"/>
   <text class="t" x="362" y="270">REST 业务处理</text>
   <text class="ts" x="362" y="288">Post / Follow / Notify</text>

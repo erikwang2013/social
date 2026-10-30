@@ -11,7 +11,7 @@
 - **API 版本**: 通过请求头 `API-Version: v1` 控制（缺失时默认 v1）
 - **语言**: 通过 `Accept-Language` 头或 `?lang=zh_CN|en` 参数切换（默认 zh_CN），Locale 中间件自动检测
 
-> **端点总览**: 认证(5) | 仪表盘(1) | 用户(7) | 角色(4) | 权限(4) | 配置(4) | 日志(1) | 个人中心(3) | 导入导出(3) | 上传(1) | 运维(4: health/metrics/docs/security.txt) | 共 37 端点
+> **端点总览**: 认证(5) | 仪表盘(1) | 用户(7) | 角色(4) | 权限(4) | 配置(4) | 日志(1) | 个人中心(3) | 导入导出(3) | 上传(1) | 运营/报表(25) | 运维(4: health/metrics/docs/security.txt) | 共 62 端点
 - **认证**: `Authorization: Bearer <token>`（JWT）
 - **响应格式**: `{ "code": 0, "message": "success", "data": {...} }`
 - **文档端点**: `GET /api/docs` 返回 OpenAPI 3.0 JSON 规范
@@ -1640,7 +1640,65 @@ POST /admin/upload
 - 422: 文件大小不能超过 10MB
 - 500: 文件上传失败（文件无效）
 
-## 13. 响应头
+## 13. 业务运营与报表接口（M6a–M6d）
+
+以下接口均需 `Authorization: Bearer <token>`，并受 RBAC 校验；`super_admin` 角色在代码中按通配 `*` 放行。`POST/PUT/DELETE` 会写入操作日志（`OperationLog`）。五组运营路由的权限种子由 `admin/database/migrations/2026_10_31_virtual_economy_permissions.sql` 提供，`install.sh` 会自动应用到 `open_admin`。
+
+### 13.1 社交用户
+
+| 方法 | 路径 | 所需权限 | 说明 |
+|------|------|----------|------|
+| GET | `/admin/social-user` | `get.admin/social-user` | 分页列表，支持 `keyword`（邮箱/昵称）、`page`、`page_size` |
+| GET | `/admin/social-user/{id}` | `get.admin/social-user` | 用户详情（含 profile） |
+| POST | `/admin/social-user/{id}/status` | `post.admin/social-user/status` | 启用/禁用，body `{status: 0\|1}`；禁用后服务端 HTTP/WS 会在 30 秒内拒绝该账号 |
+
+### 13.2 礼物目录 / IAP 商品
+
+| 方法 | 路径 | 所需权限 | 说明 |
+|------|------|----------|------|
+| GET | `/admin/gift-catalog` | `get.admin/gift-catalog` | 分页列表 |
+| POST | `/admin/gift-catalog` | `post.admin/gift-catalog` | 创建，必填 `name`、`coins_price`（正整数） |
+| PUT | `/admin/gift-catalog/{id}` | `put.admin/gift-catalog` | 更新名称/价格/特效/排序 |
+| POST | `/admin/gift-catalog/{id}/status` | `post.admin/gift-catalog/status` | 上下架，body `{status: 0\|1}` |
+| GET | `/admin/iap-product` | `get.admin/iap-product` | 分页列表，可按 `platform` 过滤 |
+| POST | `/admin/iap-product` | `post.admin/iap-product` | 创建，`platform` 取 `apple\|google\|huawei`，`sku` 唯一，`coins` 正整数 |
+| PUT | `/admin/iap-product/{id}` | `put.admin/iap-product` | 更新 `sku`/`coins` |
+| POST | `/admin/iap-product/{id}/status` | `post.admin/iap-product/status` | 上下架 |
+
+### 13.3 支付订单 / 提现
+
+| 方法 | 路径 | 所需权限 | 说明 |
+|------|------|----------|------|
+| GET | `/admin/payment-order` | `get.admin/payment-order` | 分页列表，可按 `platform`/`status`/`user_id` 过滤；列表不返回回调原文 |
+| GET | `/admin/payment-order/{id}` | `get.admin/payment-order` | 订单详情，含 `payload` 回调原文（对账用） |
+| GET | `/admin/withdrawal` | `get.admin/withdrawal` | 分页列表，`account` 脱敏 |
+| GET | `/admin/withdrawal/{id}` | `get.admin/withdrawal` | 详情，返回完整收款账户 |
+| POST | `/admin/withdrawal/{id}/status` | `post.admin/withdrawal/status` | 审核，body `{status: succeeded\|failed, reason}`；`failed` 必填 `reason`，同一事务内幂等退币并写 `withdraw_refund` 流水 |
+
+### 13.4 存储服务商
+
+| 方法 | 路径 | 所需权限 | 说明 |
+|------|------|----------|------|
+| GET | `/admin/storage/providers` | `get.admin/storage/providers` | 列表；`key`/`secret` 永不回显 |
+| POST | `/admin/storage/providers` | `post.admin/storage/providers` | 创建；`driver=local\|s3`，s3 必填 `endpoint`/`bucket`/`cdn_url` |
+| PUT | `/admin/storage/providers/{id}` | `put.admin/storage/providers` | 更新配置 |
+| DELETE | `/admin/storage/providers/{id}` | `delete.admin/storage/providers` | 删除；活动服务商不可删 |
+| POST | `/admin/storage/providers/{id}/activate` | `post.admin/storage/providers/activate` | 设为活动服务商；s3 先验签连接，成功后清理 service 缓存 |
+
+存储服务商凭证以 `ENCRYPTABLE_KEY` 加密存储；service 与 Rust 语音存储使用同一密钥解密后访问 S3 兼容存储。
+
+### 13.5 报表
+
+| 方法 | 路径 | 所需权限 | 说明 |
+|------|------|----------|------|
+| GET | `/admin/report/users` | `get.admin/report/users` | 用户报表：总用户/区间新增/今日活跃、日趋势、状态分布 |
+| GET | `/admin/report/payments` | `get.admin/report/payments` | 支付报表：订单数/成功金额、日趋势、平台/状态分布 |
+| GET | `/admin/report/withdrawals` | `get.admin/report/withdrawals` | 提现报表：笔数/成功金额、日趋势、状态分布 |
+| POST | `/admin/report/export` | `post.admin/report/export` | 导出 Excel，body `{type: users\|payments\|withdrawals, start?, end?}` |
+
+报表查询参数 `start`/`end` 使用 `Y-m-d`，默认近 30 天，区间不超过 366 天；金额单位为分（提现为币值）。
+
+## 14. 响应头
 
 所有接口（全局中间件层注入）均包含以下响应头：
 
@@ -1660,7 +1718,7 @@ POST /admin/upload
 - 使用 Redis 原子化滑动窗口算法（Lua ZSET），避免 TOCTOU 竞态
 - Redis 不可用时 fail open（放行），不阻塞请求
 
-## 14. 认证流程
+## 15. 认证流程
 
 完整的认证时序：
 
@@ -1755,7 +1813,7 @@ POST /admin/upload
 - 并发会话限制：同一用户最多 3 个有效 Token，第 4 个设备登录时最旧 Token 被强制加入黑名单
 - 账号锁定：连续 5 次登录失败触发 15 分钟账号锁定，锁定期间返回 429
 
-## 15. 部署运维
+## 16. 部署运维
 
 ### Docker Compose
 
