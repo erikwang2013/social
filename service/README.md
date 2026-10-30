@@ -37,13 +37,9 @@ webman v2（PHP 8.3）用户端业务服务：REST :8788 + WebSocket :8789 双�
 cd service && composer install
 ```
 
-2. 建库（service 与 admin 共用同一数据库）：
+2. 建库：推荐在仓库根运行 `./install.sh`；手工安装需分别导入 `social` 与 `open_admin` 两段（见 `install.sh`）。
 
-```bash
-mysql -u root -p < ../database/install.sql
-```
-
-3. 配置环境：手工安装时复制 `.env.example` 为 `.env`，填入 DB / Redis / JWT 密钥（生产环境务必随机生成）；`install.sh` 会自动生成。按需配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）。
+3. 配置环境：推荐在仓库根运行 `./install.sh` 生成 `.env`；手工安装时创建 `.env` 并填入 DB / Redis / JWT 密钥（生产环境务必随机生成）。按需配置 `REDIS`、`SFU_URL`（默认 127.0.0.1:8790）、`TURN_URL` / `TURN_SECRET`（`install.sh` 生成，用于 TURN REST 临时凭证）。
 
 4. 启动服务：
 
@@ -58,9 +54,10 @@ php start.php start -d      # HTTP :8788 · WS :8789
 - `config/route.php`：`/api/v1` 路由组（默认 v1，兼容 `/api/vX` 旧路径）
 - `config/process.php`：注册 HTTP :8788 与 WsServer :8789 两个进程
 - `config/payment.php`：支付渠道密钥与定价
+- `GET /api/v1/voice/turn-credentials`：返回 TURN REST 临时凭证（需登录）
 
 ### 测试
 
-开源版未附带 PHP 单元测试与黑盒 E2E 脚本；CI 只执行 `composer install` 依赖检查。
+`service/tests` 下的 PHPUnit 覆盖支付验签；CI 执行 `composer install` + `vendor/bin/phpunit`。
 
 > 媒体层（SFU / coturn）本地调试：`cd media/sfu && npm run smoke`；容器方式 `docker compose up -d --build`。

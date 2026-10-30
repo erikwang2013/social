@@ -628,9 +628,9 @@ flowchart TB
     end
 
     subgraph "应用服务器 (可横向扩展)"
-        WM1["webman worker 1<br/>:8787"]
-        WM2["webman worker 2<br/>:8787"]
-        WM3["webman worker N<br/>:8787"]
+        WM1["webman worker 1<br/>:8791"]
+        WM2["webman worker 2<br/>:8791"]
+        WM3["webman worker N<br/>:8791"]
     end
 
     subgraph "数据层"

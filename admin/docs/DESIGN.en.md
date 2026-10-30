@@ -366,7 +366,7 @@ Features: collapsible sidebar, Material 3 dual themes, high-density data tables,
 ### 6.2 Key Management
 
 ```
-JWT_SECRET          → 环境变量注入，64位随机字符串
+JWT_SECRET_KEY          → 环境变量注入，64位随机字符串
 HASHIDS_SALT        → 唯一盐值，泄漏后需全局更换
 ENCRYPTION_KEY      → API 传输加密密钥，32字节
 ENCRYPTABLE_KEY     → DB 存储加密密钥，与传输密钥独立
@@ -410,7 +410,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 8.1 Recommended Topology
 
 ```
-Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
+Nginx (:443 HTTPS) → webman worker × N (:8791) → MySQL + ES + Redis
                     静态文件: Flutter Web build/
 ```
 
@@ -421,12 +421,12 @@ The `docker-compose.yml` at the project root orchestrates all services of the ab
 | Service | Image/Build | Ports | Description |
 |------|----------|------|------|
 | `nginx` | nginx:alpine | 80, 443 | Reverse proxy + static files + Gzip |
-| `app` | Built from local `Dockerfile` | 8787 | PHP 8.3 + OPcache + webman |
+| `app` | Built from local `Dockerfile` | 8791 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | Primary database, data volume persistence |
 | `redis` | redis:7-alpine | 6379 | Cache / rate limiting / captcha |
 | `elasticsearch` | elasticsearch:8.x | 9200 | Full-text search |
 
-Before starting, replace keys such as `JWT_SECRET`, `HASHIDS_SALT`, `ENCRYPTION_KEY` in `docker-compose.yml` with random strings.
+Before starting, replace keys such as `JWT_SECRET_KEY`, `HASHIDS_SALT`, `ENCRYPTION_KEY` in `docker-compose.yml` with random strings.
 
 ```bash
 cp .env.docker .env

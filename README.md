@@ -10,7 +10,7 @@
 
 **Bub** · 消息气泡 —— 平台上最小的单位：图文、语音、直播弹幕、礼物打赏，最后都装进一只气泡里送出去；它会笑、会招手，左下那条尾巴指着消息要去的地方。
 
-矢量源文件 [`docs/diagrams/mascot.svg`](docs/diagrams/mascot.svg)；简化标记 [`mascot-mark.svg`](docs/diagrams/mascot-mark.svg) 另作 `favicon.svg`，已嵌入 service / admin 站点与管理后台安装向导。
+矢量源文件 [`docs/diagrams/mascot.svg`](docs/diagrams/mascot.svg)；简化标记 [`mascot-mark.svg`](docs/diagrams/mascot-mark.svg) 另作 `favicon.svg`，已嵌入 service / admin 站点与管理后台。
 
 
 ## 项目宠物表情形态 · Bub
@@ -44,9 +44,9 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 
 - **原生客户端**：Android（Kotlin + Compose），另有 Flutter 管理后台
 - **业务服务**：webman v2（PHP 8.3）承载 REST 与 WebSocket 双通道；直播 / 语聊房 / 1v1 通话状态机已迁 Rust（infrastructure/bee-rust），PHP 控制器经 gRPC 直连；API 通过 `X-Api-Version` 版本化（默认 v1，兼容 `/api/vX` 旧路径）
-- **自建媒体层**：mediasoup SFU + coturn TURN，1v1 语音通话与语聊房（8 席：房主 + 7 麦位）媒体转发
+- **自建媒体层**：mediasoup SFU（本机 :8790）+ coturn TURN（REST 临时凭证），1v1 语音通话与语聊房（8 席：房主 + 7 麦位）媒体转发
 - **状态分层**：MySQL 为业务事实，Redis 承载会话 / IM / 通话 / 房间实时状态
-- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT；v1.1.1–v1.1.6 为文档 / CI / 稳定性修复，无新功能
+- **里程碑**：M0–M5 已交付（语音消息、1v1 通话、语聊房、直播）；M6 交付 live/voice 状态机 Rust 化迁移（PHP 经 gRPC 直连 Rust，熔断/降级/限流）；M6a 交付虚拟经济：钱包（余额/流水，MySQL 唯一事实源）、礼物打赏与主播分成、移动端 IAP 充值（App Store / Google Play / 华为）；M6b 交付支付渠道：充值入账骨架（微信/支付宝/Stripe 回调验签、服务端定价、幂等入账；提现与内部对账均已交付）；M6c 交付 CDN 存储：服务商管理端可配置（S3 兼容：AWS S3 / Cloudflare R2 / 阿里 OSS / 腾讯 COS / Backblaze B2），图片/语音/文件经对象存储 + CDN 分发；M6d 交付管理报表与起始页统计：报表模块（用户/支付/提现——日期筛选、汇总、趋势、分布、Excel 导出），起始页（仪表盘）新增平台统计卡片；v1.1 交付主键治理：bee_live 的 3 处 MySQL 写入改用 idgen_rs snowflake 显式主键，去除对 last_insert_id() 的依赖，对应表去 AUTO_INCREMENT；v1.1.1–v1.1.6 为文档 / CI / 稳定性修复，无新功能；v1.1.14 为安全 / 一致性修复：默认管理员与 JWT 密钥、IAP 全局收据闸门、钱包并发锁、IM 成员校验、微信回调解密、TURN 临时凭证、安装与迁移脚本
 
 ## 功能总览
 
@@ -108,7 +108,7 @@ service/
 ./install.sh
 ```
 
-脚本会依次：对 `service/` 与 `admin/` 各执行一次 `composer install`；以 `database/install.sql` 建库（幂等，CREATE IF NOT EXISTS）；为两个服务生成 `.env`（随机 JWT / APP 密钥，不覆盖已存在文件）；可选启动媒体层（`docker compose up -d` 起 media/sfu 与 coturn，`--skip-media` 跳过）；最后打印各服务启动命令与访问地址。
+脚本会依次：对 `service/` 与 `admin/` 各执行一次 `composer install`；以 `database/install.sql` 建库（幂等，CREATE IF NOT EXISTS）；为两个服务生成 `.env`（随机 JWT / APP 密钥，不覆盖已存在文件）；首次导入时生成随机管理员密码并只打印一次，成功后写入 `admin/runtime/install.lock`；可选启动媒体层（`docker compose up -d` 起 media/sfu 与 coturn，`--skip-media` 跳过）；最后打印各服务启动命令与访问地址。
 
 ## 安装说明（手工安装）
 
@@ -119,19 +119,15 @@ cd service && composer install
 cd admin && composer install
 ```
 
-2. 建库：
+2. 建库：推荐直接用 `./install.sh` 完成；手工安装需按 `install.sh` 的 `sed` 分段命令，分别导入 `social` 与 `open_admin` 两个库（不要将整个 `install.sql` 导入单个库）。
 
-```bash
-mysql -u root -p < database/install.sql
-```
-
-3. 配置环境：将 `service/.env.example`、`admin/.env.example` 复制为 `.env`，填入 DB / Redis / JWT / APP 密钥（生产环境务必使用随机密钥）。
+3. 配置环境：推荐直接运行 `./install.sh` 生成 `.env` 与随机管理员密码；手动安装时创建 `service/.env` 与 `admin/.env`，至少填入 DB / Redis / JWT 密钥（生产环境务必使用随机密钥）。
 
 4. 启动服务：
 
 ```bash
 cd service && php start.php start -d   # HTTP :8788 · WS :8789
-cd admin && php start.php start -d     # admin :8787
+cd admin && php start.php start -d     # admin :8791
 ```
 
 5. 启动媒体层（可选）：

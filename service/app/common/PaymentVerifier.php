@@ -139,6 +139,11 @@ class PaymentVerifier
 
     private static function aes256GcmDecrypt(string $ciphertext, string $key, string $nonce, string $aad): string
     {
+        // 微信支付 V3 的 resource.ciphertext 是 Base64，先严格解码为原始字节再拆 tag
+        $ciphertext = base64_decode($ciphertext, true);
+        if ($ciphertext === false) {
+            return '';
+        }
         $tag = substr($ciphertext, -16);
         $plain = openssl_decrypt(substr($ciphertext, 0, -16), 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $nonce, $tag, $aad);
         return $plain === false ? '' : $plain;

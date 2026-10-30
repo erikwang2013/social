@@ -37,13 +37,9 @@ The script runs `composer install` once for `service/` and once for `admin/`, cr
 cd service && composer install
 ```
 
-2. Create the database (service and admin share one database):
+2. Create the database: preferably run `./install.sh` from the repository root; for a manual install, import the `social` and `open_admin` segments separately (see `install.sh`).
 
-```bash
-mysql -u root -p < ../database/install.sql
-```
-
-3. Configure environment: for a manual install, copy `.env.example` to `.env` and fill in the DB / Redis / JWT keys (always random in production); `install.sh` generates it automatically. Configure `REDIS` and `SFU_URL` (default 127.0.0.1:8790) as needed.
+3. Configure environment: preferably run `./install.sh` from the repository root to generate `.env`; for a manual install, create `.env` and fill in the DB / Redis / JWT keys (always random in production). Configure `REDIS`, `SFU_URL` (default 127.0.0.1:8790), and `TURN_URL` / `TURN_SECRET` (`install.sh` generates the secret) as needed.
 
 4. Start the service:
 
@@ -58,9 +54,10 @@ php start.php start -d      # HTTP :8788 · WS :8789
 - `config/route.php`: `/api/v1` route group (default v1, compatible with legacy `/api/vX` paths)
 - `config/process.php`: registers HTTP :8788 and WsServer :8789 processes
 - `config/payment.php`: payment channel keys and pricing
+- `GET /api/v1/voice/turn-credentials`: returns TURN REST temporary credentials (auth required)
 
 ### Tests
 
-The open-source edition does not include PHP unit tests or black-box E2E scripts; CI only runs `composer install` as a dependency check.
+PHPUnit under `service/tests` covers payment signature verification; CI runs `composer install` + `vendor/bin/phpunit`.
 
 > Media layer (SFU / coturn) local debugging: `cd media/sfu && npm run smoke`; containerized: `docker compose up -d --build`.

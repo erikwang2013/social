@@ -33,13 +33,6 @@ function v(string $controller, string $action): \Closure
 }
 
 // ============================================================
-// 系统安装向导（无需认证，无中间件依赖）
-// ============================================================
-Route::get('/install', [app\admin\controller\InstallController::class, 'index']);
-Route::post('/install/step2', [app\admin\controller\InstallController::class, 'step2']);
-Route::post('/install/install', [app\admin\controller\InstallController::class, 'install']);
-
-// ============================================================
 // 健康检查（全局，无需认证）
 // ============================================================
 Route::get('/health', [app\admin\controller\HealthController::class, 'index']);

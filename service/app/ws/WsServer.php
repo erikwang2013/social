@@ -34,7 +34,32 @@ class WsServer
         self::$liveDrainStarted = true;
         // HTTP worker 入队 social:live:broadcast，ws worker 定时消费直推
         // ponytail: 单 ws worker（config/process.php）独占消费无竞争；多 ws worker 时需换 stream/claim
-        \Workerman\Timer::add(0.1, fn() => self::drainLiveBroadcast());
+        \Workerman\Timer::add(0.1, function () {
+            self::drainLiveBroadcast();
+            self::drainWsKick();
+        });
+    }
+
+    /** 登出队列：HTTP worker 入队 uid:sid，ws worker 只踢同 sid 的本机连接，避免误踢新会话 */
+    private static function drainWsKick(): void
+    {
+        $items = WsRedis::call(function ($r) {
+            $items = $r->lrange('social:ws:kick', 0, 20) ?: [];
+            if ($items !== []) {
+                $r->ltrim('social:ws:kick', count($items), -1);
+            }
+            return $items;
+        }) ?? [];
+        foreach ($items as $item) {
+            [$uid, $sid] = array_pad(explode(':', (string) $item, 2), 2, '');
+            $uid = (int) $uid;
+            if ($uid > 0 && ConnectionRegistry::sidForUid($uid) === $sid) {
+                $fd = ConnectionRegistry::localFd($uid);
+                if ($fd !== null) {
+                    self::kick($fd);
+                }
+            }
+        }
     }
 
     private static function drainLiveBroadcast(): void
@@ -66,12 +91,17 @@ class WsServer
         if ($token !== '') {
             $payload = JwtHelper::decode($token);
         }
-        if (!$payload || ($payload->type ?? '') !== 'access' || JwtHelper::isRevoked($payload->jti)) {
+        $sid = (string) ($payload->sid ?? '');
+        if (!$payload
+            || ($payload->type ?? '') !== 'access'
+            || JwtHelper::isRevoked($payload->jti)
+            || ($sid !== '' && JwtHelper::isSidRevoked($sid))) {
             $conn->close();
             return;
         }
         $uid = (int) $payload->sub;
-        $oldFd = ConnectionRegistry::attach($conn->id, $uid);
+        $sid = (string) ($payload->sid ?? '');
+        $oldFd = ConnectionRegistry::attach($conn->id, $uid, $sid);
         if ($oldFd !== null) {
             self::kick($oldFd);
         }

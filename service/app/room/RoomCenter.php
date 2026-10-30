@@ -126,6 +126,9 @@ class RoomCenter
     /** SFU 信令转发：room_offer/answer/ice → media/sfu HTTP → 结果推回发送者 */
     public function sfuRelay(int $roomId, int $uid, string $frameType, array $data): void
     {
+        if (!$this->member($roomId, $uid)) {
+            throw new \RuntimeException('room_forbidden');
+        }
         $method = match ($frameType) {
             Envelope::T_ROOM_OFFER => 'produce',
             Envelope::T_ROOM_ANSWER => 'connect',

@@ -34,18 +34,38 @@ class ImController
             ->where('status', 1)->orderByDesc('updated_at');
         $paginator = $query->paginate($pageSize, ['*'], 'page', $page);
 
+        $items = $paginator->items();
+        $ids = array_map(fn($c) => (int) $c->id, $items);
+        $lastMessages = $lastReadMap = $unreadMap = [];
+        if ($ids !== []) {
+            // 每会话最后一条：先取 MAX(id)，再一次性取回消息体
+            $lastIds = Message::whereIn('conversation_id', $ids)
+                ->groupBy('conversation_id')->selectRaw('MAX(id) AS id')->pluck('id')->all();
+            $lastMessages = Message::whereIn('id', $lastIds)->get()->keyBy('conversation_id')->all();
+            $lastReadMap = MessageRead::where('user_id', $uid)->whereIn('conversation_id', $ids)
+                ->pluck('last_read_id', 'conversation_id')->all();
+            // 未读数一次性按会话聚合（阈值取各自 last_read_id）
+            $unreadMap = Message::query()
+                ->selectRaw('conversation_id, COUNT(*) AS cnt')
+                ->whereIn('conversation_id', $ids)
+                ->where(function ($q) use ($ids, $lastReadMap) {
+                    foreach ($ids as $cid) {
+                        $q->orWhere(fn($qq) => $qq->where('conversation_id', $cid)->where('id', '>', (int) ($lastReadMap[$cid] ?? 0)));
+                    }
+                })
+                ->groupBy('conversation_id')->pluck('cnt', 'conversation_id')->all();
+        }
+
         $list = [];
-        foreach ($paginator->items() as $conv) {
-            $last = Message::where('conversation_id', $conv->id)->orderByDesc('id')->first();
-            $lastReadId = (int) MessageRead::where('conversation_id', $conv->id)->where('user_id', $uid)->value('last_read_id');
-            $unread = Message::where('conversation_id', $conv->id)->where('id', '>', $lastReadId)->count();
+        foreach ($items as $conv) {
+            $last = $lastMessages[(int) $conv->id] ?? null;
             $list[] = [
                 'id' => $conv->id,
                 'type' => $conv->type,
                 'name' => $conv->name,
                 'created_at' => $conv->created_at,
                 'updated_at' => $conv->updated_at,
-                'unread' => $unread,
+                'unread' => (int) ($unreadMap[(int) $conv->id] ?? 0),
                 'last_message' => $last ? [
                     'id' => $last->id,
                     'type' => $last->type,
@@ -144,14 +164,16 @@ class ImController
         }
         $cursor = max(0, (int) $request->get('cursor', 0));
         $limit = min(50, max(1, (int) $request->get('page_size', 20)));
-        $list = Message::where('conversation_id', $cid)->where('id', '>', $cursor)
-            ->orderBy('id')->limit($limit + 1)->get();
+        // cursor=0 表示最新一页：倒序取 n+1，回正后 next_cursor 为页内最旧 id（下一页取 id < cursor）
+        $list = Message::where('conversation_id', $cid)
+            ->when($cursor > 0, fn($q) => $q->where('id', '<', $cursor))
+            ->orderByDesc('id')->limit($limit + 1)->get();
         $hasMore = $list->count() > $limit;
-        $list = $list->take($limit);
+        $list = $list->take($limit)->reverse()->values();
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => [
             'list' => array_values($list->all()),
             'has_more' => $hasMore,
-            'next_cursor' => $hasMore ? (string) $list->last()->id : null,
+            'next_cursor' => $hasMore && $list->isNotEmpty() ? (string) $list->first()->id : null,
         ]]);
     }
 

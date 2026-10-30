@@ -6,7 +6,7 @@
 use crate::live::{InMemoryLiveStore, LiveCenter, LiveConfig, LiveError};
 use crate::resilience::{BreakerError, CircuitBreaker, RateLimiter};
 use crate::store::RedisConn;
-use crate::upload::{valid_file_name, VoiceStorage};
+use crate::upload::{temp_upload_path, valid_file_name, VoiceStorage};
 use crate::voice::{sfu_http, InMemoryRoomStore, RoomCenter, RoomError};
 use axum::extract::{Multipart, Path, State};
 use axum::http::{header, HeaderMap, StatusCode};
@@ -249,8 +249,9 @@ async fn voice_upload(State(st): State<AppState>, headers: HeaderMap, mut multip
     if bytes.len() as u64 > crate::upload::MAX_BYTES {
         return fail(StatusCode::PAYLOAD_TOO_LARGE, 413, "voice.too_large", "voice.too_large");
     }
-    let tmp = std::env::temp_dir().join(format!("voice_up_{}_{}.upload", uid, std::process::id()));
+    let tmp = temp_upload_path("voice_up", uid);
     if std::fs::write(&tmp, &bytes).is_err() {
+        let _ = std::fs::remove_file(&tmp); // 写盘失败可能留下截断文件
         return fail(StatusCode::INTERNAL_SERVER_ERROR, 500, "voice.io_failed", "voice.io_failed");
     }
     let out = match st.voice_storage.ingest(&tmp).await {

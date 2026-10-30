@@ -59,7 +59,7 @@
     <text class="ts" x="590" y="368">Rust 状态机（bee_live）· gRPC :50051</text>
     <rect class="box" x="720" y="328" width="200" height="56"/>
     <text class="t" x="820" y="350">虚拟经济（PHP）</text>
-    <text class="ts" x="820" y="368">钱包 · 礼物打赏 · 主播分成 · IAP 充值</text>
+    <text class="ts" x="820" y="368">钱包 · 礼物 · 分成 · IAP 收据闸门</text>
   </g>
 
   <!-- 媒体层 -->
@@ -67,9 +67,9 @@
     <rect class="layer" x="20" y="438" width="920" height="86"/>
     <text class="lt" x="36" y="462">媒体层 · media/（Node.js）</text>
     <rect class="boxg" x="60" y="474" width="400" height="38"/>
-    <text class="t" x="260" y="497">mediasoup SFU · :8790（RTC UDP 10000-10200）</text>
+    <text class="t" x="260" y="497">mediasoup SFU · 本机:8790（UDP 10000-10200）</text>
     <rect class="boxg" x="500" y="474" width="420" height="38"/>
-    <text class="t" x="710" y="497">coturn TURN/STUN · :3478（NAT 兜底中继）</text>
+    <text class="t" x="710" y="497">coturn TURN/STUN · :3478（REST 临时凭证）</text>
   </g>
 
   <!-- 数据 / 计算层 -->

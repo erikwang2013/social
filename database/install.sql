@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS `social_messages` (
   `recall_at` TIMESTAMP NULL,
   `created_at` TIMESTAMP NULL,
   `updated_at` TIMESTAMP NULL,
-  PRIMARY KEY (`id`), UNIQUE KEY `uk_cmid` (`client_msg_id`),
+  PRIMARY KEY (`id`), UNIQUE KEY `uk_cmid` (`sender_id`, `client_msg_id`),
   KEY `idx_cid_id` (`conversation_id`, `id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='消息';
 CREATE TABLE IF NOT EXISTS `social_message_reads` (
@@ -432,10 +432,10 @@ INSERT INTO `erik_admin_role_permission` (`role_id`, `permission_id`) VALUES
 ('10000000000000001', '30000000000000024');
 
 -- -------------------------------------------
--- 默认管理员账号 erik / admin888
+-- 管理员账号 erik（默认禁用）：password 为占位值，install.sh 首次导入后生成随机密码并启用（重复安装不重置）
 -- -------------------------------------------
 INSERT INTO `erik_admin_user` (`id`, `username`, `password`, `real_name`, `status`, `created_at`, `updated_at`) VALUES
-('21000000000000100', 'erik', '$2y$10$OMKpk/QJFvFg.785anhTR.n038Gmwf.yx9sOPcbS/AgIt3ChKXswG', 'erik', 1, NOW(), NOW());
+('21000000000000100', 'erik', '!', 'erik', 0, NOW(), NOW());
 
 INSERT INTO `erik_admin_user_role` (`user_id`, `role_id`) VALUES
 ('21000000000000100', '10000000000000001');
@@ -458,11 +458,11 @@ CREATE TABLE IF NOT EXISTS social_currency_transactions (
   amount BIGINT NOT NULL COMMENT '有符号余额变更',
   balance_after BIGINT NOT NULL COMMENT '变更后余额',
   ref_type VARCHAR(32) NULL COMMENT '外部引用类型（如 iap_apple）',
-  ref_id VARCHAR(64) NULL COMMENT '外部引用 ID（事务号/订单号）',
+  ref_id VARCHAR(191) NULL COMMENT '外部引用 ID（事务号/订单号）',
   note VARCHAR(255) NOT NULL DEFAULT '',
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
-  UNIQUE KEY uniq_ref (ref_type, ref_id),
+  UNIQUE KEY uniq_ref (user_id, ref_type, ref_id),
   KEY idx_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='资金流水';
 
@@ -489,7 +489,7 @@ CREATE TABLE IF NOT EXISTS social_gifts_given (
   client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（重试去重）',
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
-  UNIQUE KEY uniq_client_ref (client_ref),
+  UNIQUE KEY uniq_client_ref (from_uid, client_ref),
   KEY idx_from (from_uid, created_at),
   KEY idx_to (to_uid, created_at),
   KEY idx_room (room_id)
@@ -517,6 +517,19 @@ CREATE TABLE IF NOT EXISTS social_products (
   UNIQUE KEY uniq_platform_sku (platform, sku)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IAP 商品（SKU↔币值）';
 
+-- receipt_key = platform:transaction_id（不含 sku）：同一商店交易无论账号/请求 SKU 都只能入账一次
+CREATE TABLE IF NOT EXISTS social_iap_receipts (
+  receipt_key VARCHAR(191) NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  platform VARCHAR(16) NOT NULL DEFAULT '',
+  sku VARCHAR(128) NOT NULL DEFAULT '',
+  transaction_id VARCHAR(191) NOT NULL DEFAULT '',
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  PRIMARY KEY (receipt_key),
+  KEY idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IAP 凭证全局去重';
+
 -- ############### 支付渠道 (M6b) ###############
 CREATE TABLE IF NOT EXISTS social_payments (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -532,7 +545,7 @@ CREATE TABLE IF NOT EXISTS social_payments (
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
   UNIQUE KEY uniq_platform_trade_no (platform, trade_no),
-  UNIQUE KEY uniq_client_ref (client_ref),
+  UNIQUE KEY uniq_client_ref (user_id, client_ref),
   KEY idx_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='支付订单';
 
@@ -549,7 +562,7 @@ CREATE TABLE IF NOT EXISTS social_withdrawals (
   client_ref VARCHAR(64) NULL COMMENT '客户端幂等键（防重复申请）',
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
-  UNIQUE KEY uniq_client_ref (client_ref),
+  UNIQUE KEY uniq_client_ref (user_id, client_ref),
   KEY idx_user_created (user_id, created_at),
   KEY idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='提现单';

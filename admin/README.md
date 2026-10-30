@@ -19,6 +19,7 @@
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
+| 💰 提现单 | 列表/详情/标记 succeeded·failed | pending 单 failed 时原子退币并写 withdraw_refund 流水 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |
 | 🏥 运维 | 健康检查/metrics/API 文档/security.txt | Prometheus + OpenAPI 3.0 + hg/apidoc 交互文档 |
 | 🌐 国际化 | 中英文切换 | Accept-Language 头 / ?lang= 参数 |
@@ -120,7 +121,7 @@ composer install
 
 ### 2. 配置环境变量
 
-复制并修改环境变量（可选，不配置则使用 `config/*.php` 中的默认值）:
+复制并修改环境变量（`JWT_SECRET_KEY` 必须设置为随机值；其余可按需覆盖 `config/*.php` 默认值）:
 
 ```bash
 cp .env.example .env
@@ -130,39 +131,37 @@ cp .env.example .env
 
 | 环境变量 | 说明 | 默认值 |
 |---------|------|--------|
-| `JWT_SECRET` | JWT 签名密钥 | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids 盐值 | `open-admin-hashids-salt-2026` |
-| `ENCRYPTION_KEY` | API 加密密钥 | 32 字节默认值 |
+| `JWT_SECRET_KEY` | JWT 签名密钥（至少 32 字符，必须设置） | 空（未设置时认证失败） |
+| `HASHIDS_SALT` | Hashids 盐值 | 内置默认值（install.sh 生成随机值） |
+| `ENCRYPTION_KEY` | API 传输加密密钥（32 字节） | 内置默认值（install.sh 生成随机值） |
+| `ENCRYPTABLE_KEY` | 数据库敏感字段加密密钥（32 字节） | 内置默认值（install.sh 生成随机值） |
 | `SNOWFLAKE_DATACENTER_ID` | 数据中心 ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | 工作节点 ID (0-31) | `1` |
 | `SCOUT_HOSTS` | ES 地址 | `http://localhost:9200` |
 
 **生产环境务必修改所有密钥为随机字符串。**
 
-### 3. 一键安装
+### 3. 初始化数据库
 
-启动服务后，浏览器访问安装向导完成数据库初始化和管理员创建：
+Web 安装向导已移除。在仓库根目录执行一键安装脚本（幂等，可重复执行）：
+
+```bash
+cd .. && ./install.sh
+```
+
+脚本会安装依赖、创建 `social` / `open_admin` 数据库、导入 `database/install.sql`（权限种子；管理员 `erik` 的 SQL 种子为禁用占位口令，不含可用密码）、为 `service/` 与 `admin/` 生成 `.env`，并写入 `admin/runtime/install.lock`。
+
+首次安装时脚本会为 `erik` 生成随机密码并启用账号，密码只在脚本输出中显示一次，请立即保存。旧安装若仍使用历史默认口令，重新执行 `./install.sh` 会自动改为随机密码并启用账号（已自定义密码的保持不变）。
+
+### 4. 启动与登录
 
 ```bash
 php start.php start
 ```
 
-默认监听 `http://0.0.0.0:8787`（端口可在 `config/server.php` 修改）。
+默认监听 `http://0.0.0.0:8791`（端口见 `config/process.php`）。
 
-浏览器打开 **`http://localhost:8787/install`**，按向导填入：
-
-| 步骤 | 内容 |
-|------|------|
-| ① 数据库配置 | 主机地址、端口、数据库名、用户名、密码 |
-| ② 管理员设置 | 管理员用户名、密码（默认 admin / admin888） |
-
-点击「开始安装」后自动完成建表、播种权限数据、创建管理员账号，并写入 `.env` 数据库配置。
-
-> 安装完成后生成 `runtime/install.lock` 锁定文件。需重新安装时删除此文件即可。
-
-### 4. 登录
-
-访问 `http://localhost:8787`，使用安装时设置的管理员账号密码登录。
+访问 `http://localhost:8791`，使用账号 `erik` 与 `install.sh` 输出的随机密码登录，首次登录后请修改密码。
 
 ### 5. 启动前端（可选）
 
@@ -186,13 +185,12 @@ cp .env.docker .env
 # 2. 启动所有服务
 docker-compose up -d
 
-# 3. 浏览器访问安装向导完成初始化
-# http://localhost:8787/install  (填入数据库和管理员信息)
-# 或手动执行 SQL 迁移（进入 app 容器）:
-# docker-compose exec app mysql -h mysql -u root -p < database/migrations/open_admin.sql
+# 3. 首次部署先初始化数据库（仓库根目录）
+# ./install.sh
+# 或手工分段导入 social / open_admin 两段（分段命令见仓库根 install.sh）
 
 # 4. 访问
-# http://localhost:8787  (webman)
+# http://localhost:8791  (webman)
 # http://localhost:8080  (Nginx 反向代理)
 ```
 
@@ -253,7 +251,7 @@ cd apps/flutter && flutter test      # Flutter widget 测试
 | 服务 | 镜像 | 端口 |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | 本地 `Dockerfile` 构建 | 8787 |
+| `app` | 本地 `Dockerfile` 构建 | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

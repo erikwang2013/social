@@ -7,7 +7,7 @@
 
 The open-admin management console is built on webman v2 and provides a RESTful JSON API. All admin endpoints require JWT authentication and RBAC permission checks; public endpoints are routed to versioned controllers via the API version header.
 
-- **Base URL**: `http://localhost:8787`
+- **Base URL**: `http://localhost:8791`
 - **API version**: controlled via the `API-Version: v1` request header (defaults to v1 when missing)
 - **Language**: switch via the `Accept-Language` header or the `?lang=zh_CN|en` parameter (default zh_CN), auto-detected by the Locale middleware
 

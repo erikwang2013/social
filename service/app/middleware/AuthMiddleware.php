@@ -15,11 +15,16 @@ class AuthMiddleware implements MiddlewareInterface
             return json(['code' => 401, 'message' => '未登录', 'lang_key' => 'auth.unauthorized'], 401);
         }
         $payload = JwtHelper::decode($m[1]);
-        if (!$payload || ($payload->type ?? '') !== 'access' || JwtHelper::isRevoked($payload->jti)) {
+        $sid = (string) ($payload->sid ?? '');
+        if (!$payload
+            || ($payload->type ?? '') !== 'access'
+            || JwtHelper::isRevoked($payload->jti)
+            || ($sid !== '' && JwtHelper::isSidRevoked($sid))) {
             return json(['code' => 401, 'message' => '凭证无效或已过期', 'lang_key' => 'auth.token_invalid'], 401);
         }
         $request->uid = (int) $payload->sub;
         $request->jti = $payload->jti;
+        $request->sid = $sid;
         return $handler($request);
     }
 }

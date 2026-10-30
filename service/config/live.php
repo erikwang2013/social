@@ -17,4 +17,9 @@ return [
     'split_streamer_percent' => (int) (getenv('LIVE_SPLIT_STREAMER_PERCENT') ?: 70),
     // Rust live/voice gRPC 服务地址（M6 状态机迁移）
     'grpc_host' => getenv('GRPC_HOST') ?: '127.0.0.1:50051',
+    // TURN REST 临时凭证：TURN_URL 逗号分隔，如 turn:turn.example.com:3478
+    'turn_urls' => array_values(array_filter(array_map('trim', explode(',', (string) (getenv('TURN_URL') ?: ''))))),
+    // coturn static-auth-secret，必须与 media/sfu/.env 的 TURN_SECRET 一致
+    'turn_secret' => (string) (getenv('TURN_SECRET') ?: ''),
+    'turn_ttl' => (int) (getenv('TURN_TTL') ?: 3600),
 ];

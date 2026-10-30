@@ -9,7 +9,9 @@ namespace app\admin\controller;
 
 use app\model\SocialUser;
 use app\model\Withdrawal;
+use support\Db;
 use support\Request;
+use Throwable;
 
 class WithdrawalController
 {
@@ -64,7 +66,8 @@ class WithdrawalController
 
     public function status(Request $request, string $id)
     {
-        if (!Withdrawal::where('id', (int) $id)->exists()) {
+        $id = (int) $id;
+        if (!Withdrawal::where('id', $id)->exists()) {
             return json(['code' => 404, 'message' => '提现单不存在'], 404);
         }
         $status = trim((string) $request->post('status'));
@@ -75,14 +78,49 @@ class WithdrawalController
         if ($status === 'failed' && $reason === '') {
             return json(['code' => 400, 'message' => 'failed 必填 reason'], 400);
         }
-        // 原子条件更新：WHERE status='pending' 与用户取消（service 端 lockForUpdate）互斥，杜绝退币+打款双付
-        $affected = Withdrawal::where('id', (int) $id)->where('status', 'pending')->update([
-            'status' => $status,
-            'reason' => $reason,
-        ]);
+        // 同一事务内先锁 pending 提现单（与 service 端取消的 lockForUpdate 互斥），
+        // 失败单退币与状态更新一起提交，杜绝退币+打款双付
+        $db = Db::connection('social');
+        try {
+            $affected = $db->transaction(function () use ($db, $id, $status, $reason) {
+                $withdrawal = $db->table('social_withdrawals')
+                    ->where('id', $id)->where('status', 'pending')->lockForUpdate()->first();
+                if ($withdrawal === null) {
+                    return 0;
+                }
+                if ($status === 'failed') {
+                    $uid = (int) $withdrawal->user_id;
+                    $coins = (int) $withdrawal->coins;
+                    $refId = "withdraw:{$id}";
+                    $refunded = $db->table('social_currency_transactions')
+                        ->where('user_id', $uid)->where('ref_type', 'withdraw_refund')->where('ref_id', $refId)->exists();
+                    if (!$refunded && $coins > 0) {
+                        $now = date('Y-m-d H:i:s');
+                        $db->table('social_wallets')->insertOrIgnore([
+                            'user_id' => $uid, 'coins' => 0, 'created_at' => $now, 'updated_at' => $now,
+                        ]);
+                        $wallet = $db->table('social_wallets')->where('user_id', $uid)->lockForUpdate()->first();
+                        $balance = (int) $wallet->coins + $coins;
+                        $db->table('social_wallets')->where('user_id', $uid)->update([
+                            'coins' => $balance, 'updated_at' => $now,
+                        ]);
+                        $db->table('social_currency_transactions')->insert([
+                            'user_id' => $uid, 'type' => 'withdraw_refund', 'amount' => $coins,
+                            'balance_after' => $balance, 'ref_type' => 'withdraw_refund',
+                            'ref_id' => $refId, 'note' => $reason, 'created_at' => $now, 'updated_at' => $now,
+                        ]);
+                    }
+                }
+                return $db->table('social_withdrawals')->where('id', $id)->where('status', 'pending')->update([
+                    'status' => $status, 'reason' => $reason, 'updated_at' => date('Y-m-d H:i:s'),
+                ]);
+            });
+        } catch (Throwable) {
+            return json(['code' => 500, 'message' => '状态更新失败'], 500);
+        }
         if ($affected === 0) {
             return json(['code' => 422, 'message' => '仅 pending 状态可变更'], 422);
         }
-        return json(['code' => 0, 'message' => 'ok', 'data' => Withdrawal::find((int) $id)]);
+        return json(['code' => 0, 'message' => 'ok', 'data' => Withdrawal::find($id)]);
     }
 }

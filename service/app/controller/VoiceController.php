@@ -11,6 +11,30 @@ use Webman\Http\Response;
 
 class VoiceController
 {
+    /** TURN REST 临时凭证：GET /api/v1/voice/turn-credentials */
+    public function turnCredentials(Request $request): Response
+    {
+        $secret = (string) config('live.turn_secret', '');
+        $urls = (array) config('live.turn_urls', []);
+        if ($secret === '' || $urls === []) {
+            return json(['code' => 503, 'message' => 'TURN 未配置', 'lang_key' => 'voice.turn_not_configured'], 503);
+        }
+        $ttl = max(60, (int) config('live.turn_ttl', 3600));
+        $username = (time() + $ttl) . ':' . (int) $request->uid;
+        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => [
+            'urls' => $urls,
+            'username' => $username,
+            'credential' => self::turnCredential($secret, $username),
+            'ttl' => $ttl,
+        ]]);
+    }
+
+    /** coturn TURN REST：base64(HMAC-SHA1(secret, username)) */
+    public static function turnCredential(string $secret, string $username): string
+    {
+        return base64_encode(hash_hmac('sha1', $username, $secret, true));
+    }
+
     /** 通话历史：GET /api/v1/voice/calls?page= */
     public function calls(Request $request): Response
     {

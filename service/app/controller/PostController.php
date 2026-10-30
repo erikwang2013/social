@@ -27,7 +27,8 @@ class PostController
             return json(['code' => 400, 'message' => '内容长度需 1-5000 字', 'lang_key' => 'post.content_length'], 400);
         }
         $post = Post::create(['user_id' => $request->uid, 'content' => $content]);
-        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $post->load('user')->makeHidden('liked')]);
+        $post->setAttribute('liked', false);
+        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $post->load('user')]);
     }
 
     /**
@@ -49,6 +50,14 @@ class PostController
         $ids = array_merge([$request->uid], $followeeIds);
         $paginator = Post::with('user')->whereIn('user_id', $ids)
             ->orderByDesc('created_at')->paginate($pageSize, ['*'], 'page', $page);
+        $items = $paginator->items();
+        $likedIds = \app\model\Like::where('user_id', $request->uid)
+            ->whereIn('post_id', array_map(fn($p) => (int) $p->id, $items))
+            ->pluck('post_id')->all();
+        $likedSet = array_flip(array_map('intval', $likedIds));
+        foreach ($items as $post) {
+            $post->setAttribute('liked', isset($likedSet[(int) $post->id]));
+        }
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => [
             'list' => $paginator->items(),
             'total' => $paginator->total(),
@@ -71,6 +80,7 @@ class PostController
         if (!$post) {
             return json(['code' => 404, 'message' => '动态不存在', 'lang_key' => 'post.not_found'], 404);
         }
+        $post->setAttribute('liked', \app\model\Like::where('post_id', $post->id)->where('user_id', $request->uid)->exists());
         $post->setAttribute('comments', Comment::where('post_id', $post->id)
             ->with('user')->orderByDesc('created_at')->limit(5)->get());
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $post]);

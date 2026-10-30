@@ -71,8 +71,11 @@ class MeController
         if ($request->post('birthday') !== null) {
             $birthday = (string) $request->post('birthday');
             if ($birthday !== '') {
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthday)) {
+                    return json(['code' => 400, 'message' => '生日格式 YYYY-MM-DD', 'lang_key' => 'me.birthday_invalid'], 400);
+                }
                 [$y, $m, $d] = array_map('intval', explode('-', $birthday));
-                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthday) || !checkdate($m, $d, $y)) {
+                if (!checkdate($m, $d, $y)) {
                     return json(['code' => 400, 'message' => '生日格式 YYYY-MM-DD', 'lang_key' => 'me.birthday_invalid'], 400);
                 }
             }

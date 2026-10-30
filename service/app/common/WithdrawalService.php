@@ -66,7 +66,7 @@ class WithdrawalService
                     $outcome = 'already_processed';
                     return;
                 }
-                $credit = WalletService::credit($uid, (int) $withdrawal->coins, 'withdraw_refund', "withdraw:{$id}", '提现取消退回');
+                $credit = WalletService::credit($uid, (int) $withdrawal->coins, 'withdraw_refund', "withdraw:{$id}", '提现取消退回', 'withdraw_refund');
                 if ($credit['code'] !== 0) {
                     throw new \RuntimeException(); // 回滚，保持 pending
                 }

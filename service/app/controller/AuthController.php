@@ -5,6 +5,7 @@ use support\Request;
 use app\model\User;
 use app\model\UserProfile;
 use app\common\JwtHelper;
+use app\ws\WsRedis;
 use hg\apidoc\annotation as Apidoc;
 
 /**
@@ -102,10 +103,21 @@ class AuthController
     {
         $token = trim((string) $request->post('refresh_token'));
         $payload = JwtHelper::decode($token);
-        if (!$payload || ($payload->type ?? '') !== 'refresh' || JwtHelper::isRevoked($payload->jti)) {
+        $sid = (string) ($payload->sid ?? '');
+        if (!$payload
+            || ($payload->type ?? '') !== 'refresh'
+            || JwtHelper::isRevoked($payload->jti)
+            || ($sid !== '' && JwtHelper::isSidRevoked($sid))) {
             return json(['code' => 401, 'message' => '刷新令牌无效', 'lang_key' => 'auth.token_invalid'], 401);
         }
-        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $this->tokens((int) $payload->sub)]);
+        $user = User::find((int) $payload->sub);
+        if (!$user) {
+            return json(['code' => 401, 'message' => '刷新令牌无效', 'lang_key' => 'auth.token_invalid'], 401);
+        }
+        if ((int) $user->status !== 1) {
+            return json(['code' => 403, 'message' => '账号已被禁用', 'lang_key' => 'auth.account_disabled'], 403);
+        }
+        return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok', 'data' => $this->tokens($user->id, $sid !== '' ? $sid : null)]);
     }
 
     /**
@@ -118,6 +130,12 @@ class AuthController
     public function logout(Request $request)
     {
         JwtHelper::revoke($request->jti, 7200);
+        if (($request->sid ?? '') !== '') {
+            $refreshTtl = (int) config('plugin.erikwang2013.jwt.jwt.refresh_expire', 1209600);
+            JwtHelper::revokeSid((string) $request->sid, $refreshTtl);
+        }
+        // 通知 ws worker 踢掉该用户的已建立连接（单 ws worker 消费 social:ws:kick）
+        WsRedis::call(fn($r) => $r->rpush('social:ws:kick', (string) $request->uid));
         return json(['code' => 0, 'message' => 'ok', 'lang_key' => 'ok']);
     }
 
@@ -140,12 +158,13 @@ class AuthController
         ]]);
     }
 
-    private function tokens(int $userId): array
+    private function tokens(int $userId, ?string $sid = null): array
     {
         $cfg = config('plugin.erikwang2013.jwt.jwt');
+        $sid ??= bin2hex(random_bytes(16));
         return [
-            'access_token' => JwtHelper::encode($userId, 'access', (int) $cfg['default_expire']),
-            'refresh_token' => JwtHelper::encode($userId, 'refresh', (int) $cfg['refresh_expire']),
+            'access_token' => JwtHelper::encode($userId, 'access', (int) $cfg['default_expire'], $sid),
+            'refresh_token' => JwtHelper::encode($userId, 'refresh', (int) $cfg['refresh_expire'], $sid),
             'expires_in' => (int) $cfg['default_expire'],
         ];
     }

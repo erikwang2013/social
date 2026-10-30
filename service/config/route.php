@@ -64,6 +64,7 @@ Route::group('/api/v1', function () {
         Route::post('/im/voice', [ImVoiceController::class, 'upload']);
         Route::post('/im/image', [\app\controller\ImageController::class, 'upload']);
         Route::get('/voice/calls', [VoiceController::class, 'calls']); // 静态路由先注册，避免被 /voice/{file} 吞掉
+        Route::get('/voice/turn-credentials', [VoiceController::class, 'turnCredentials']);
         Route::post('/voice/rooms', [VoiceController::class, 'createRoom']);
         Route::get('/voice/rooms', [VoiceController::class, 'rooms']);
         Route::get('/voice/rooms/{id}', [VoiceController::class, 'roomDetail']);

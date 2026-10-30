@@ -18,6 +18,7 @@ A full-stack admin dashboard built with webman v2 + Flutter.
 | ⚙ Config | Key-value CRUD | Grouped management |
 | 📋 Audit | Log query + source detection | 8 platforms auto-detected |
 | 📁 Files | Upload/Excel export/PDF export | Sensitive data auto-masked |
+| 💰 Withdrawals | List/detail/mark succeeded·failed | pending → failed atomically refunds coins and writes a withdraw_refund ledger row |
 | 🛡 Security | 18-layer defense-in-depth | XSS/SQLi/path traversal/cmd injection/CSRF/rate limit/CSP... |
 | 🏥 Ops | Health check/metrics/API docs/security.txt | Prometheus + OpenAPI 3.0 + hg/apidoc interactive docs |
 | 🌐 i18n | Chinese/English | Accept-Language header / ?lang= param |
@@ -121,39 +122,37 @@ Key environment variables:
 
 | Variable | Description | Default |
 |---------|-------------|---------|
-| `JWT_SECRET` | JWT signing key | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids salt | `open-admin-hashids-salt-2026` |
-| `ENCRYPTION_KEY` | API encryption key | 32-byte default |
+| `JWT_SECRET_KEY` | JWT signing key (at least 32 chars, required) | empty (auth fails if unset) |
+| `HASHIDS_SALT` | Hashids salt | built-in default (install.sh generates a random one) |
+| `ENCRYPTION_KEY` | API transport encryption key (32 bytes) | built-in default (install.sh generates a random one) |
+| `ENCRYPTABLE_KEY` | Database field encryption key (32 bytes) | built-in default (install.sh generates a random one) |
 | `SNOWFLAKE_DATACENTER_ID` | Datacenter ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | Worker ID (0-31) | `1` |
 | `SCOUT_HOSTS` | ES hosts | `http://localhost:9200` |
 
 **Always change all keys to random strings in production.**
 
-### 3. One-Click Install
+### 3. Initialize the Database
 
-Start the server, then open the install wizard in your browser to set up the database and create an admin account:
+The web install wizard has been removed. Run the one-click installer from the repository root (idempotent, safe to re-run):
+
+```bash
+cd .. && ./install.sh
+```
+
+It installs dependencies, creates the `social` / `open_admin` databases, imports `database/install.sql` (permission seeds; the SQL seed for admin `erik` is a disabled placeholder with no usable password), generates `.env` for both `service/` and `admin/`, and writes `admin/runtime/install.lock`.
+
+On first install the script generates a random password for `erik`, enables the account, and prints the password once — save it immediately. On an old install that still uses the historical default password, re-running `./install.sh` rotates it to a random password and enables the account (custom passwords are kept unchanged).
+
+### 4. Start and Log In
 
 ```bash
 php start.php start
 ```
 
-Default: `http://0.0.0.0:8787` (change port in `config/server.php`).
+Default: `http://0.0.0.0:8791` (port is set in `config/process.php`).
 
-Open **`http://localhost:8787/install`** and follow the wizard:
-
-| Step | Description |
-|------|-------------|
-| ① Database | Host, port, database name, username, password |
-| ② Admin Account | Admin username and password (default: admin / admin888) |
-
-Click "Start Install" — tables are created, permissions seeded, admin account created, and `.env` is updated automatically.
-
-> After installation, `runtime/install.lock` is created to prevent re-installation. Delete this file to re-install.
-
-### 4. Login
-
-Visit `http://localhost:8787` and log in with the admin credentials set during installation.
+Visit `http://localhost:8791` and log in as `erik` with the random password printed by `install.sh`; change it after the first login.
 
 ### 5. Start Frontend (Optional)
 
@@ -177,13 +176,12 @@ cp .env.docker .env
 # 2. Start all services
 docker-compose up -d
 
-# 3. Open the install wizard in your browser
-# http://localhost:8787/install  (fill in DB and admin info)
-# Or run SQL migration manually (inside the app container):
-# docker-compose exec app mysql -h mysql -u root -p < database/migrations/open_admin.sql
+# 3. Initialize the database on first deploy (from the repository root)
+# ./install.sh
+# Or import the social / open_admin segments manually (see install.sh at the repository root)
 
 # 4. Access
-# http://localhost:8787  (webman)
+# http://localhost:8791  (webman)
 # http://localhost:8080  (Nginx reverse proxy)
 ```
 
@@ -353,7 +351,6 @@ Authorization: Bearer <token>
 | `GET` | `/health` | Health check (DB/Redis/ES status) |
 | `GET` | `/api/docs` | OpenAPI 3.0 specification |
 | `GET` | `/apidoc` | hg/apidoc interactive docs (Service/Admin grouping) |
-| `GET` | `/install` | System install wizard (setup DB + create admin) |
 | `POST` | `/api/captcha/generate` | Generate click captcha |
 | `POST` | `/api/captcha/verify` | Verify click positions |
 | `POST` | `/api/auth/login` | Login (requires captcha) |
@@ -425,7 +422,7 @@ Authorization: Bearer <token>
 | Service | Image | Port |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | Local `Dockerfile` build | 8787 |
+| `app` | Local `Dockerfile` build | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

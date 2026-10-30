@@ -29,6 +29,9 @@ class ImageController
         if ($size === false) {
             return json(['code' => 422, 'message' => '非有效图片', 'lang_key' => 'image.invalid'], 422);
         }
+        if ((int) $size[0] * (int) $size[1] > WatermarkService::MAX_PIXELS) {
+            return json(['code' => 422, 'message' => '图片像素不能超过 4000 万', 'lang_key' => 'image.too_large'], 422);
+        }
 
         $dateDir = date('Y-m-d');
         $filename = md5(uniqid((string) mt_rand(), true)) . '.' . $ext;

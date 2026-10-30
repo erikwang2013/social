@@ -147,6 +147,13 @@ class ProfileController extends BaseController
             $payload = self::getJWT()->decode($token);
             $ttl     = max((int)($payload['exp'] ?? 0) - time(), 0);
             Redis::setex('jwt_blacklist:' . md5($token), $ttl, '1');
+
+            // 同一 sid 的 refresh 也一并失效，TTL 与 refresh 有效期一致
+            $sid = (string) ($payload['sid'] ?? '');
+            if ($sid !== '') {
+                $refreshTtl = (int)(config('plugin.erikwang2013.jwt.jwt.refresh_expire') ?: 1209600);
+                Redis::setex('jwt:sid:' . $sid, $refreshTtl, '1');
+            }
         } catch (\Throwable $e) {
             // token 无效也视为登出成功
         }

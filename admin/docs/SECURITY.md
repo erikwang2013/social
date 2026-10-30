@@ -196,7 +196,7 @@ AdminAuth 中间件实现，挂载在需要认证的路由组上。
 | 参数 | 值 | 说明 |
 |------|-----|------|
 | 算法 | HS256 | HMAC-SHA256 对称签名 |
-| 密钥 | `JWT_SECRET` | 环境变量注入，生产环境需更换 |
+| 密钥 | `JWT_SECRET_KEY` | 环境变量注入，生产环境需更换 |
 | access_token TTL | 7200s (2h) | `JWT_TTL` |
 | refresh_token TTL | 1209600s (14d) | `JWT_REFRESH_TTL` |
 | 签发者 | `open-admin` | `JWT_ISSUER` |
@@ -383,7 +383,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 
 | 环境变量 | 用途 | 包 | 生产要求 |
 |----------|------|-----|---------|
-| JWT_SECRET | JWT 签名密钥 | erikwang2013/jwt-webman | 64+ 字符随机字符串 |
+| JWT_SECRET_KEY | JWT 签名密钥 | erikwang2013/jwt-webman | 64+ 字符随机字符串 |
 | JWT_ALGORITHM | JWT 签名算法 | 同上 | 保持 HS256 |
 | HASHIDS_SALT | ID 编码盐值 | erikwang2013/hashids | 随机字符串 |
 | SNOWFLAKE_DATACENTER_ID | 数据中心 ID (0-31) | erikwang2013/snowflake-php | 单机房保持默认 |
@@ -403,7 +403,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | 传输加密 | `config/encryption.php` → `key` | `ENCRYPTION_KEY` |
 | 存储加密 | `config/encryptable.php` → `key` | `ENCRYPTABLE_KEY` |
 | ID 混淆 | `config/hashids.php` → `connections.main.salt` | `HASHIDS_SALT` |
-| JWT 签名 | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET` |
+| JWT 签名 | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET_KEY` |
 
 ---
 

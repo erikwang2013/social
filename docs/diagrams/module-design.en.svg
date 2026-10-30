@@ -45,7 +45,7 @@
   <rect class="it" x="40" y="368" width="400" height="30"/>
   <text class="t" x="240" y="387">8 mic seats · join TOCTOU recheck · close broadcast</text>
   <rect class="it" x="40" y="404" width="400" height="30"/>
-  <text class="t" x="240" y="423">sfuRelay signaling translation · raw HTTP → SFU</text>
+  <text class="t" x="240" y="423">sfuRelay membership check · raw HTTP → SFU</text>
 
   <!-- SFU 模块 -->
   <rect class="mod" x="480" y="296" width="460" height="150"/>
@@ -55,7 +55,7 @@
   <rect class="it" x="500" y="368" width="420" height="30"/>
   <text class="t" x="710" y="387">RTC UDP 10000-10200 · 5min idle recycle</text>
   <rect class="it" x="500" y="404" width="420" height="30"/>
-  <text class="t" x="710" y="423">coturn TURN :3478 · 64KB request limit</text>
+  <text class="t" x="710" y="423">coturn TURN :3478 · REST ephemeral creds</text>
 
   <!-- 直播模块 -->
   <rect class="mod" x="20" y="466" width="440" height="150"/>
@@ -73,9 +73,9 @@
   <rect class="it" x="500" y="502" width="420" height="30"/>
   <text class="t" x="710" y="521">Wallet balance/ledger (MySQL only source of truth)</text>
   <rect class="it" x="500" y="538" width="420" height="30"/>
-  <text class="t" x="710" y="557">Gift deduct/split (client_ref idempotent)</text>
+  <text class="t" x="710" y="557">Gift deduct/split (per-sender idempotent)</text>
   <rect class="it" x="500" y="574" width="420" height="30"/>
-  <text class="t" x="710" y="593">IAP recharge 3-side verify idempotent credit</text>
+  <text class="t" x="710" y="593">IAP verify + global receipt gate</text>
   <rect class="it" x="500" y="610" width="420" height="30"/>
   <text class="t" x="710" y="629">Payment channels WeChat/Alipay/Stripe callback verify</text>
 

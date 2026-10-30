@@ -60,6 +60,7 @@
     "files": ["app/functions.php"]
   },
   "scripts": {
+    "test": "vendor/bin/phpunit",
     "post-package-install": [
       "support\\Plugin::install"
     ],

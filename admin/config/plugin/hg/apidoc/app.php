@@ -32,9 +32,9 @@ return [
             'enable' => false,
         ],
         'auth'               => [
-            'enable'     => false,  // 关闭认证：getConfig()要求token导致前端无法初始化
-            'password'   => "admin888",
-            'secret_key' => "open-admin-apidoc",
+            'enable'     => false,  // 关闭认证：getConfig()要求token导致前端无法初始化；开启时必须配置 APIDOC_PASSWORD/APIDOC_SECRET
+            'password'   => getenv('APIDOC_PASSWORD') ?: '',
+            'secret_key' => getenv('APIDOC_SECRET') ?: '',
             'expire'     => 24 * 60 * 60
         ],
         'params' => [

@@ -2,6 +2,13 @@
 
 **语言 / Languages:** [中文](CHANGELOG.md)
 
+## [Unreleased] — 2026-10-30
+
+### Fixed
+- Voice storage: the local provider now persists to `LocalFileSystem` (`VOICE_LOCAL_DIR`, default `storage/voice`) instead of `InMemory`, so voice files survive restarts.
+- Voice uploads use unique temp paths, so concurrent uploads for the same uid no longer overwrite each other.
+- Media compose binds the SFU signaling port to loopback and requires `TURN_SECRET` for coturn TURN REST credentials.
+
 ## [1.0.6] — 2026-08-07
 
 ### Added

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\middleware;
 
+use app\model\AdminUser;
 use support\Request;
 use Webman\Http\Response;
 use support\Redis;
@@ -48,7 +49,26 @@ class AdminAuth
 
         try {
             $payload = self::getJWT()->decode($token);
-            $request->adminId = $payload['sub'] ?? 0;
+            $tokenType = $payload['token_type'] ?? null;
+            if ($tokenType !== null && $tokenType !== 'access') {
+                return json(['code' => 401, 'message' => 'Token已过期或无效', 'data' => []]);
+            }
+            $sid = (string) ($payload['sid'] ?? '');
+            if ($sid !== '') {
+                try {
+                    if (Redis::get('jwt:sid:' . $sid)) {
+                        return json(['code' => 401, 'message' => 'Token已失效，请重新登录', 'data' => []]);
+                    }
+                } catch (\Throwable $e) {
+                    // Redis down, skip sid blacklist check
+                }
+            }
+            $adminId = (int) ($payload['sub'] ?? 0);
+            $admin = $adminId > 0 ? AdminUser::find($adminId) : null;
+            if (!$admin || (int) $admin->status !== 1) {
+                return json(['code' => 401, 'message' => 'Token已过期或无效', 'data' => []]);
+            }
+            $request->adminId = $adminId;
             $request->adminUsername = $payload['username'] ?? '';
         } catch (JWTException | \Exception $e) {
             return json(['code' => 401, 'message' => 'Token已过期或无效', 'data' => []]);

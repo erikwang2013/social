@@ -45,7 +45,7 @@
   <rect class="it" x="40" y="368" width="400" height="30"/>
   <text class="t" x="240" y="387">8 麦位 · join TOCTOU 复核 · close 广播</text>
   <rect class="it" x="40" y="404" width="400" height="30"/>
-  <text class="t" x="240" y="423">sfuRelay 信令转译 · 裸 HTTP → SFU</text>
+  <text class="t" x="240" y="423">sfuRelay 成员校验 · 裸 HTTP → SFU</text>
 
   <!-- SFU 模块 -->
   <rect class="mod" x="480" y="296" width="460" height="150"/>
@@ -55,7 +55,7 @@
   <rect class="it" x="500" y="368" width="420" height="30"/>
   <text class="t" x="710" y="387">RTC UDP 10000-10200 · 空置 5min 回收</text>
   <rect class="it" x="500" y="404" width="420" height="30"/>
-  <text class="t" x="710" y="423">coturn TURN :3478 · 请求体 64KB 上限</text>
+  <text class="t" x="710" y="423">coturn TURN :3478 · REST 临时凭证</text>
 
   <!-- 直播模块 -->
   <rect class="mod" x="20" y="466" width="440" height="150"/>
@@ -73,9 +73,9 @@
   <rect class="it" x="500" y="502" width="420" height="30"/>
   <text class="t" x="710" y="521">钱包 余额/流水（MySQL 唯一事实源）</text>
   <rect class="it" x="500" y="538" width="420" height="30"/>
-  <text class="t" x="710" y="557">礼物 扣款/分成（client_ref 幂等）</text>
+  <text class="t" x="710" y="557">礼物 扣款/分成（发送者内幂等）</text>
   <rect class="it" x="500" y="574" width="420" height="30"/>
-  <text class="t" x="710" y="593">IAP 充值 三端校验幂等入账</text>
+  <text class="t" x="710" y="593">IAP 三端校验 + 全局收据闸门</text>
   <rect class="it" x="500" y="610" width="420" height="30"/>
   <text class="t" x="710" y="629">支付渠道 微信/支付宝/Stripe 回调验签</text>
 

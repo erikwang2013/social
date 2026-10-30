@@ -59,9 +59,6 @@ class AuthController
         if ($captchaKey === '') {
             return json(['code' => 422, 'message' => '验证码参数缺失', 'data' => []]);
         }
-        if ($captchaKey === '') {
-            return json(['code' => 422, 'message' => '验证码参数缺失', 'data' => []]);
-        }
 
         // 检查验证码是否已通过 /api/captcha/verify 校验
         try {
@@ -109,11 +106,12 @@ class AuthController
             return json(['code' => 403, 'message' => trans('messages.account_disabled'), 'data' => []]);
         }
 
-        // 签发 JWT
+        // 签发 JWT（access + refresh 共用同一 sid，便于登出时整对失效）
         $jwt = self::getJWT();
         $tokenExpire = (int)(config('plugin.erikwang2013.jwt.jwt.default_expire') ?: 7200);
-        $token = $jwt->encode(['sub' => $user->id, 'username' => $user->username]);
-        $refreshToken = $jwt->encode(['sub' => $user->id, 'token_type' => 'refresh'],
+        $sid = bin2hex(random_bytes(16));
+        $token = $jwt->encode(['sub' => $user->id, 'username' => $user->username, 'token_type' => 'access', 'sid' => $sid]);
+        $refreshToken = $jwt->encode(['sub' => $user->id, 'token_type' => 'refresh', 'sid' => $sid],
             (int)(config('plugin.erikwang2013.jwt.jwt.refresh_expire') ?: 1209600)
         );
 
@@ -164,20 +162,34 @@ class AuthController
             $jwt = self::getJWT();
             $payload = $jwt->decode($refreshToken);
 
-            // 刷新时更新最后登录时间和IP
-            $userId = $payload['sub'] ?? 0;
-            if ($userId) {
-                $user = AdminUser::find($userId);
-                if ($user) {
-                    $user->last_login_at = date('Y-m-d H:i:s');
-                    $user->last_login_ip = $request->getRealIp();
-                    $user->save();
-                }
+            if (($payload['token_type'] ?? '') !== 'refresh') {
+                return json(['code' => 401, 'message' => trans('messages.refresh_invalid'), 'data' => []]);
             }
 
+            $sid = (string) ($payload['sid'] ?? '');
+            if ($sid !== '') {
+                try {
+                    if (Redis::get('jwt:sid:' . $sid)) {
+                        return json(['code' => 401, 'message' => trans('messages.refresh_invalid'), 'data' => []]);
+                    }
+                } catch (\Throwable) {}
+            }
+
+            $userId = (int) ($payload['sub'] ?? 0);
+            $user = $userId ? AdminUser::find($userId) : null;
+            if (!$user || (int) $user->status !== 1) {
+                return json(['code' => 401, 'message' => trans('messages.refresh_invalid'), 'data' => []]);
+            }
+
+            // 刷新时更新最后登录时间和IP
+            $user->last_login_at = date('Y-m-d H:i:s');
+            $user->last_login_ip = $request->getRealIp();
+            $user->save();
+
+            $sid = $sid !== '' ? $sid : bin2hex(random_bytes(16));
             $tokenExpire = (int)(config('plugin.erikwang2013.jwt.jwt.default_expire') ?: 7200);
-            $token = $jwt->encode(['sub' => $payload['sub'], 'username' => $payload['username'] ?? '']);
-            $newRefresh = $jwt->encode(['sub' => $payload['sub'], 'token_type' => 'refresh'],
+            $token = $jwt->encode(['sub' => $user->id, 'username' => $user->username, 'token_type' => 'access', 'sid' => $sid]);
+            $newRefresh = $jwt->encode(['sub' => $user->id, 'token_type' => 'refresh', 'sid' => $sid],
                 (int)(config('plugin.erikwang2013.jwt.jwt.refresh_expire') ?: 1209600)
             );
 

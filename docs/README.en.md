@@ -10,7 +10,7 @@ Multilingual social platform monorepo: image/text community + instant messaging 
 
 **Bub** · a message bubble. The smallest unit of the platform: posts, voice notes, live danmaku and gifts all leave inside one bubble; it smiles, it waves, and the tail at its lower left points where the message is headed.
 
-Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark [`mascot-mark.svg`](diagrams/mascot-mark.svg) also ships as `favicon.svg` on the service / admin sites and in the admin install wizard.
+Vector source: [`diagrams/mascot.svg`](diagrams/mascot.svg); the simplified mark [`mascot-mark.svg`](diagrams/mascot-mark.svg) also ships as `favicon.svg` on the service / admin sites and in the admin console.
 
 ## Mascot Expressions · Bub
 
@@ -39,9 +39,9 @@ The project mascot, images, icons and expressions (including the SVG / PNG files
 
 - **Native client**: Android (Kotlin + Compose), plus a Flutter admin console
 - **Business services**: webman v2 (PHP 8.3) serving both REST and WebSocket channels; live/voice-call state machines migrated to Rust (infrastructure/bee-rust); PHP controllers connect via gRPC; the API is versioned via `X-Api-Version` (default v1, compatible with legacy `/api/vX` paths)
-- **In-house media layer**: mediasoup SFU + coturn TURN for media forwarding in 1v1 voice calls and voice chat rooms (8 seats: host + 7 mics)
+- **In-house media layer**: mediasoup SFU (loopback :8790) + coturn TURN (REST ephemeral credentials) for media forwarding in 1v1 voice calls and voice chat rooms (8 seats: host + 7 mics)
 - **State layering**: MySQL as the source of truth for business data, Redis for real-time session / IM / call / room state
-- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT; v1.1.1–v1.1.6 are documentation / CI / stability fixes with no new features
+- **Milestones**: M0–M5 delivered (voice messages, 1v1 calls, voice chat rooms, live streaming); M6 delivers the Rust migration of live/voice state machines (PHP calls Rust directly over gRPC; circuit breaker / degradation / rate limiting); M6a delivers the virtual economy: wallet (balance/ledger, MySQL as single source of truth), gift tipping with streamer share, and mobile IAP top-up (App Store / Google Play / Huawei); M6b delivers payment channels: top-up crediting skeleton (WeChat/Alipay/Stripe callback signature verification, server-side pricing, idempotent crediting; withdrawals and reconciliation delivered); M6c delivers CDN storage: providers configurable from admin panel (S3-compatible: AWS S3 / Cloudflare R2 / Aliyun OSS / Tencent COS / Backblaze B2), images/voice/files served via object storage + CDN; M6d delivers admin reports and dashboard statistics: report module (users/payments/withdrawals — date filtering, totals, trends, distributions, Excel export) plus platform-statistics cards on the home page; v1.1 delivers primary-key governance: the three MySQL writes in bee_live now pass explicit idgen_rs snowflake IDs, removing the dependency on last_insert_id(); the corresponding tables drop AUTO_INCREMENT; v1.1.1–v1.1.6 are documentation / CI / stability fixes with no new features; v1.1.14 delivers security / consistency fixes: default admin and JWT secrets, global IAP receipt gate, wallet concurrency locks, IM membership checks, WeChat callback decryption, ephemeral TURN credentials, and install/migration scripts
 
 ## Feature Overview
 
@@ -101,7 +101,7 @@ Prerequisites: PHP ≥ 8.3 (composer), MySQL, Redis (Docker optional, for the me
 ./install.sh
 ```
 
-The script: runs `composer install` once for each of `service/` and `admin/`; creates the database from `database/install.sql` (idempotent, CREATE IF NOT EXISTS); generates `.env` for both services (random JWT / APP keys, never overwrites existing files); optionally starts the media layer (`docker compose up -d` for media/sfu and coturn, `--skip-media` to skip); finally prints the commands to start each service and the access URLs.
+The script: runs `composer install` once for each of `service/` and `admin/`; creates the database from `database/install.sql` (idempotent, CREATE IF NOT EXISTS); generates `.env` for both services (random JWT / APP keys, never overwrites existing files); on first import, generates a random admin password and prints it once, then writes `admin/runtime/install.lock`; optionally starts the media layer (`docker compose up -d` for media/sfu and coturn, `--skip-media` to skip); finally prints the commands to start each service and the access URLs.
 
 ## Manual Install
 
@@ -112,19 +112,15 @@ cd service && composer install
 cd admin && composer install
 ```
 
-2. Create the database:
+2. Create the database: preferably use `./install.sh`; for a manual install, import the `social` and `open_admin` segments separately using the `sed` commands in `install.sh` (do not import the whole file into one database).
 
-```bash
-mysql -u root -p < database/install.sql
-```
-
-3. Configure environment: copy `service/.env.example` and `admin/.env.example` to `.env`, fill in DB / Redis / JWT / APP keys (always use random keys in production).
+3. Configure environment: preferably run `./install.sh` to generate `.env` and the random admin password; for a manual install, create `service/.env` and `admin/.env` and fill in at least the DB / Redis / JWT keys (always use random keys in production).
 
 4. Start the services:
 
 ```bash
 cd service && php start.php start -d   # HTTP :8788 · WS :8789
-cd admin && php start.php start -d     # admin :8787
+cd admin && php start.php start -d     # admin :8791
 ```
 
 5. Start the media layer (optional):

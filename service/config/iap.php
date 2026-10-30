@@ -28,6 +28,8 @@ return [
         'package' => (string) (getenv('IAP_HUAWEI_PACKAGE') ?: ''),
         // IAP 订单查询端点（海外默认；国内环境可用 orders-iap.cloud.huawei.com.cn 覆盖）
         'endpoint' => (string) (getenv('IAP_HUAWEI_ENDPOINT') ?: 'https://orders-dre.iap.hicloud.com'),
+        // 华为 IAP 公钥（PEM）；配置后强制校验 purchaseTokenData 的 dataSignature
+        'public_key' => (string) (getenv('IAP_HUAWEI_PUBLIC_KEY') ?: ''),
     ],
     // 校验 HTTP 超时（秒）
     'timeout' => (int) (getenv('IAP_TIMEOUT') ?: 10),

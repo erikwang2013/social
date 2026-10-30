@@ -7,7 +7,7 @@ tonic::include_proto!("social");
 
 use bee_live::live::{LiveCenter, LiveConfig, LiveError};
 use bee_live::store::{MySqlLiveStore, MySqlRoomStore, RedisConn, mysql_opts};
-use bee_live::upload::{MAX_BYTES, valid_file_name, VoiceStorage};
+use bee_live::upload::{MAX_BYTES, temp_upload_path, valid_file_name, VoiceStorage};
 use bee_live::voice::{RoomCenter, RoomError, sfu_http};
 use mysql_async::prelude::Queryable;
 use mysql_async::{Conn, Params};
@@ -322,8 +322,9 @@ impl VoiceService for VoiceSvc {
         if r.voice.len() as u64 > MAX_BYTES {
             return Ok(Response::new(err_reply(413, "voice.too_large", "voice.too_large")));
         }
-        let tmp = std::env::temp_dir().join(format!("voice_grpc_{}_{}.upload", r.uid, std::process::id()));
+        let tmp = temp_upload_path("voice_grpc", r.uid);
         if std::fs::write(&tmp, &r.voice).is_err() {
+            let _ = std::fs::remove_file(&tmp); // 写盘失败可能留下截断文件
             return Ok(Response::new(err_reply(500, "voice.io_failed", "voice.io_failed")));
         }
         let out = match self.storage.ingest(&tmp).await {

@@ -10,21 +10,23 @@ use Throwable;
 class WalletService
 {
     /** 幂等入账：ref_type+ref_id 已入账则返回既有流水，不重复加币 */
-    public static function credit(int $uid, int $coins, string $refType, string $refId, string $note = ''): array
+    public static function credit(int $uid, int $coins, string $refType, string $refId, string $note = '', string $type = 'recharge'): array
     {
         if ($coins <= 0) {
             return ['code' => 422, 'message' => '币值需为正数', 'lang_key' => 'wallet.coins_invalid'];
         }
         try {
-            $tx = Db::transaction(function () use ($uid, $coins, $refType, $refId, $note) {
+            $tx = Db::transaction(function () use ($uid, $coins, $refType, $refId, $note, $type) {
+                // insert-ignore 建钱包再锁行：并发首充不会因读旧余额互相覆盖
+                Db::table('wallets')->insertOrIgnore(['user_id' => $uid]);
+                $wallet = Wallet::where('user_id', $uid)->lockForUpdate()->first();
                 if ($exist = self::findByRef($uid, $refType, $refId)) {
                     return $exist;
                 }
-                $wallet = Wallet::firstOrCreate(['user_id' => $uid]);
                 $wallet->coins += $coins;
                 $wallet->save();
                 return CurrencyTransaction::create([
-                    'user_id' => $uid, 'type' => 'recharge', 'amount' => $coins,
+                    'user_id' => $uid, 'type' => $type, 'amount' => $coins,
                     'balance_after' => $wallet->coins, 'ref_type' => $refType, 'ref_id' => $refId, 'note' => $note,
                 ]);
             });
@@ -46,10 +48,11 @@ class WalletService
         }
         try {
             $tx = Db::transaction(function () use ($uid, $coins, $refType, $refId, $note, $type) {
+                // 先锁行再判余额：并发扣款串行执行，幂等重试优先返回原流水
+                $wallet = Wallet::where('user_id', $uid)->lockForUpdate()->first();
                 if ($exist = self::findByRef($uid, $refType, $refId)) {
                     return $exist;
                 }
-                $wallet = Wallet::where('user_id', $uid)->first();
                 if ($wallet === null || $wallet->coins < $coins) {
                     throw new \RuntimeException('insufficient');
                 }
@@ -88,10 +91,11 @@ class WalletService
         ];
     }
 
+    /** 幂等查询用锁定读：绕过 REPEATABLE READ 快照，嵌套事务里的并发重试才能看到已提交的原流水 */
     private static function findByRef(int $uid, string $refType, string $refId): ?CurrencyTransaction
     {
         return CurrencyTransaction::where('user_id', $uid)
-            ->where('ref_type', $refType)->where('ref_id', $refId)->first();
+            ->where('ref_type', $refType)->where('ref_id', $refId)->lockForUpdate()->first();
     }
 
     private static function ok(CurrencyTransaction $tx): array

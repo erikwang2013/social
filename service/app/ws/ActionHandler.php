@@ -2,6 +2,7 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 namespace app\ws;
 
+use app\model\ConversationMember;
 use app\model\Message;
 use app\model\MessageRead;
 use Illuminate\Database\QueryException;
@@ -81,10 +82,14 @@ final class ActionHandler
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid voice url'], $seq);
             return;
         }
+        if (!self::isMember($cid, $uid)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'not a conversation member'], $seq);
+            return;
+        }
         // SETNX 幂等：重复 client_msg_id 直接回已存在消息的 ack（键 TTL 24h，DB 唯一索引兜底并发）
         $claimed = WsRedis::call(fn ($r) => $r->set('im:dedup:' . $uid . ':' . $cmid, '1', ['NX', 'EX' => 86400]));
         if ($claimed === false) {
-            $existing = Message::where('client_msg_id', $cmid)->first();
+            $existing = Message::where('sender_id', $uid)->where('client_msg_id', $cmid)->first();
             if ($existing !== null) {
                 self::send($fd, Envelope::T_ACK, ['client_msg_id' => $cmid, 'message_id' => (int) $existing->id], $seq);
                 return;
@@ -104,10 +109,13 @@ final class ActionHandler
                 'recall_at' => null,
             ]);
         } catch (QueryException $e) {
-            $msg = Message::where('client_msg_id', $cmid)->first();
+            // 唯一键 (sender_id, client_msg_id) 并发兜底：重复插入只回 ack，不再投递
+            $msg = Message::where('sender_id', $uid)->where('client_msg_id', $cmid)->first();
             if ($msg === null) {
                 throw $e;
             }
+            self::send($fd, Envelope::T_ACK, ['client_msg_id' => $cmid, 'message_id' => (int) $msg->id], $seq);
+            return;
         }
         Deliverer::deliver($msg, $uid);
         self::send($fd, Envelope::T_ACK, ['client_msg_id' => $cmid, 'message_id' => (int) $msg->id], $seq);
@@ -121,6 +129,10 @@ final class ActionHandler
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid read payload'], $seq);
             return;
         }
+        if (!self::isMember($cid, $uid)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'not a conversation member'], $seq);
+            return;
+        }
         MessageRead::advance($cid, $uid, $lastReadId);
         Deliverer::notifyRead($cid, $uid, $lastReadId);
     }
@@ -130,6 +142,10 @@ final class ActionHandler
         $cid = (int) ($data['conversation_id'] ?? 0);
         if ($cid <= 0) {
             self::send($fd, Envelope::T_ERROR, ['msg' => 'invalid typing payload']);
+            return;
+        }
+        if (!self::isMember($cid, $uid)) {
+            self::send($fd, Envelope::T_ERROR, ['msg' => 'not a conversation member']);
             return;
         }
         Deliverer::relayTyping($cid, $uid);
@@ -262,6 +278,12 @@ final class ActionHandler
         } catch (\RuntimeException $e) {
             self::send($fd, Envelope::T_ERROR, ['msg' => $e->getMessage()], $seq);
         }
+    }
+
+    /** send/read/typing 前置成员校验：非成员不产生任何副作用 */
+    private static function isMember(int $cid, int $uid): bool
+    {
+        return ConversationMember::where('conversation_id', $cid)->where('user_id', $uid)->where('status', 1)->exists();
     }
 
     private static function send(int $fd, string $type, array $data = [], ?int $seq = null): void

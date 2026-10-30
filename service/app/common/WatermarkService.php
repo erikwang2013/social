@@ -7,6 +7,9 @@ namespace app\common;
  */
 class WatermarkService
 {
+    /** 像素上限（约 40MP），GD 解码前拒绝，防大图耗尽内存 */
+    public const MAX_PIXELS = 40_000_000;
+
     private const FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
 
     /** 就地加水印；非图片或 GD 不支持时静默跳过 */
@@ -24,7 +27,7 @@ class WatermarkService
         }
         $w = imagesx($img);
         $h = imagesy($img);
-        if ($w < 64 || $h < 64) {
+        if ($w < 64 || $h < 64 || $w * $h > self::MAX_PIXELS) {
             imagedestroy($img);
             return;
         }

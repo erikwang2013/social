@@ -1,15 +1,15 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 //! 语音上传存储：ffmpeg 转 m4a（AAC 32k 单声道）+ ffprobe 时长，移植自 PHP `app\storage\VoiceStorage`。
 //! 文件名 = md5(16 随机字节).m4a，与 PHP 一致；静态服务白名单 `^[a-f0-9]{32}\.m4a$` 防路径穿越。
-//! M6c3: 落盘改 object_store（s3 兼容桶 / local 降级 InMemory），活动服务商来自 open_admin.erik_storage_provider。
+//! M6c3: 落盘改 object_store（s3 兼容桶 / local 落盘 LocalFileSystem），活动服务商来自 open_admin.erik_storage_provider。
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::Arc;
 
 use mysql_async::prelude::Queryable;
 use object_store::path::Path as ObjPath;
-use object_store::{memory::InMemory, aws::AmazonS3Builder, ObjectStore, PutPayload};
+use object_store::{aws::AmazonS3Builder, ObjectStore, PutPayload};
 use thiserror::Error;
 
 use crate::store::open_admin_opts;
@@ -60,8 +60,8 @@ impl VoiceStorage {
         Self { store }
     }
 
-    /// 生产：从 MySQL 读活动服务商构建 store；local 服务商降级 InMemory，
-    /// s3 兼容桶（R2/OSS/COS/B2）走 AmazonS3Builder（endpoint 直连）。
+    /// 生产：从 MySQL 读活动服务商构建 store；local 服务商落盘 `VOICE_LOCAL_DIR`
+    /// （默认 storage/voice），s3 兼容桶（R2/OSS/COS/B2）走 AmazonS3Builder（endpoint 直连）。
     pub async fn from_active_provider() -> Result<Self, UploadError> {
         let pool = mysql_async::Pool::new(open_admin_opts());
         let mut conn = pool.get_conn().await.map_err(|_| UploadError::Provider)?;
@@ -79,7 +79,8 @@ impl VoiceStorage {
             return Err(UploadError::Provider);
         };
         if driver == "local" {
-            return Ok(Self::new(Arc::new(InMemory::new())).await);
+            let dir = std::env::var("VOICE_LOCAL_DIR").unwrap_or_else(|_| "storage/voice".into());
+            return Self::from_local_dir(Path::new(&dir));
         }
         let store = AmazonS3Builder::new()
             .with_endpoint(endpoint)
@@ -91,6 +92,14 @@ impl VoiceStorage {
             .build()
             .map_err(|_| UploadError::Provider)?;
         Ok(Self::new(Arc::new(store)).await)
+    }
+
+    /// local 服务商：落盘持久目录（`LocalFileSystem` 要求目录已存在，先创建）。
+    fn from_local_dir(dir: &Path) -> Result<Self, UploadError> {
+        std::fs::create_dir_all(dir).map_err(|_| UploadError::Provider)?;
+        let store = object_store::local::LocalFileSystem::new_with_prefix(dir)
+            .map_err(|_| UploadError::Provider)?;
+        Ok(Self { store: Arc::new(store) })
     }
 
     /// 校验 → 转 m4a（AAC 32k 单声道）→ 存 store（voice/{name}）→ {name, url, duration}
@@ -111,14 +120,27 @@ impl VoiceStorage {
             .map(|s| s.success())
             .unwrap_or(false);
         if !ok {
+            let _ = std::fs::remove_file(&tmp); // ffmpeg 失败可能留下半成品
             return Err(UploadError::TranscodeFailed);
         }
-        let duration = probe(&tmp)?;
+        let duration = match probe(&tmp) {
+            Ok(d) => d,
+            Err(e) => {
+                let _ = std::fs::remove_file(&tmp);
+                return Err(e);
+            }
+        };
         if duration > MAX_SECONDS {
             let _ = std::fs::remove_file(&tmp);
             return Err(UploadError::TooLong);
         }
-        let bytes = std::fs::read(&tmp).map_err(|_| UploadError::TranscodeFailed)?;
+        let bytes = match std::fs::read(&tmp) {
+            Ok(b) => b,
+            Err(_) => {
+                let _ = std::fs::remove_file(&tmp);
+                return Err(UploadError::TranscodeFailed);
+            }
+        };
         let _ = std::fs::remove_file(&tmp);
         self.store
             .put(&ObjPath::from(format!("voice/{name}")), PutPayload::from(bytes))
@@ -157,6 +179,17 @@ fn voice_name() -> String {
     format!("{:x}.m4a", md5::compute(buf)) // PHP: md5(random_bytes(16)) . '.m4a'
 }
 
+/// 唯一临时上传路径：随机后缀，同一 uid 并发上传不再互相覆盖。
+pub fn temp_upload_path(prefix: &str, uid: i64) -> PathBuf {
+    std::env::temp_dir().join(format!("{}_{}_{}.upload", prefix, uid, random_suffix()))
+}
+
+fn random_suffix() -> String {
+    let mut buf = [0u8; 8];
+    let _ = getrandom::fill(&mut buf);
+    format!("{:016x}", u64::from_le_bytes(buf))
+}
+
 fn probe(file: &Path) -> Result<u64, UploadError> {
     let out = Command::new("ffprobe")
         .args(["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0"])
@@ -170,6 +203,7 @@ fn probe(file: &Path) -> Result<u64, UploadError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use object_store::memory::InMemory;
 
     fn ffmpeg_ok() -> bool {
         Command::new("ffmpeg").arg("-version").stdout(std::process::Stdio::null()).status().is_ok()
@@ -245,5 +279,20 @@ mod tests {
         let st = VoiceStorage::new(Arc::new(InMemory::new())).await;
         // 与 PHP 一致：缺文件 → 404 voice.not_found（而非 500）
         assert!(matches!(st.read("0123456789abcdef0123456789abcdef.m4a").await, Err(UploadError::NotFound)));
+    }
+
+    #[tokio::test]
+    async fn local_store_survives_reopen() {
+        let dir = std::env::temp_dir().join(format!("bee_live_store_{}", random_suffix()));
+        let name = "0123456789abcdef0123456789abcdef.m4a";
+        let st = VoiceStorage::from_local_dir(&dir).expect("创建本地 store");
+        st.store
+            .put(&ObjPath::from(format!("voice/{name}")), PutPayload::from_static(b"voice-bytes"))
+            .await
+            .expect("写入磁盘");
+        drop(st);
+        let reopened = VoiceStorage::from_local_dir(&dir).expect("重新打开本地 store");
+        assert_eq!(reopened.read(name).await.expect("重开后仍可读"), b"voice-bytes".to_vec());
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

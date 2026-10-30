@@ -35,13 +35,13 @@
   <rect class="lane" x="20" y="218" width="920" height="118"/>
   <rect class="b2" x="44" y="246" width="180" height="64"/>
   <text class="t" x="134" y="270">Auth Middleware</text>
-  <text class="ts" x="134" y="288">JWT verify · versioning before routing</text>
+  <text class="ts" x="134" y="288">JWT verify · session revoke · versioning</text>
   <rect class="b2" x="272" y="246" width="180" height="64"/>
   <text class="t" x="362" y="270">REST Business Logic</text>
   <text class="ts" x="362" y="288">Post / Follow / Notify</text>
   <rect class="b2" x="500" y="246" width="180" height="64"/>
   <text class="t" x="590" y="270">WsServer Frame Handling</text>
-  <text class="ts" x="590" y="288">Envelope decode · Deliverer delivery</text>
+  <text class="ts" x="590" y="288">Envelope decode · membership · delivery</text>
   <rect class="b2" x="728" y="246" width="180" height="64"/>
   <text class="t" x="818" y="270">CallCenter / RoomCenter</text>
   <text class="ts" x="818" y="288">Call state machine · room mgmt · SFU relay</text>
@@ -55,7 +55,7 @@
   <rect class="b3" x="500" y="402" width="180" height="44"/>
   <text class="t" x="590" y="429">Redis IM index / online map</text>
   <rect class="b3" x="728" y="402" width="180" height="44"/>
-  <text class="t" x="818" y="429">SFU media relay / voice storage</text>
+  <text class="t" x="818" y="429">SFU signaling/media · persistent voice</text>
 
   <path class="edge" d="M 134 140 L 134 246"/>
   <path class="edge" d="M 362 140 L 362 246"/>

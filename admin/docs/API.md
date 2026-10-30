@@ -7,7 +7,7 @@
 
 开放管理后台 (open-admin) 基于 webman v2 构建，提供 RESTful JSON API。所有管理端接口需要 JWT 认证与 RBAC 权限校验，公开接口通过 API 版本头路由到版本化控制器。
 
-- **基础 URL**: `http://localhost:8787`
+- **基础 URL**: `http://localhost:8791`
 - **API 版本**: 通过请求头 `API-Version: v1` 控制（缺失时默认 v1）
 - **语言**: 通过 `Accept-Language` 头或 `?lang=zh_CN|en` 参数切换（默认 zh_CN），Locale 中间件自动检测
 
